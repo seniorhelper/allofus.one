@@ -1,0 +1,13 @@
+/* ============================================================
+   allofus.one · settings
+   Leave these blank = DEMO mode (everything saves on the visitor's
+   own device, demo residents answer). Paste your Supabase Project
+   URL + anon public key = LIVE mode (real accounts, real chat,
+   real players walking around). See /SETUP.md.
+   The anon key is SAFE to publish (Row Level Security protects
+   the data). NEVER paste the service_role key here.
+   ============================================================ */
+export const CONFIG = {
+  SUPABASE_URL: '',        // e.g. 'https://abcdefghij.supabase.co'
+  SUPABASE_ANON_KEY: '',   // e.g. 'eyJhbGciOi...'
+};

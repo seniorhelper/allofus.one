@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>allofus.one · A World Where All of Us Connect</title>
+<meta name="description" content="allofus.one is a free 3D world for connecting humanity. Make an avatar, set your status ring, walk your life paths, meet people, trade in Global Match, plan your life on the Lifeboard and claim land. Works on phone, laptop and VR.">
+<link rel="canonical" href="https://allofus.one/">
+<meta name="theme-color" content="#1b1f3b">
+<link rel="icon" href="/images/allofus-mark.svg" type="image/svg+xml">
+<link rel="icon" href="/images/favicon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/images/favicon-192.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="allofus.one">
+<meta property="og:title" content="allofus.one · All of us. One world.">
+<meta property="og:description" content="A free 3D world for connecting humanity: avatars, status rings, life paths, Global Match, your Lifeboard and land for everyone.">
+<meta property="og:url" content="https://allofus.one/">
+<meta property="og:image" content="https://allofus.one/images/allofus-og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="allofus.one · All of us. One world.">
+<meta name="twitter:description" content="Walk your life paths, meet your people, help each other, build your home. Free, in your browser.">
+<meta name="twitter:image" content="https://allofus.one/images/allofus-og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"WebSite","@id":"https://allofus.one/#site","url":"https://allofus.one/","name":"allofus.one","description":"A free 3D world for connecting humanity.","inLanguage":"en-US"},
+ {"@type":"Organization","@id":"https://allofus.one/#org","name":"allofus.one","url":"https://allofus.one/","logo":"https://allofus.one/images/allofus-mark.svg","founder":{"@type":"Person","name":"Zachary Tye Wennstedt","url":"https://zacharytyewennstedt.com/"},"sameAs":["https://www.facebook.com/share/1FCtkAgToH/"]},
+ {"@type":"WebApplication","name":"allofus.one world","url":"https://allofus.one/","applicationCategory":"SocialNetworkingApplication","operatingSystem":"Any (web browser, WebXR headsets)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
+ {"@type":"FAQPage","mainEntity":[
+  {"@type":"Question","name":"Is allofus.one free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Making an avatar, walking the world, connecting, Global Match, your Lifeboard and claiming land are free."}},
+  {"@type":"Question","name":"Do I need a VR headset?","acceptedAnswer":{"@type":"Answer","text":"No. It runs in any modern browser on a phone, tablet or laptop. On a headset like Meta Quest, open allofus.one in the headset browser and tap Enter VR."}},
+  {"@type":"Question","name":"What is Global Match?","acceptedAnswer":{"@type":"Answer","text":"A board where people post what they have and what they need, for items and services. When a have meets a need, both people get a match. No money changes hands on allofus.one."}},
+  {"@type":"Question","name":"What do the status rings mean?","acceptedAnswer":{"@type":"Answer","text":"Gold is Home, green is Hanging (open to chat), blue is Working (collab invites only), orange is Exploring, gray is Do Not Disturb."}}
+ ]}
+]}
+</script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js">
+<style>
+:root{--ink:#1b1f3b;--ink2:#3b4166;--paper:#faf6ee;--card:#fffdf8;--line:#e8dfcf;--gold:#c9a24a;--p1:#e0a800;--p2:#2f86ff;--p3:#22a35a;--p4:#e8671e;--p5:#e11d48;--p6:#7c3aed;--p7:#0d9488}
+html{scroll-behavior:smooth}
+#wvm-stage{position:relative;width:100%;height:100vh;height:100dvh;background:#0d1b3a}
+#wvm-preload{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:700 18px Manrope,Arial,sans-serif;background:radial-gradient(circle at 50% 40%,#2a3a7a,#0d1b3a)}
+.wvm-brand img.wvm-logo-full{height:40px;width:auto}
+#scrollhint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:20;border:0;background:rgba(255,253,248,.95);color:var(--ink);font:800 13px Manrope,Arial,sans-serif;padding:9px 16px;border-radius:999px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+@media(max-width:720px){#scrollhint{bottom:auto;top:58px;left:auto;right:8px;transform:none;font-size:11.5px;padding:7px 11px}}
+.site{background:var(--paper);color:var(--ink);font-family:Manrope,"Segoe UI",Arial,sans-serif;font-size:17px;line-height:1.65}
+.site *{box-sizing:border-box}
+.site a{color:#4338ca}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+.spectrum{height:8px;background:linear-gradient(90deg,var(--p1) 0 14.28%,var(--p2) 0 28.57%,var(--p3) 0 42.85%,var(--p4) 0 57.14%,var(--p5) 0 71.42%,var(--p6) 0 85.71%,var(--p7) 0)}
+.site h1,.site h2,.site h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em;line-height:1.1;color:var(--ink)}
+.site h1{font-size:clamp(44px,8vw,96px);margin:0 0 14px;font-weight:800}
+.site h2{font-size:clamp(32px,4.6vw,54px);margin:0 0 14px;font-weight:800}
+.site h3{font-size:24px;margin:0 0 6px;font-weight:600}
+.eyebrow{font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:12.5px;color:var(--ink2)}
+section{padding:84px 0;border-bottom:1px solid var(--line)}
+.lede{font-size:clamp(19px,2.2vw,23px);color:var(--ink2);max-width:760px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);background:var(--ink);color:#fff!important;text-decoration:none;font:800 16px Manrope,Arial,sans-serif;padding:13px 22px;border-radius:999px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink)!important}
+.btn:hover{transform:translateY(-1px)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+/* hero */
+.hero{padding:96px 0 70px;position:relative;overflow:hidden}
+.hero .one{font-style:italic;background:linear-gradient(90deg,var(--p5),var(--p4),var(--p1),var(--p3),var(--p2),var(--p6));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-ring{position:absolute;right:-120px;top:40px;width:420px;opacity:.9;pointer-events:none}
+@media(max-width:860px){.hero-ring{width:260px;right:-90px;top:10px;opacity:.35}}
+/* flow infographic */
+.flow{list-style:none;padding:0;margin:40px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s;position:relative}
+.flow li{position:relative;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px 22px 22px;counter-increment:s;box-shadow:0 2px 0 var(--line)}
+.flow li::before{content:counter(s);position:absolute;top:-16px;left:20px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font:800 16px Manrope;color:#fff;background:var(--c)}
+.flow li::after{content:"";position:absolute;right:-22px;top:50%;width:22px;height:4px;background:var(--c)}
+.flow li:nth-child(3n)::after{display:none}
+.flow .ic{font-size:34px}
+.flow p{margin:4px 0 0;color:var(--ink2);font-size:16px}
+.loop{margin-top:26px;border:2px dashed var(--ink2);border-radius:22px;padding:18px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:#fff}
+.loop b{font-family:Fraunces,Georgia,serif;font-size:22px}
+@media(max-width:860px){.flow{grid-template-columns:1fr}.flow li::after{right:auto;left:38px;top:auto;bottom:-22px;width:4px;height:22px}.flow li:nth-child(3n)::after{display:block}.flow li:last-child::after{display:none}}
+/* rings */
+.rings{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:30px}
+.ringc{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;text-align:center}
+.ringc .r{width:74px;height:74px;margin:0 auto 10px;border-radius:50%;border:9px solid var(--c);box-shadow:0 0 22px var(--c);background:#fff;display:grid;place-items:center;font-size:26px}
+.ringc p{font-size:14.5px;color:var(--ink2);margin:4px 0 0}
+@media(max-width:860px){.rings{grid-template-columns:repeat(2,1fr)}}
+/* two column feature */
+.duo{display:grid;grid-template-columns:1.05fr 1fr;gap:46px;align-items:center}
+@media(max-width:860px){.duo{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid var(--line);border-radius:26px;padding:26px;box-shadow:0 18px 50px rgba(27,31,59,.08)}
+.feat{display:grid;gap:14px;margin-top:16px}
+.feat div{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start}
+.feat span{font-size:28px}
+.feat p{margin:0;color:var(--ink2)}
+.feat b{color:var(--ink)}
+.match{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}@media(max-width:560px){.match{grid-template-columns:1fr;text-align:center}}
+.mcard{border-radius:18px;padding:18px;border:2px solid var(--c);background:#fff}
+.mcard small{display:block;font-weight:900;letter-spacing:.14em;color:var(--c);font-size:12px}
+.mcard b{font-family:Fraunces,Georgia,serif;font-size:21px}
+.eq{font:800 34px Fraunces,Georgia,serif;color:var(--p6)}
+.bang{margin-top:14px;text-align:center;font:800 26px Fraunces,Georgia,serif;background:var(--ink);color:#fff;border-radius:16px;padding:12px}
+/* paths grid */
+.paths{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:28px}
+.pc{background:#fff;border:1px solid var(--line);border-top:8px solid var(--c);border-radius:18px;padding:18px}
+.pc .ic{font-size:30px}.pc p{margin:4px 0 0;color:var(--ink2);font-size:15.5px}
+/* founder (strategic dark) */
+.founder{background:var(--ink);color:#f5efe2;border-bottom:0}
+.founder h2{color:#fff}.founder .eyebrow{color:#ffd76a}.founder p{color:#e9e2d2;font-size:18px}
+.founder a{color:#ffd76a}
+.quote{font:600 clamp(24px,3vw,34px)/1.3 Fraunces,Georgia,serif;color:#fff;border-left:6px solid #ffd76a;padding-left:22px;margin:22px 0}
+/* join */
+.join{text-align:center}
+.join .lede{margin:0 auto}
+/* faq */
+details{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin:10px 0}
+summary{cursor:pointer;font:700 19px Fraunces,Georgia,serif;color:var(--ink)}
+details p{margin:10px 0 0;color:var(--ink2)}
+/* footer + signature heart */
+footer.site-foot{background:var(--paper);padding:40px 0 18px;text-align:center;color:var(--ink2);font-size:15px}
+footer.site-foot nav{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin:12px 0}
+footer.site-foot nav a{color:var(--ink);font-weight:700;text-decoration:none}
+.sig{display:flex;align-items:center;justify-content:center;gap:8px;padding:18px 0 22px;font:700 14px Manrope,Arial,sans-serif}
+.sig a{color:var(--ink)!important;text-decoration:none}
+.heart{display:inline-block;color:#e11d48;font-size:18px;animation:beat 1.2s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.28)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){.heart{animation:none}html{scroll-behavior:auto}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div id="wvm-stage"><div id="wvm-preload">Opening the world…</div><button id="scrollhint" type="button">How it works ↓</button></div>
+
+<main class="site" id="story">
+<div class="spectrum" aria-hidden="true"></div>
+
+<section class="hero" aria-labelledby="h-hero">
+  <svg class="hero-ring" viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke-width="7" stroke-linecap="round"><path d="M60 14 A46 46 0 0 1 95.9 31.3" stroke="#e0a800"/><path d="M101.3 39.8 A46 46 0 0 1 104.8 70.2" stroke="#2f86ff"/><path d="M101.5 79.6 A46 46 0 0 1 81.2 101" stroke="#22a35a"/><path d="M71 104.7 A46 46 0 0 1 43.6 103" stroke="#e8671e"/><path d="M34.6 98.5 A46 46 0 0 1 16.4 75.2" stroke="#e11d48"/><path d="M14.3 65.4 A46 46 0 0 1 20.2 36.3" stroke="#7c3aed"/><path d="M25.8 28.8 A46 46 0 0 1 50.6 15" stroke="#0d9488"/></g></svg>
+  <div class="wrap">
+    <p class="eyebrow">A world for connecting humanity</p>
+    <h1 id="h-hero">All of us.<br><span class="one">One</span> world.</h1>
+    <p class="lede">allofus.one is a free 3D world you walk into from any browser. Make an avatar of yourself, walk the life paths you care about, and meet the people walking them too. Help each other, plan your life, and build a home on land that is free for everyone.</p>
+    <div class="btns"><button class="btn" data-act="join">✨ Make my place</button><a class="btn alt" href="#top-world" data-act="enter">🌍 Step into the world</a></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-how">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2 id="h-how">Six steps from stranger to neighbor.</h2>
+    <p class="lede">No feed run by a secret algorithm. No hunting for people in a list. You find each other the way people always have: by being in the same place, going the same direction.</p>
+    <ol class="flow">
+      <li style="--c:var(--p6)"><div class="ic">🧑</div><h3>Make your avatar</h3><p>Pick a character, dress it up, and add your real face with a selfie if you like. The photo stays on your device.</p></li>
+      <li style="--c:var(--p3)"><div class="ic">🟢</div><h3>Set your status ring</h3><p>A glowing ring at your feet tells everyone if you are home, hanging out, working or exploring, or if you'd rather not be disturbed.</p></li>
+      <li style="--c:var(--p2)"><div class="ic">🛤️</div><h3>Pick your life paths</h3><p>Business, Learning, Wellness, Adventure, Causes, Creativity or Explore. Your avatar stands on your path so others can find you.</p></li>
+      <li style="--c:var(--p1)"><div class="ic">👋</div><h3>Wave, connect, collaborate</h3><p>Wave at anyone. Send a connect request. When they say yes, chat unlocks. Request a call, meeting or VR visit.</p></li>
+      <li style="--c:var(--p4)"><div class="ic">🏠</div><h3>Build your Lifeboard</h3><p>Your home dashboard: life-balance wheel, goal stacker, vision board, habits, projects, booking link, and buttons you design.</p></li>
+      <li style="--c:var(--p5)"><div class="ic">🏡</div><h3>Claim land, build home</h3><p>Every road goes on forever, and there are open lots along every one. Claim yours and pick a style: Treehouse, Space Villa, Beach Villa and more.</p></li>
+    </ol>
+    <div class="loop"><span style="font-size:34px">🤝</span><div><b>Then the loop: Global Match.</b><br>Post what you have and what you need, for items and services. When a have meets a need, it's a match.</div></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-rings">
+  <div class="wrap">
+    <p class="eyebrow">Status rings</p>
+    <h2 id="h-rings">Know who is open to talk, at a glance.</h2>
+    <p class="lede">Everyone wears a ring. Change yours any time with the ring button in the world.</p>
+    <div class="rings">
+      <div class="ringc" style="--c:#ffd23f"><div class="r">🏠</div><h3>Home</h3><p>At my place. The I'M HOME sign is lit. Knock.</p></div>
+      <div class="ringc" style="--c:#4ade80"><div class="r">🟢</div><h3>Hanging</h3><p>Open to chats, waves and group hangs.</p></div>
+      <div class="ringc" style="--c:#38b6ff"><div class="r">💼</div><h3>Working</h3><p>Collab invites and meeting requests only.</p></div>
+      <div class="ringc" style="--c:#ff8a3d"><div class="r">🧭</div><h3>Exploring</h3><p>Out roaming the paths. Say hi.</p></div>
+      <div class="ringc" style="--c:#9aa3b8"><div class="r">🌙</div><h3>Do Not Disturb</h3><p>Visible, not reachable. Waves wait.</p></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-lb">
+  <div class="wrap duo">
+    <div>
+      <p class="eyebrow">Your Lifeboard</p>
+      <h2 id="h-lb">Your home is a dashboard for your whole life.</h2>
+      <p class="lede">Walk into your home and your life is on the wall. Everything in one place, arranged the way you want it.</p>
+      <div class="feat">
+        <div><span>🎯</span><p><b>Goal stacker.</b> Drag goals from Dreaming to Doing to Done and stack them by what matters most.</p></div>
+        <div><span>🗺️</span><p><b>Vision board.</b> Drop ideas anywhere and link them into a flowchart of where you're going.</p></div>
+        <div><span>🌿</span><p><b>Wellness.</b> Habits with streaks, a daily mood check-in, and a gratitude line.</p></div>
+        <div><span>📅</span><p><b>Work + booking.</b> Projects, the days you take meetings, and a booking link for calls, meetings and VR visits.</p></div>
+        <div><span>🔘</span><p><b>Your buttons.</b> Make your own buttons and decide what each one does.</p></div>
+      </div>
+    </div>
+    <div class="panel" aria-hidden="true">
+      <svg viewBox="0 0 300 300" width="100%"><g transform="translate(150 150)">
+        <circle r="128" fill="#faf6ee" stroke="#e8dfcf"/>
+        <path d="M0 0 L0 -110 A110 110 0 0 1 95.3 -55 Z" fill="#7c3aed" opacity=".85"/>
+        <path d="M0 0 L69.3 -40 A80 80 0 0 1 69.3 40 Z" fill="#2563eb" opacity=".85"/>
+        <path d="M0 0 L82.3 47.5 A95 95 0 0 1 0 95 Z" fill="#16a34a" opacity=".85"/>
+        <path d="M0 0 L0 120 A120 120 0 0 1 -103.9 60 Z" fill="#0891b2" opacity=".85"/>
+        <path d="M0 0 L-60.6 35 A70 70 0 0 1 -60.6 -35 Z" fill="#e11d48" opacity=".85"/>
+        <path d="M0 0 L-77.9 -45 A90 90 0 0 1 0 -90 Z" fill="#ea580c" opacity=".85"/>
+        <circle r="20" fill="#fff" stroke="#e8dfcf"/>
+        <g font-family="Manrope,Arial" font-size="12" font-weight="800" fill="#1b1f3b" text-anchor="middle"><text x="62" y="-112">Goals</text><text x="122" y="4">Social</text><text x="62" y="124">Wellness</text><text x="-66" y="124">Work</text><text x="-120" y="4">Giving</text><text x="-62" y="-112">Create</text></g>
+      </g></svg>
+      <p style="text-align:center;margin:6px 0 0;color:var(--ink2);font-size:15px">The life-balance wheel: rate each part of your life from 1 to 10 and see where to put your energy next.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-match">
+  <div class="wrap duo">
+    <div class="panel" aria-hidden="true">
+      <div class="match"><div class="mcard" style="--c:#16a34a"><small>I HAVE</small><b>A gently used blue couch</b></div><div class="eq">↔</div><div class="mcard" style="--c:#e11d48"><small>I NEED</small><b>A couch for our first apartment</b></div></div>
+      <div class="bang">🎉 WE HAVE A MATCH</div>
+    </div>
+    <div>
+      <p class="eyebrow">Global Match</p>
+      <h2 id="h-match">Someone, somewhere, needs exactly what you have.</h2>
+      <p class="lede">Post an I Have or an I Need. Items and services: a couch, tools, coding lessons, help moving, a wall to paint a mural on. When they line up, both of you hear about it.</p>
+      <p style="color:var(--ink2)">Global Match is for items and services only. No money changes hands on allofus.one.</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-feed">
+  <div class="wrap duo">
+    <div>
+      <p class="eyebrow">Your feed, your rules</p>
+      <h2 id="h-feed">Newest first, from the people you choose.</h2>
+      <p class="lede">You decide who can post to your feed (connections, path-mates or anyone) and what you want to see: updates, wins, asks or offers. Nothing is boosted. Nothing is buried.</p>
+    </div>
+    <div class="panel">
+      <div class="feat">
+        <div><span>🔒</span><p><b>You control who reaches you.</b> Status rings, message requests from strangers that you approve, and a block button.</p></div>
+        <div><span>📨</span><p><b>Message requests.</b> People you haven't connected with can knock. You decide who gets in.</p></div>
+        <div><span>🤳</span><p><b>Selfies stay on your device.</b> Your face photo for your avatar is never uploaded.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-world">
+  <div class="wrap">
+    <p class="eyebrow">The world</p>
+    <h2 id="h-world">Seven paths. Endless roads. A lot to find.</h2>
+    <p class="lede">Every life path leads somewhere worth going, and the roads past the hub never end. Swim, dive, ride an ATV, beam up to orbit, and look for the seven hidden Light Seeds.</p>
+    <div class="paths">
+      <div class="pc" style="--c:var(--p1)"><div class="ic">💼</div><h3>Business → The City</h3><p>Neon towers, Collab Tower and rooms for people in Working mode.</p></div>
+      <div class="pc" style="--c:var(--p2)"><div class="ic">📚</div><h3>Learning → Library</h3><p>A glass dome of flying books with doors to free, world-class learning.</p></div>
+      <div class="pc" style="--c:var(--p3)"><div class="ic">🌿</div><h3>Wellness → Waterfall</h3><p>Cliffs, a waterfall and a pool to swim in. Something glows behind the falls.</p></div>
+      <div class="pc" style="--c:var(--p4)"><div class="ic">🏜️</div><h3>Adventure → Desert</h3><p>Mesas, the Temple of Many Hands and ATV trails.</p></div>
+      <div class="pc" style="--c:var(--p5)"><div class="ic">❤️</div><h3>Causes → Starport</h3><p>Beam up to Orbit Garden, where the whole Earth hangs below you.</p></div>
+      <div class="pc" style="--c:var(--p6)"><div class="ic">🎨</div><h3>Creativity → Art Garden</h3><p>Sculptures made of code, Zach's paintings, and a wall of wish lanterns.</p></div>
+      <div class="pc" style="--c:var(--p7)"><div class="ic">🌊</div><h3>Explore → The Bay</h3><p>Dive the reef: coral, fish schools, a sea turtle and a sunken ship.</p></div>
+      <div class="pc" style="--c:var(--gold)"><div class="ic">🏛️</div><h3>Zach's eco home</h3><p>First on the right. Living roof, rain-to-drinking water, aquaponics, geothermal, solar + wind, and movie night.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="founder" aria-labelledby="h-founder">
+  <div class="wrap">
+    <p class="eyebrow">Why this exists</p>
+    <h2 id="h-founder">Built for the long road toward each other.</h2>
+    <p class="quote">More ways to talk than ever. Fewer ways to find each other. So here is a place where you can see who is walking the same road you are.</p>
+    <p>allofus.one was founded by Zachary Tye Wennstedt: Colorado painter, poet, and builder of websites and big ideas. The plan is simple: give people a home, a direction and each other, and let the good spread from there. More is coming: a full house designer, bigger collab spaces, and tools for groups doing real good in the world.</p>
+    <div class="btns"><a class="btn" style="background:#ffd76a;color:#1b1f3b!important;border-color:#ffd76a" href="https://zacharytyewennstedt.com/" target="_blank" rel="noopener">Meet Zach ↗</a><a class="btn alt" style="color:#fff!important;border-color:#fff" href="https://www.facebook.com/share/1FCtkAgToH/" target="_blank" rel="noopener">Follow on Facebook ↗</a></div>
+  </div>
+</section>
+
+<section class="join" aria-labelledby="h-join">
+  <div class="wrap">
+    <p class="eyebrow">Start here</p>
+    <h2 id="h-join">There's a place for you. Come claim it.</h2>
+    <p class="lede">Make your avatar, pick your paths, set your ring. Then bring your people. Your invite link remembers who you brought.</p>
+    <div class="btns" style="justify-content:center"><button class="btn" data-act="join">✨ Make my place</button><button class="btn alt" data-act="invite">✉️ Invite friends</button><a class="btn alt" href="#top-world" data-act="enter">🌍 Explore first</a></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-faq">
+  <div class="wrap">
+    <p class="eyebrow">Questions</p>
+    <h2 id="h-faq">Good questions, quick answers.</h2>
+    <details><summary>Is it free?</summary><p>Yes. Your avatar, the world, connecting, chat, Global Match, your Lifeboard and your land are free.</p></details>
+    <details><summary>Do I need a VR headset?</summary><p>No. It runs in the browser on phones, tablets and laptops. On a headset like Meta Quest, open allofus.one in the headset browser and tap Enter VR.</p></details>
+    <details><summary>How do I move around?</summary><p>On a laptop: WASD or the arrow keys, Shift to run, drag to look, click anything that glows. On a phone: the stick on the left to move, drag to look, tap the ground to walk there. Q dives in deep water, H opens your Lifeboard.</p></details>
+    <details><summary>Who is Lumi?</summary><p>The glowing orb on the right edge of the world. Lumi is a scripted guide, not AI: ask how things work or say "take me to the beach."</p></details>
+    <details><summary>What is Global Match for?</summary><p>Items and services: things you have that someone needs, and things you need that someone has. No money changes hands on allofus.one. Meet in public and never send money to strangers.</p></details>
+    <details><summary>Who are the people standing on the paths?</summary><p>Some are demo residents that show how profiles work (their cards say so). As people join, real profiles take their places along the paths they choose.</p></details>
+    <details><summary>Is my data private?</summary><p>Your selfie stays on your device. Your Lifeboard is private to you. You choose who can message you, who can post to your feed, and whom to block.</p></details>
+  </div>
+</section>
+</main>
+
+<footer class="site site-foot">
+  <div class="wrap">
+    <img src="/images/allofus-mark.svg" alt="allofus.one" width="56" height="56">
+    <nav aria-label="Footer"><a href="#top-world" data-act="enter">Enter the world</a><a href="#h-how">How it works</a><a href="#h-lb">Lifeboard</a><a href="#h-match">Global Match</a><a href="#h-faq">FAQ</a><a href="https://zacharytyewennstedt.com/" target="_blank" rel="noopener">Founder</a></nav>
+    <p>© 2026 allofus.one</p>
+  </div>
+  <div class="sig"><span class="heart" aria-hidden="true">❤</span><a href="https://eyetoad.com/" target="_blank" rel="noopener">Need a website?</a></div>
+</footer>
+
+<script type="module">
+import { WVM, THREE } from '/js/aou-engine.js';
+import { groundY } from '/js/aou-terrain.js';
+import { buildWorld } from '/js/aou-world.js';
+import { buildLife } from '/js/aou-life.js';
+import { initLumi } from '/js/aou-lumi.js';
+import { initSocial } from '/js/aou-social.js';
+
+const app = new WVM({
+  title: 'allofus.one', worldName: 'allofus.one · The Hub', page: 'index',
+  spawn: new THREE.Vector3(0, 0, 160), spawnYaw: 0, groundY,
+  bounds: 1e6, fog: 0xcfe3f2, fogNear: 140, fogFar: 500, camFar: 4000, maxDist: 1500, cullDist: 700, spriteFar: 80,
+  showSelfieOnFirstVisit: false,
+});
+window.WVM_APP = app;
+const api = { isNight: () => !!app.isNight };
+app.start(async (a) => {
+  const W = await buildWorld(a, api);
+  buildLife(W);
+  const lumi = initLumi(a, W);
+  await initSocial(a, W, lumi);
+  window.AOU = Object.assign(window.AOU || {}, { W, app: a });
+  setTimeout(() => { try { if (!localStorage.getItem('aou_seen')) { localStorage.setItem('aou_seen', '1'); lumi.say('Welcome to allofus.one! 🌍 Zach\'s place is first on the right. Tap ✨ Join to make your place, or 🧑 up top to build your avatar.'); } } catch (e) { } }, 3500);
+});
+const go = (fn) => { document.getElementById('wvm-stage').scrollIntoView({ behavior: 'smooth' }); setTimeout(() => { if (window.AOU && window.AOU[fn]) window.AOU[fn](); }, 600); };
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (!b) return; e.preventDefault(); const a = b.dataset.act; if (a === 'join') go('join'); else if (a === 'invite') go('openInvite'); else go(null); });
+document.getElementById('scrollhint').onclick = () => document.getElementById('story').scrollIntoView({ behavior: 'smooth' });
+</script>
+</body>
+</html>

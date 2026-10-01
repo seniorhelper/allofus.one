@@ -1,0 +1,20 @@
+# allofus.one
+
+> A free 3D world for connecting humanity, playable in any web browser (phone, laptop, WebXR headsets). People make an avatar, set a status ring, walk "life paths," meet others on the same paths, trade items and services in Global Match, plan their lives on a personal Lifeboard dashboard, and claim free land to build a home.
+
+## What you can do
+- Avatar: pick a character and optionally add your face from a selfie (the photo stays on the device).
+- Status rings: Home (gold), Hanging (green, open to chat), Working (blue, collab invites only), Exploring (orange), Do Not Disturb (gray).
+- Life paths: Business, Learning, Wellness, Adventure, Causes, Creativity, Explore. Each leads to a district (City, Library, Waterfall, Desert, Starport + Orbit Garden, Art Garden, the Bay).
+- Connect flow: wave, connect request, chat unlocks on mutual yes; message requests from strangers; public rooms and collab rooms; meeting requests (call, meeting, VR visit).
+- Lifeboard: life-balance wheel, goal stacker, vision board flowchart, wellness habits and mood, projects and booking link, giving, creative links, custom buttons.
+- Global Match: I Have / I Need for items and services only. No money changes hands on allofus.one.
+- Land: open lots along roads that continue without end; home styles include Eco Deco, Bungalow, Beach Villa, Treehouse, Space Villa, Loft Apartment and Cliffside Mansion.
+- Feed: newest first from people the user chooses; no ranking algorithm.
+- Lumi: a scripted guide (not AI).
+
+## Founder
+- Zachary Tye Wennstedt: https://zacharytyewennstedt.com/
+
+## Key page
+- https://allofus.one/ (the world on top, how-it-works guide and FAQ below)

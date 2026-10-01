@@ -1,0 +1,60 @@
+/* ============================================================
+   allofus.one · Lumi, the guide
+   A little ball of light. Lives in a round tab on the right edge
+   (stays a round orb when tucked away). Lumi is NOT AI and says
+   so: a well-read guide with answers, directions and a few jokes.
+   ============================================================ */
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const KB = [
+  [/^(hi|hey|hello|yo|sup|howdy)\b/, () => 'Hi! I\'m Lumi. 💡 Ask me how anything works, or say "take me to the beach" (or the plaza, Zach\'s, the city, the waterfall, the desert, the starport, the art garden, the library).'],
+  [/what is (this|allofus)|about|purpose|why/, () => 'allofus.one is a world for connecting humanity: make an avatar, pick your life paths, set your status ring, meet people walking the same paths, collaborate, help each other in Global Match, and build your life on your Lifeboard. Your feed, your rules. No secret algorithm.'],
+  [/ring|mode|status|dnd|disturb|working|hanging/, () => 'Status rings: 🏠 Home (gold), 🟢 Hanging (green, open to chat), 💼 Working (blue, collab invites only), 🧭 Exploring (orange), 🌙 Do Not Disturb (gray). Tap the ring button on the left to change yours.', 'modes'],
+  [/lifeboard|dashboard|goal|vision|habit|wheel/, () => 'Your Lifeboard is your home dashboard: life-balance wheel, goal stacker (drag goals from Dreaming → Doing → Done), a vision board flowchart, wellness habits, work + booking link, giving, create, and buttons you design yourself. Tap 🏠 or press H.', 'lifeboard'],
+  [/match|have|need|trade|give|donat/, () => 'Global Match pairs I HAVE with I NEED, for items and services. Post what you have or need and when it lines up: WE HAVE A MATCH. No money changes hands here.', 'match'],
+  [/connect|friend|wave|chat|message|dm/, () => 'Wave 👋 at anyone, then tap 🤝 Connect. When they say yes, chat unlocks. Strangers can send a message request and you decide. Public rooms (like Town Square) are open to everyone.'],
+  [/land|lot|claim|build|house|home style|address/, () => 'There is enough land for all of us. Walk past the Gateway down Unity Road (or any road, forever) and tap a green 🌍 stake. Pick a style: Eco Deco, Bungalow, Beach Villa, Treehouse, Space Villa, Loft or Cliffside Mansion. Change skins any time on your Lifeboard.'],
+  [/zach|founder|who made|creator|eye ?to ?ad/, () => 'Zach built this. His eco-deco place is the first lot on the right past the Gateway: living roof, rain-to-drinking-water, aquaponics, geothermal, solar + wind, an observatory, and movie night in the backyard. Check his mailbox to say hi.', 'zach'],
+  [/swim|dive|underwater|fish|ocean|reef|ship/, () => 'Swim out into the Bay past the buoys and tap 🤿 Dive (or press Q). Coral, kelp, fish schools, a sea turtle, a manta and a sunken ship are down there. Tap ⬆️ Surface to come up.', 'beach'],
+  [/atv|ride|drive|vehicle|quad/, () => 'ATVs are parked by the Waterfall trail and at the Desert. Walk up and tap "Hop on." TURBO for a boost. Hills are fine, cliffs are not.', 'desert'],
+  [/space|orbit|rocket|star|earth/, () => 'Go to the Starport (Causes path) and step into the pink ring by the rocket. Orbit Garden floats above the Earth. Look down: that is all of us.', 'starport'],
+  [/secret|hidden|seed|easter|light seed/, () => 'Seven Light Seeds glow in hidden places: water, sand, sky, art and one far down the long road. One hint: the waterfall is hiding something. Your count is on your Lifeboard.'],
+  [/movie|projector|cartoon|watch/, () => 'Zach\'s backyard has movie night. Walk up to the lawn chairs and sit. Tap 🌙 to make it night and the projector beam glows.', 'movie'],
+  [/vr|headset|quest|oculus|goggles/, () => 'On a VR headset (like Meta Quest), open allofus.one in the headset browser and tap Enter VR. On phones and laptops it works right in the browser.'],
+  [/control|move|walk|keys|how do i (move|walk)/, () => 'Laptop: WASD or arrows to move, Shift to run, drag to look, tap anything glowing. Phone: left stick to move, drag to look, tap to walk somewhere. Q dives, H opens your Lifeboard.'],
+  [/invite|share|ref/, () => 'Tap ✉️ Invite for your personal link. Anyone who joins through it shows you invited them.'],
+  [/feed|algorithm|post/, () => 'Your feed shows only what you choose: from your connections, path-mates or anyone; updates, wins, asks or offers. Newest first. No hidden algorithm deciding for you.'],
+  [/safe|privacy|block|report|data/, () => 'You control who reaches you (status rings, message requests, block). Selfie photos stay on your device. Meet in public for Global Match trades, and never send money to strangers.'],
+  [/ai|robot|are you real|chatgpt|claude/, () => 'I\'m not AI. I\'m a scripted guide with a good memory for this world. Ask me how things work and I\'ll point the way. 💡'],
+  [/joke|funny|laugh/, () => ['Why did the avatar cross the road? It was on the Adventure path.', 'I asked the waterfall for advice. It said: just go with the flow.', 'The fox knows where the Light Seeds are. The fox is not a snitch.', 'What do you call a deer with no eyes? No idea. 🦌'][Math.floor(Math.random() * 4)]],
+  [/thank|thx|ty\b/, () => 'Anytime. Go say hi to someone. 👋'],
+];
+const PLACES = [['plaza', /plaza|center|middle|monument|portal/], ['zach', /zach|founder|eco home|smart home/], ['movie', /movie|projector/], ['beach', /beach|ocean|bay|swim|dive|reef/], ['city', /city|tower|collab|downtown/], ['falls', /waterfall|falls|cliff/], ['desert', /desert|ruins|temple|sand|atv/], ['starport', /starport|rocket/], ['orbit', /orbit|space/], ['art', /art|garden|sculpture|wish|lantern/], ['library', /library|learn|books/], ['first-street', /first street|neighbors|homes/], ['gate', /gate|start|entrance/]];
+export function initLumi(app, W) {
+  const tab = document.createElement('div'); tab.id = 'aou-lumi'; tab.innerHTML = `<button class="orb" aria-label="Ask Lumi, your guide"><span class="face"><i></i><i></i><b></b></span></button><div class="panel" role="dialog" aria-label="Lumi guide"><div class="lh"><span class="mini"></span><div><b>Lumi</b><small>your guide · not AI</small></div><button class="lx" aria-label="Close">✕</button></div><div class="log"></div><div class="chips"><button>How does this work?</button><button>Take me to the beach</button><button>Status rings?</button><button>Claim land</button><button>Secrets?</button></div><form class="in"><input maxlength="200" placeholder="Ask Lumi…" aria-label="Message Lumi"><button>➤</button></form></div>`;
+  document.getElementById('wvm-stage').appendChild(tab);
+  const st = document.createElement('style'); st.textContent = `#aou-lumi{position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:29;font-family:Poppins,"Segoe UI",Arial,sans-serif}
+#aou-lumi .orb{position:relative;width:62px;height:62px;border-radius:50%;margin-right:-14px;border:0;cursor:pointer;background:radial-gradient(circle at 38% 32%,#fffbe8 0 18%,#ffe08a 42%,#ffb547 72%,#ff9a3d);box-shadow:0 0 22px rgba(255,200,90,.9),0 0 60px rgba(255,180,60,.5);animation:lumiB 3s ease-in-out infinite}
+#aou-lumi .orb:hover{margin-right:-4px}#aou-lumi .face{position:absolute;left:14px;top:22px}#aou-lumi .face i{position:absolute;width:6px;height:9px;border-radius:50%;background:#3a2a10;top:0}#aou-lumi .face i:first-child{left:4px}#aou-lumi .face i:nth-child(2){left:18px}#aou-lumi .face b{position:absolute;left:8px;top:13px;width:12px;height:6px;border-bottom:2.5px solid #3a2a10;border-radius:0 0 10px 10px}
+@keyframes lumiB{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+#aou-lumi .panel{display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);width:min(360px,88vw);height:min(520px,72vh);background:#fff;color:#0f172a;border-radius:20px;box-shadow:0 24px 70px rgba(2,6,23,.45);flex-direction:column;overflow:hidden;border:1px solid #fde68a}
+#aou-lumi.open .panel{display:flex}#aou-lumi.open .orb{visibility:hidden}
+#aou-lumi .lh{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(90deg,#fffbeb,#fef3c7)}#aou-lumi .lh small{display:block;color:#92400e;font-size:11.5px}#aou-lumi .mini{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fffbe8,#ffb547);box-shadow:0 0 12px #ffc35a}#aou-lumi .lx{margin-left:auto;border:1px solid #e5e7eb;background:#fff;color:#0f172a;border-radius:10px;width:32px;height:32px;cursor:pointer}
+#aou-lumi .log{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fffdf7}#aou-lumi .m{max-width:85%;padding:8px 12px;border-radius:14px;font-size:14px;line-height:1.45;background:#fff;border:1px solid #fde68a}#aou-lumi .m.me{align-self:flex-end;background:#eef2ff;border-color:#c7d2fe}#aou-lumi .m .go{display:inline-block;margin-top:6px;border:0;background:linear-gradient(90deg,#f59e0b,#ea580c);color:#fff;font-weight:800;border-radius:999px;padding:6px 12px;cursor:pointer;font-family:inherit}
+#aou-lumi .chips{display:flex;gap:6px;overflow-x:auto;padding:8px 10px;border-top:1px solid #f3f4f6}#aou-lumi .chips button{white-space:nowrap;border:1px solid #fcd34d;background:#fffbeb;color:#78350f;border-radius:999px;padding:6px 10px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+#aou-lumi .in{display:flex;gap:6px;padding:10px;border-top:1px solid #f3f4f6}#aou-lumi .in input{flex:1;border:1px solid #d1d5db;border-radius:999px;padding:9px 14px;font:inherit;font-size:15px;color:#0f172a;background:#fff}#aou-lumi .in button{border:0;background:#f59e0b;color:#fff;border-radius:50%;width:40px;height:40px;font-size:16px;cursor:pointer}
+@media(max-width:720px){#aou-lumi{top:auto;bottom:90px;transform:none}#aou-lumi .orb{width:54px;height:54px}#aou-lumi .face{left:11px;top:18px}#aou-lumi .panel{top:auto;bottom:0;transform:none;height:min(480px,66vh);width:calc(100vw - 84px)}}`;
+  document.head.appendChild(st);
+  const log = tab.querySelector('.log'), inp = tab.querySelector('.in input');
+  const add = (html, me = false, place = null) => { const d = document.createElement('div'); d.className = 'm' + (me ? ' me' : ''); d.innerHTML = html; if (place) { const b = document.createElement('button'); b.className = 'go'; b.textContent = '✨ Take me there'; b.onclick = () => { close(); app.travel(place); }; d.appendChild(document.createElement('br')); d.appendChild(b); } log.appendChild(d); log.scrollTop = 1e6; };
+  const answer = (q) => { const t = q.toLowerCase().trim(); if (/take me|go to|where is|teleport|bring me|show me/.test(t)) { const p = PLACES.find(([, re]) => re.test(t)); if (p) { add('On it! Here is the way. 🗺️', false, p[0]); return; } }
+    for (const [re, fn, place] of KB) if (re.test(t)) { add(esc(fn()), false, place || null); return; }
+    const p = PLACES.find(([, re]) => re.test(t)); if (p) { add('That sounds like a place. Want to go?', false, p[0]); return; }
+    add('Hmm, I don\'t know that one yet. Try asking about status rings, the Lifeboard, Global Match, claiming land, diving, ATVs, Zach, or say "take me to the city". 💡'); };
+  const open = () => { tab.classList.add('open'); if (!log.children.length) add('Hi, I\'m <b>Lumi</b> 💡 I know my way around. Ask me anything, or tap a bubble below.'); setTimeout(() => inp.focus(), 50); };
+  const close = () => tab.classList.remove('open');
+  tab.querySelector('.orb').onclick = open; tab.querySelector('.lx').onclick = close;
+  tab.querySelector('.in').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) return; inp.value = ''; add(esc(v), true); setTimeout(() => answer(v), 280); };
+  tab.querySelector('.chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; add(esc(b.textContent), true); setTimeout(() => answer(b.textContent), 280); };
+  inp.addEventListener('keydown', (e) => e.stopPropagation());
+  return { open, close, say: (txt) => { add(esc(txt)); tab.classList.add('open'); } };
+}
