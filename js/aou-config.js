@@ -8,6 +8,6 @@
    the data). NEVER paste the service_role key here.
    ============================================================ */
 export const CONFIG = {
-  SUPABASE_URL: '',        // e.g. 'https://abcdefghij.supabase.co'
-  SUPABASE_ANON_KEY: '',   // e.g. 'eyJhbGciOi...'
+  SUPABASE_URL: 'https://izfccjaznlcffvjxawya.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_b6KPHJ3aPWaxl3yVz93sTw_c47NzfOF',
 };
