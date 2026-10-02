@@ -19,6 +19,7 @@ import { buildUnityV5, buildUnityV6 } from './aou-unity.js';
 import { buildSki2 } from './aou-ski2.js';
 import { buildLakes } from './aou-lakes.js';
 import { buildCoaster } from './aou-coaster.js';
+import { buildParty } from './aou-party.js';
 const T = THREE;
 const MOB = isMobile();
 
@@ -494,6 +495,7 @@ export function buildEstates(app, W, api) {
   try { buildSki2(app, W); } catch (e) { console.error('ski2', e); }
   try { buildLakes(app, W, api); } catch (e) { console.error('lakes', e); }
   try { buildCoaster(app, W); } catch (e) { console.error('coaster', e); }
+  try { buildParty(app, W, 44, 105); } catch (e) { console.error('party', e); }
   return out;
 }
 
