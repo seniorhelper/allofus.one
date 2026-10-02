@@ -19,6 +19,14 @@
 - Weather control (personal view): clear, golden hour, rain, thunderstorm, snow, fog, northern lights, tropical sky, night.
 - Worlds globe: a spinning directory linking World VR Mall, Comics Come Alive, The VR Galaxy, Another Dimension VR, Virtual Reality Adventure, VR Flying Simulator, Sparkle Diner, USA Business Search, CO Business List and more.
 - Places: No. 1 Unity Road (Zach's net-zero model home: waterfalls, gallery, 360 Dream Room, elevator office, roof pool, backyard rocket), 8 Silk Lane (a spider field guide with 16 species and scientific names), Comic Lane (Captain Kapow and Comics Come Alive).
+- Home builder: shape (rectangle, L, U, courtyard, round tower), 1 to 3 floors, wall materials, roof types (flat, gable, hip, shed, butterfly, dome, living garden) and roof materials (slate, standing-seam aluminum, clay tile, cedar shake, copper, solar glass, living green), pools you draw yourself with depth and fish, gardens with growing flowers, solar, wind, fences, signs, mailbox styles and Lifeblocks (build anything block by block). Live 3D preview.
+- Addresses: every home gets a street address and a unique hashed address code (SHA-256 fingerprint). Share links like https://allofus.one/?to=CODE walk visitors to the door.
+- Directory: a phone-book of every place and every home address, searchable, linked to the map.
+- Voice chat: real peer-to-peer WebRTC audio rooms (nearby, plaza, conference hall and more); teens only with teens, adults only with adults; never recorded.
+- Conference Center: 72 seats and a 26 m screen; present PDFs, PowerPoint, Word, MP3, video, images, YouTube or web pages live to everyone in the hall.
+- Coburn's Place: a mountain mansion reached by a chairlift, with a timed ski-run game (gates, coins, personal best), a swimmable pool with a coin dive and a winter/summer season switch.
+- Living gardens: Colorado blue columbines, moth orchids, giant alliums, sunflowers, tulips, lupines and bird of paradise that grow and bloom, visited by ruby-throated hummingbirds.
+- Lifeboard Insights: activity heatmap, life-balance radar, goal and bucket-list donuts, focus, mood, habit and tracker charts. Plus Events (host conferences with invite links and calendar files) and a Bucket list.
 - Lumi: a scripted guide (not AI) that never pops open on its own.
 - Family friendly with no exceptions: language filter, report and block, accounts 13+.
 

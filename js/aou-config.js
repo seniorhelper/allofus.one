@@ -10,4 +10,7 @@
 export const CONFIG = {
   SUPABASE_URL: 'https://izfccjaznlcffvjxawya.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_b6KPHJ3aPWaxl3yVz93sTw_c47NzfOF',
+  // Optional voice relay for strict networks (a TURN server). Example:
+  // TURN: { urls: 'turn:YOUR-TURN-HOST:3478', username: 'user', credential: 'pass' },
+  TURN: null,
 };

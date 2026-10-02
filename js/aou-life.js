@@ -206,7 +206,7 @@ function buildRemote(W) {
     W.remoteHalo(r, av.halo); };
   W.remoteHalo = (r, h) => { const k = h ? (h.t || '') + (h.c || '') : ''; if (r.haloKey === k) return; r.haloKey = k; if (r.halo) { r.g.remove(r.halo); r.halo = null; } if (!h || !h.t) return; r.halo = makeSprite(h.t, { scale: 3.4, accent: h.c || '#ffd23f' }); r.halo.position.y = 3.55; r.g.add(r.halo); };
   W.remoteRemove = (id) => { const r = W.remote.get(id); if (!r) return; S.remove(r.g); app.hotspots = app.hotspots.filter(h => h !== r.g); W.remote.delete(id); };
-  app.onUpdate((dt, t) => { for (const r of W.remote.values()) { const g = r.g; g.position.x += (r.tgt.x - g.position.x) * Math.min(1, dt * 6); g.position.z += (r.tgt.z - g.position.z) * Math.min(1, dt * 6); g.position.y = groundY(g.position.x, g.position.z); let da = r.yaw - g.rotation.y; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; g.rotation.y += da * Math.min(1, dt * 6); if (r.body) animatePerson(r.body, t, r.moving ? 1 : 0); if (app.t - (r.seen || 0) > 30) W.remoteRemove(r.id); } });
+  app.onUpdate((dt, t) => { for (const r of W.remote.values()) { const g = r.g; const kk = Math.min(1, dt * 4.5); g.position.x += (r.tgt.x - g.position.x) * kk; g.position.z += (r.tgt.z - g.position.z) * kk; g.position.y = groundY(g.position.x, g.position.z); let da = r.yaw - g.rotation.y; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; g.rotation.y += da * Math.min(1, dt * 6); if (r.body) animatePerson(r.body, t, r.moving ? 1 : 0); if (app.t - (r.seen || 0) > 30) W.remoteRemove(r.id); } });
 }
 
 /* ---------- YOUR STATUS RING ---------- */

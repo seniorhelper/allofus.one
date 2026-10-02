@@ -12,12 +12,16 @@
    ============================================================ */
 import { THREE, makeSprite, makeEarth, makePerson, isMobile, WVM } from './aou-engine.js';
 import { M, glow, glass, box, cyl, sph, plane, textPlane, waterMaterial, paintArt, ART, NEON, PINK, GOLD, MINT, VIOLET } from './aou-kit.js';
-import { terrainY, addFlat, addDeck, openGround } from './aou-terrain.js';
+import { terrainY, addFlat, addDeck, openGround, MTN, STATE } from './aou-terrain.js';
+import { plantGarden, makeFlower } from './aou-garden.js';
+import { TEX, buildCustomHome } from './aou-build.js';
 const T = THREE;
 const MOB = isMobile();
 
 /* fixed spots (flattened before the ground is built) */
-export const SPOTS = { silk: { x: 70, z: 168 }, comics: { x: -84, z: 8 }, worlds: { x: 24, z: 146 } };
+export const SPOTS = { silk: { x: 70, z: 168 }, comics: { x: -84, z: 8 }, worlds: { x: 24, z: 146 }, conf: { x: 125, z: -32 } };
+addFlat({ x: 125, z: -32, r: 28, y: 0.6, soft: 12 });
+addFlat({ x: MTN.x, z: MTN.z, r: 26, y: MTN.top, soft: 14 });
 addFlat({ x: SPOTS.silk.x, z: SPOTS.silk.z, r: 19, y: 0.6, soft: 12 });
 addFlat({ x: SPOTS.comics.x, z: SPOTS.comics.z, r: 15, y: 0.6, soft: 10 });
 
@@ -177,7 +181,7 @@ export function buildMansion(app, W, api, house, X, Z) {
   for (let i = 0; i < 4; i++) hang(pick(ai++), ai, -19 + i * 4, 3.0, z2 - 0.35, Math.PI);
   for (let i = 0; i < 3; i++) hang(pick(ai++), ai, -19 + i * 3.9, 3.0, z1 + 0.35, 0);
   hang('ai', 99, -6.6, 3.2, z1 + 0.35, 0, 3.4, 2.5);
-  for (const sz of [-1, 1]) { const runner = box(16, 0.03, 2.4, M(0x7a1f2b, { roughness: 1 }), -12.5, 0.26, sz * 9.8, g); runner.userData.noOcclude = true; for (let i = 0; i < 5; i++) { const sp = new T.PointLight(0xffe2b8, MOB ? 0 : 0.6, 6, 2); sp.position.set(-18 + i * 4.2, 5.5, sz * 10.5); g.add(sp); } }
+  for (const sz of [-1, 1]) { const runner = box(16, 0.03, 2.4, M(0x7a1f2b, { roughness: 1 }), -12.5, 0.26, sz * 9.8, g); runner.userData.noOcclude = true;  }
   const galSign = textPlane(['🎨 THE GALLERY HALLS', 'Zach\'s canvases + one by his AI friend'], 4.4, 1, { bg: 'rgba(255,250,240,.95)', fg: '#1a1a1a', accent: '#c9a24a', font: 'bold 64px Georgia, serif' }); galSign.position.set(-9.4, 4.6, 8.6); galSign.rotation.y = -Math.PI / 2; g.add(galSign);
 
   /* 6) great room: animated shag, sunken lounge, fireplace, TV wall with a remote, neon switches */
@@ -195,7 +199,7 @@ export function buildMansion(app, W, api, house, X, Z) {
   const fpw = new T.Group(); fpw.position.set(-1, 0.2, z1 + 0.8); g.add(fpw); box(7, 5.4, 0.6, M(0x3a3632, { roughness: 0.9 }), 0, 2.7, -0.2, fpw); box(5.2, 0.9, 0.4, dark, 0, 1.0, 0.15, fpw);
   const flameM = new T.ShaderMaterial({ uniforms: { t: { value: 0 }, c1: { value: new T.Color(1.0, 0.35, 0.05) }, c2: { value: new T.Color(1.0, 0.9, 0.5) }, hgt: { value: 1 } }, transparent: true, depthWrite: false, blending: T.AdditiveBlending, vertexShader: 'varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}', fragmentShader: 'uniform float t,hgt; uniform vec3 c1,c2; varying vec2 vUv; float h(vec2 p){return fract(sin(dot(p,vec2(12.9,78.2)))*43758.5);} float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);} void main(){ float y=vUv.y/hgt; float fl=n(vec2(vUv.x*14.0, y*3.0-t*3.0))*0.7+n(vec2(vUv.x*30.0,y*6.0-t*5.0))*0.3; float a=smoothstep(0.0,0.15,y)*(1.0-y)*smoothstep(0.25,0.9,fl+0.35-y*0.6); vec3 c=mix(c1,c2,fl*(1.0-y)); gl_FragColor=vec4(c,a*1.4); }' });
   const flame = plane(4.8, 0.9, flameM, fpw); flame.position.set(0, 1.0, 0.36); flame.userData.noCollide = true;
-  const fireLight = new T.PointLight(0xff8a3d, 1.2, 9, 2); fireLight.position.set(0, 1.4, 1.2); fpw.add(fireLight);
+  const fireGlow = new T.Sprite(new T.SpriteMaterial({ map: (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const q = c.getContext('2d'); const gr = q.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); q.fillStyle = gr; q.fillRect(0, 0, 128, 128); return new T.CanvasTexture(c); })(), color: 0xff8a3d, transparent: true, opacity: 0.5, depthWrite: false, blending: T.AdditiveBlending })); fireGlow.scale.set(7, 3.4, 1); fireGlow.position.set(0, 1.2, 0.8); fpw.add(fireGlow); const fireLight = { set visible(v) { fireGlow.visible = v; }, get visible() { return fireGlow.visible; }, color: fireGlow.material.color, set intensity(v) { fireGlow.material.opacity = Math.max(0, Math.min(0.8, v * 0.42)); }, get intensity() { return fireGlow.material.opacity / 0.42; } };
   // the fireplace is a toy: tap it to change the flame (classic, blue, violet, rainbow, tall, low, off)
   const FIRES = [['🔥 Classic fire', 0xff5a0d, 0xffe680, 1, 0xff8a3d], ['💙 Blue gas flame', 0x1e40ff, 0x9fe8ff, 0.8, 0x6aa8ff], ['💜 Violet flame', 0x7c3aed, 0xf0abfc, 1, 0xc084fc], ['🌈 Rainbow flame', 0xff0080, 0x00ffd0, 1, 0xffffff], ['🔥 Tall roaring fire', 0xff3a00, 0xfff2a0, 0.6, 0xff7a2a], ['🕯️ Low ember glow', 0xb91c1c, 0xff9a3d, 1.8, 0xff5a1f], ['⏻ Fire off', 0, 0, 1, 0]]; let fireI = 0;
   const setFire = (i) => { fireI = i % FIRES.length; const F = FIRES[fireI]; const off = !F[1] && !F[2]; flame.visible = !off; fireLight.visible = !off; if (!off) { flameM.uniforms.c1.value.setHex(F[1]); flameM.uniforms.c2.value.setHex(F[2]); flameM.uniforms.hgt.value = F[3]; fireLight.color.setHex(F[4]); flame.scale.y = F[3] < 1 ? 1.8 : F[3] > 1 ? 0.6 : 1; flame.position.y = 1.0 + (flame.scale.y - 1) * 0.45; } fpw.userData.rainbow = fireI === 3; app.toast(F[0]); };
@@ -254,9 +258,9 @@ export function buildMansion(app, W, api, house, X, Z) {
   const EL = { x: 11.2, z: 10.6 };
   cyl(1.35, 1.35, L2 + 1.4, M(0xcff6ff, { transparent: true, opacity: 0.22, roughness: 0.05, metalness: 0.3, depthWrite: false }), EL.x, (L2 + 1.4) / 2, EL.z, g, 28).userData.noOcclude = true;
   for (const yy of [0.25, L1, L2 + 1.3]) { const rr = new T.Mesh(new T.TorusGeometry(1.38, 0.07, 8, 32), gold); rr.rotation.x = Math.PI / 2; rr.position.set(EL.x, yy, EL.z); g.add(rr); }
-  const cab = new T.Group(); cab.position.set(EL.x, 0.25, EL.z); g.add(cab); cyl(1.15, 1.15, 0.12, gold, 0, 0, 0, cab, 24); cyl(1.15, 1.15, 0.08, gold, 0, 2.8, 0, cab, 24); const cabL = new T.PointLight(0xfff1d6, 0.6, 5); cabL.position.y = 2.4; cab.add(cabL);
+  const cab = new T.Group(); cab.position.set(EL.x, 0.25, EL.z); g.add(cab); cyl(1.15, 1.15, 0.12, gold, 0, 0, 0, cab, 24); cyl(1.15, 1.15, 0.08, gold, 0, 2.8, 0, cab, 24); 
   const elTag = makeSprite('🛗 Elevator', { scale: 2.4, accent: '#ffd23f' }); elTag.position.set(EL.x, 3.4, EL.z - 1.6); g.add(elTag);
-  const FLOORS = [[0, '🏛️ Lobby + gallery', 0.25, -2, 6], [1, '💼 Office (business chats)', L1, 6, 2], [2, '🏊 Roof deck + infinity pool', L2, 6, -2]];
+  const FLOORS = [[0, '🏛️ Lobby + gallery', 0.25, -2, 6], [1, '💼 Office (business chats)', L1, 6, 2], [2, '🏊 Roof deck + infinity pool', L2, -4, 6]];
   const ride = (lv) => { const F = FLOORS[lv]; app.fade.classList.add('on'); app.fade.textContent = '🛗 ' + F[1]; const startY = cab.position.y; let k = 0; const f = (dt) => { k = Math.min(1, k + dt * 1.2); cab.position.y = startY + (F[2] - startY) * k; if (k >= 1) app.updaters = app.updaters.filter(q => q !== f); }; app.onUpdate(f);
     setTimeout(() => { app.level = lv; const px = X + F[3], pz = Z + F[4]; app.player.position.set(px, y0 + F[2], pz); setTimeout(() => app.fade.classList.remove('on'), 320); app.toast(lv === 1 ? '💼 The office. Tap the screen to open a business chat room.' : lv === 2 ? '🏊 Roof deck. The pool is real water: walk in and swim.' : '🏛️ Back in the lobby.', 3600); }, 420); };
   const elevator = () => app.popup('🛗 Elevator', '<p>Pick a floor.</p>', FLOORS.map(([lv, label]) => ({ label: (app.level === lv ? '● ' : '') + label, primary: app.level !== lv && lv === 1, fn: () => ride(lv) })));
@@ -265,7 +269,7 @@ export function buildMansion(app, W, api, house, X, Z) {
   addDeck({ level: 1, y: y0 + L1, x1: X - 8.7, x2: X + x2 - 0.6, z1: Z + z1 + 0.6, z2: Z + z2 - 0.6 });
   addDeck({ level: 2, y: y0 + L2, x1: X + x1 + 0.6, x2: X + x2 - 0.6, z1: Z + z1 + 0.6, z2: Z + z2 - 0.6 });
   app.addPoly([[X - 8.7, Z + z1 + 0.6], [X + x2 - 0.6, Z + z1 + 0.6], [X + x2 - 0.6, Z + z2 - 0.6], [X - 8.7, Z + z2 - 0.6]], { keepIn: true, level: 1 });
-  app.addPoly([[X + x1 + 0.6, Z + z1 + 0.6], [X + x2 - 0.6, Z + z1 + 0.6], [X + x2 - 0.6, Z + z2 - 0.6], [X + x1 + 0.6, Z + z2 - 0.6]], { keepIn: true, level: 2 });
+  app.addPoly([[X + x1 + 0.6, Z + z1 + 0.6], [X + 1.4, Z + z1 + 0.6], [X + 1.4, Z + 6.6], [X + x2 - 0.6, Z + 6.6], [X + x2 - 0.6, Z + z2 - 0.6], [X + x1 + 0.6, Z + z2 - 0.6]], { keepIn: true, level: 2 });
   /* office (L1) */
   const off = new T.Group(); off.position.y = L1; g.add(off);
   box(4.4, 0.1, 2, M(0x2a1a10, { roughness: 0.5 }), 4, 1.05, -2, off); for (const sx of [-1.9, 1.9]) box(0.12, 1.0, 1.8, gold, 4 + sx, 0.5, -2, off);
@@ -280,9 +284,9 @@ export function buildMansion(app, W, api, house, X, Z) {
   const poolW = new T.Mesh(new T.PlaneGeometry(10.6, 8.8), waterMaterial(0x38c8f0, 0x0a5a8a)); poolW.rotation.x = -Math.PI / 2; poolW.position.set(-14.7, 0.75, 0); poolW.userData.noCollide = true; deck.add(poolW);
   for (const [w, d, ox, oz] of [[11, 0.3, 0, 4.55], [11, 0.3, 0, -4.55], [0.3, 9.4, 5.45, 0]]) box(w, 0.8, d, marble, -14.7 + ox, 0.4, oz, deck);
   app.addWater({ poly: [[X - 20, Z - 4.4], [X - 9.4, Z - 4.4], [X - 9.4, Z + 4.4], [X - 20, Z + 4.4]], y: y0 + L2 + 0.75, level: 2 });
-  const tel = cyl(0.18, 0.28, 2.4, M(0x222831, { metalness: 0.6 }), 8, 1.6, -8, deck, 14); tel.rotation.z = -0.8; cyl(0.06, 0.08, 1.2, M(0x888888), 8.3, 0.6, -8, deck, 8);
+  const tel = cyl(0.18, 0.28, 2.4, M(0x222831, { metalness: 0.6 }), -4, 1.6, -9, deck, 14); tel.rotation.z = -0.8; cyl(0.06, 0.08, 1.2, M(0x888888), -3.7, 0.6, -9, deck, 8);
   app.addHotspot(tel, { title: '🔭 Roof telescope', html: '<p>On a clear night you can find the Moon, Jupiter\'s four big moons and Saturn\'s rings with a small backyard telescope. Try the night sky (🌙) and look up.</p>', actions: [{ label: '🌙 Night sky', fn: () => api.setNight && api.setNight(true) }] });
-  for (let i = 0; i < 10; i++) sph(0.5 + Math.random() * 0.4, M(0x3f7d2b, { roughness: 0.9 }), -4 + (i % 5) * 3.2, 0.5, 9 + (i > 4 ? 1.6 : 0), deck, 10);
+  for (let i = 0; i < 8; i++) sph(0.45 + Math.random() * 0.35, M(0x3f7d2b, { roughness: 0.9 }), -8 + (i % 4) * 2.4, 0.45, 11.6, deck, 10);
   const notice = { text: 'WELCOME HOME · ALL OF US', color: '#ff4fd8' }; let noticeMesh = null;
   const drawNotice = () => { if (noticeMesh) g.remove(noticeMesh); noticeMesh = textPlane([notice.text], 14, 1.6, { bg: 'rgba(0,0,0,0)', fg: '#ffffff', accent: notice.color, font: 'bold 120px Poppins, Arial', border: null, glow: true }); noticeMesh.rotation.y = -Math.PI / 2; noticeMesh.position.set(x1 - 0.3, L2 + 1.6, 0); g.add(noticeMesh); };
   drawNotice();
@@ -291,7 +295,7 @@ export function buildMansion(app, W, api, house, X, Z) {
 
   /* 9) doors slide open as you approach; level resets when you travel */
   app.onUpdate((dt) => { const P = app.player.position; for (const [d, sx, sz] of doors) { const near = !app.level && Math.hypot(P.x - (X + sx), P.z - Z) < 4.2; const tgt = sz * (gap / 2 + (near ? gap * 0.9 : 0)); d.position.z += (tgt - d.position.z) * Math.min(1, dt * 5); } });
-  const lights = []; for (const [x, y, z] of [[-15, 9, 0], [2, 4.8, 0], [2, L1 + 4.6, 0]]) { const L = new T.PointLight(0xfff1d6, MOB ? 0.5 : 0.9, 24, 1.6); L.position.set(x, y, z); g.add(L); lights.push(L); }
+  
   /* 10) backyard rocket: walk up to the pad and it launches (fireworks at the top, back on the pad 30 s later) */
   const RK = { x: X + 32, z: Z - 4 }; const pad2 = new T.Group(); pad2.position.set(RK.x, terrainY(RK.x, RK.z) + 0.05, RK.z); S.add(pad2);
   cyl(3.2, 3.6, 0.5, M(0x9aa3ad, { metalness: 0.5, roughness: 0.5 }), 0, 0.25, 0, pad2, 32); const padRing = new T.Mesh(new T.RingGeometry(2.4, 2.7, 48), new T.MeshBasicMaterial({ color: 0xffd23f, side: T.DoubleSide })); padRing.rotation.x = -Math.PI / 2; padRing.position.y = 0.52; pad2.add(padRing);
@@ -319,6 +323,7 @@ export function buildMansion(app, W, api, house, X, Z) {
   app.addPlace({ id: 'rocket', name: '🚀 Backyard rocket', icon: '🚀', x: RK.x - 9, z: RK.z + 4, cat: 'Fun', keys: 'rocket launch space backyard fireworks', say: 'Walk onto the pad and stand back.' });
   app.addPlace({ id: 'mansion', name: '🏛️ No. 1 Unity Road (Zach\'s)', icon: '🏛️', x: X + x1 - 9, z: Z, yaw: -Math.PI / 2, cat: 'Homes', keys: 'zach mansion house home founder waterfall gallery dream room 360 office elevator pool shag neon model home', say: 'No. 1 Unity Road. Walk right in: it is the allofus.one model home.' });
   app.addPlace({ id: 'dream-room', name: '🌀 360 Dream Room', icon: '🌀', x: X + DR.x - DR.r - 2, z: Z + DR.z, yaw: Math.PI / 2, cat: 'Fun', keys: '360 panorama photo dream room showroom illusion', say: 'Walk through the doorway and stand in the middle.' });
+  try { mansionV4(app, W, api, g, X, Z, y0, { x1, x2, z1, z2, L1, L2 }); } catch (e) { console.error('mansion v4', e); }
   return { group: g, setNotice: (t, c) => { notice.text = String(t || '').slice(0, 40) || notice.text; if (c) notice.color = c; drawNotice(); }, notice, dream, setShag, neonState, applyNeon };
 }
 function makeTVCard(a, b) { const c = document.createElement('canvas'); c.width = 1024; c.height = 576; const g = c.getContext('2d'); const gr = g.createLinearGradient(0, 0, 1024, 576); gr.addColorStop(0, '#0b1033'); gr.addColorStop(1, '#3b0d4a'); g.fillStyle = gr; g.fillRect(0, 0, 1024, 576); g.fillStyle = '#fff'; g.font = 'bold 64px Poppins, Arial'; g.textAlign = 'center'; g.fillText(a, 512, 270); g.fillStyle = '#38f0ff'; g.font = '600 40px Poppins, Arial'; g.fillText(b, 512, 340); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t; }
@@ -478,5 +483,151 @@ export function buildEstates(app, W, api) {
   try { out.silk = buildSpiderHouse(app, W, api); } catch (e) { console.error('silk', e); }
   try { buildComicLane(app, W, api); } catch (e) { console.error('comics', e); }
   try { buildWorldsKiosk(app, W, api); } catch (e) { console.error('worlds', e); }
+  try { out.coburn = buildCoburn(app, W, api); } catch (e) { console.error('coburn', e); }
+  try { out.conf = buildConference(app, W, api); W.confScreen = out.conf; } catch (e) { console.error('conference', e); }
   return out;
+}
+
+/* ============================================================
+   v4 · No. 1 Unity Road grows: orchid rotunda, sky wing,
+   slate + solar gable, living flower beds, hummingbirds
+   ============================================================ */
+function slateMat(rx, ry) { const t = TEX.slate().clone(); t.needsUpdate = true; t.repeat.set(rx, ry); return new T.MeshStandardMaterial({ map: t, roughness: 0.55, metalness: 0.05 }); }
+function mansionV4(app, W, api, g, X, Z, y0, F) {
+  const { x1, x2, z1, z2, L1, L2 } = F; const white = M(0xf4f1ea, { roughness: 0.55 }); const gold = M(0xc9a24a, { metalness: 0.85, roughness: 0.25 });
+  /* slate gable roof with solar on the south slope, over the east wing */
+  const rw = x2 - 1.6, rd = 6.6 - z1; const rcx = (1.6 + x2) / 2, rcz = (z1 + 6.6) / 2; const rh = 4.2; const sm = slateMat(rw / 2.2, rd / 2.2);
+  for (const sx of [-1, 1]) { const len = Math.hypot(rw / 2, rh); const p = box(len + 0.4, 0.22, rd + 0.8, sx > 0 ? sm : sm, rcx + sx * rw / 4, L2 + rh / 2, rcz, g); p.rotation.z = -sx * Math.atan2(rh, rw / 2); p.castShadow = true; }
+  for (const sz of [-1, 1]) { const sh = new T.Shape(); sh.moveTo(-rw / 2, 0); sh.lineTo(rw / 2, 0); sh.lineTo(0, rh); sh.closePath(); const tri = new T.Mesh(new T.ShapeGeometry(sh), new T.MeshStandardMaterial({ color: 0xf4f1ea, side: T.DoubleSide })); tri.position.set(rcx, L2, rcz + sz * rd / 2); g.add(tri); }
+  box(0.3, 0.3, rd + 1, gold, rcx, L2 + rh + 0.12, rcz, g);
+  const sol = new T.MeshStandardMaterial({ map: TEX.solar(), metalness: 0.6, roughness: 0.2 }); const ang = Math.atan2(rh, rw / 2);
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 6; c++) { const pnl = box(1.7, 0.06, 2.4, sol, 0, 0, 0, g); const along = 0.9 + r * 2; pnl.position.set(rcx - rw / 2 + 0.6 + Math.cos(ang) * along, L2 + 0.25 + Math.sin(ang) * along, rcz - rd / 2 + 1.8 + c * 2.9); pnl.rotation.z = ang; }
+  learnSpot(app, g, '🪨 Slate + solar roof', rcx, L2 + rh + 2.2, rcz, '<p>Natural slate can last more than 100 years, sheds snow and never needs paint. The south slope carries solar panels; together they make the roof a power plant that outlives the house.</p>');
+  /* sky wing: a glass lounge cantilevered out over the backyard at an angle */
+  const sky = new T.Group(); sky.position.set(x2 + 5, L2 + 2.3, -1.5); sky.rotation.y = -0.38; g.add(sky);
+  box(17, 0.5, 7.4, white, 0, -2.2, 0, sky).castShadow = true; box(17, 0.4, 7.4, white, 0, 2.3, 0, sky).castShadow = true;
+  const sg = box(16.6, 4.2, 7, M(0xbfefff, { transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.3 }), 0, 0, 0, sky); sg.userData.noOcclude = true;
+  for (const sx of [-8.3, 0, 8.3]) for (const sz of [-3.5, 3.5]) box(0.25, 4.4, 0.25, gold, sx, 0, sz, sky);
+  const glowStrip = box(17, 0.08, 0.08, glow(NEON, 2), 0, -2.5, 3.7, sky); const glowStrip2 = box(17, 0.08, 0.08, glow(NEON, 2), 0, -2.5, -3.7, sky);
+  for (const sz of [-2.6, 2.6]) { const leg = cyl(0.3, 0.42, L2 + 2, white, 0, 0, 0, g, 12); leg.position.set(x2 + 11.5, (L2 + 2) / 2 - 1, -4.6 + sz); leg.rotation.z = 0.16; leg.castShadow = true; }
+  const skyTag = makeSprite('🛋️ The sky lounge', { scale: 3, accent: '#38f0ff' }); skyTag.position.set(x2 + 5, L2 + 6, -1.5); g.add(skyTag);
+  app.addHotspot(sky, { title: '🛋️ The sky lounge', html: '<p>A glass room cantilevered out over the backyard at an angle, so the house turns toward the sunset and the lake. Steel trusses inside the floor carry it with no posts underneath the far end.</p>' });
+  /* the orchid rotunda: a glass conservatory with a slate cone roof, giant flowers and hummingbirds */
+  const ro = { x: -17, z: z2 + 4.8, r: 4.6, h: 9 }; const rt = new T.Group(); rt.position.set(ro.x, 0, ro.z); g.add(rt);
+  cyl(ro.r + 0.4, ro.r + 0.5, 0.4, M(0xd9d2c5, { roughness: 0.8 }), 0, 0.2, 0, rt, 40);
+  const panes = new T.Mesh(new T.CylinderGeometry(ro.r, ro.r, ro.h, 40, 1, true, Math.PI * 0.16, Math.PI * 1.68), M(0xcff6ff, { transparent: true, opacity: 0.22, roughness: 0.04, metalness: 0.3, side: T.DoubleSide, depthWrite: false })); panes.position.y = ro.h / 2 + 0.4; panes.rotation.y = -Math.PI / 2; panes.userData.noOcclude = true; rt.add(panes);
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; if (Math.abs(Math.atan2(Math.sin(a - Math.PI), Math.cos(a - Math.PI))) < 0.5) continue; const mul = cyl(0.09, 0.09, ro.h, gold, Math.cos(a) * ro.r, ro.h / 2 + 0.4, Math.sin(a) * ro.r, rt, 6); app.addObstacle(X + ro.x + Math.cos(a) * ro.r, Z + ro.z + Math.sin(a) * ro.r, 0.75); }
+  const cone = new T.Mesh(new T.ConeGeometry(ro.r + 0.7, 4.2, 40, 1), slateMat(10, 3)); cone.position.y = ro.h + 0.4 + 2.1; cone.castShadow = true; rt.add(cone); const fin = new T.Mesh(new T.SphereGeometry(0.4, 16, 12), new T.MeshStandardMaterial({ color: 0x6fb39b, metalness: 0.7, roughness: 0.3 })); fin.position.y = ro.h + 4.8; rt.add(fin);
+  const bed = new T.Mesh(new T.TorusGeometry(ro.r - 1.2, 0.5, 8, 40), M(0x5a3a22, { roughness: 1 })); bed.rotation.x = Math.PI / 2; bed.position.y = 0.6; rt.add(bed);
+  const rlist = []; for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2 + 0.2; if (Math.abs(Math.atan2(Math.sin(a - Math.PI), Math.cos(a - Math.PI))) < 0.45) continue; const k = ['orchid', 'orchid', 'paradise', 'columbine'][i % 4]; rlist.push([k, Math.cos(a) * (ro.r - 1.2), Math.sin(a) * (ro.r - 1.2), k === 'columbine' ? 3.2 : k === 'orchid' ? 2.6 : 2.2, 0.8]); }
+  rlist.push(['columbine', 0, 0, 4.4, 0.4]); plantGarden(app, rt, rlist, { birds: 3, range: 90, wind: 0.4 });
+  const rTag = makeSprite('🌸 Orchid rotunda · walk in', { scale: 3.2, accent: '#ff6fb5' }); rTag.position.set(0, ro.h + 6.4, 0); rt.add(rTag);
+  app.addPlace({ id: 'rotunda', name: '🌸 Orchid rotunda', icon: '🌸', x: X + ro.x - ro.r - 3, z: Z + ro.z, yaw: Math.PI / 2, cat: 'Fun', keys: 'flowers orchid columbine garden hummingbird conservatory', say: 'Giant flowers that grow while you watch, and hummingbirds. Tap any of them.' });
+  /* living flower beds out front: giant Colorado columbines along the walk, hummingbirds included */
+  for (const sz of [-1, 1]) { const fb = new T.Group(); fb.position.set(x1 - 10.5, 0.2, sz * 6.5); g.add(fb); box(2.4, 0.4, 7.5, M(0x5a3a22, { roughness: 1 }), 0, 0.2, 0, fb); const L = []; for (let i = 0; i < 7; i++) L.push([['columbine', 'allium', 'columbine', 'lupine', 'columbine', 'tulip', 'sunflower'][i], (i % 2 - 0.5) * 0.9, -3.2 + i * 1.05, [3.4, 2.4, 2.8, 1.8, 3.8, 1.4, 1.6][i], 0.4]); plantGarden(app, fb, L, { birds: sz > 0 ? 2 : 1, range: 110 }); app.addBox(X + x1 - 10.5, Z + sz * 6.5, 1.3, 3.9); }
+  /* roof garden flowers */
+  const rg = new T.Group(); rg.position.set(-6, L2 + 0.25, 10.8); g.add(rg); plantGarden(app, rg, [['sunflower', -3, 0, 1.2], ['lupine', -1.5, 0.4, 1.4], ['tulip', 0, -0.2, 1.4], ['columbine', 1.5, 0.3, 1.8], ['allium', 3, 0, 1.4]], { birds: 1, range: 60 });
+}
+
+/* ============================================================
+   COBURN'S MOUNTAIN · ski lift, ski run game, summit mansion,
+   seasons switch (winter snow ↔ summer green)
+   ============================================================ */
+export function buildCoburn(app, W, api) {
+  const S = app.scene; const TOP = { x: MTN.x, z: MTN.z }; const base = { x: MTN.x + 16, z: MTN.z - 108 }, top = { x: MTN.x + 16, z: MTN.z - 26 };
+  const ty = (x, z) => terrainY(x, z);
+  /* summit mansion */
+  const g = new T.Group(); const gy = ty(TOP.x, TOP.z) + 0.05; g.position.set(TOP.x, gy, TOP.z); S.add(g); g.userData.noCollide = true;
+  const wood = new T.MeshStandardMaterial({ map: (() => { const t = TEX.wood().clone(); t.needsUpdate = true; t.repeat.set(6, 2); return t; })(), roughness: 0.7 }); const stone = new T.MeshStandardMaterial({ map: (() => { const t = TEX.stone().clone(); t.needsUpdate = true; t.repeat.set(4, 2); return t; })() }); const gls = M(0xcff6ff, { transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.3 }); const dark = M(0x1d2433, { metalness: 0.5, roughness: 0.3 });
+  const vol = (w, h, d, x, y, z, m) => { const b = box(w, h, d, m, x, y, z, g); b.castShadow = true; b.receiveShadow = true; return b; };
+  vol(28, 5, 14, 0, 2.5, 4, stone); app.addBox(TOP.x, TOP.z + 4, 14.3, 7.3);
+  const up = vol(22, 4.6, 12, 4, 7.3, 1, wood); const glsUp = box(22.2, 3.4, 12.2, gls, 4, 7.3, 1, g); glsUp.userData.noOcclude = true;
+  vol(14, 4, 10, -6, 11.6, 3, gls).userData.noOcclude = true; box(15, 0.4, 11, dark, -6, 13.8, 3, g);
+  box(30, 0.5, 16, dark, 0, 9.85, 3, g); box(24, 0.5, 14, dark, 4, 0.2, -8, g);
+  for (let i = 0; i < 6; i++) box(0.12, 4, 0.12, M(0xffd23f, { metalness: 0.8 }), -11 + i * 4.4, 7.3, -5, g);
+  const cSign = textPlane(['COBURN\'S PLACE', '1 Summit Way'], 9, 2, { bg: 'rgba(0,0,0,0)', fg: '#ffffff', accent: '#38f0ff', font: 'bold 110px Poppins, Arial', border: null, glow: true }); cSign.position.set(0, 10.8, -5.3); cSign.rotation.y = Math.PI; g.add(cSign);
+  // the big rectangular pool, real water, with a coin dive game
+  const pool = { x: 0, z: -16, w: 22, d: 8 }; const pw = new T.Mesh(new T.PlaneGeometry(pool.w, pool.d), waterMaterial(0x38c8f0, 0x0a4a7a)); pw.rotation.x = -Math.PI / 2; pw.position.set(pool.x, 0.55, pool.z); pw.userData.noCollide = true; g.add(pw);
+  for (const [w, d, ox, oz] of [[pool.w + 1, 0.5, 0, pool.d / 2 + 0.25], [pool.w + 1, 0.5, 0, -pool.d / 2 - 0.25], [0.5, pool.d, pool.w / 2 + 0.25, 0], [0.5, pool.d, -pool.w / 2 - 0.25, 0]]) box(w, 0.45, d, stone, pool.x + ox, 0.22, pool.z + oz, g);
+  app.addWater({ poly: [[TOP.x - pool.w / 2, TOP.z + pool.z - pool.d / 2], [TOP.x + pool.w / 2, TOP.z + pool.z - pool.d / 2], [TOP.x + pool.w / 2, TOP.z + pool.z + pool.d / 2], [TOP.x - pool.w / 2, TOP.z + pool.z + pool.d / 2]], y: gy + 0.55 });
+  const coins = []; const coinM = new T.MeshStandardMaterial({ color: 0xffd23f, metalness: 0.9, roughness: 0.2, emissive: 0x332200 }); for (let i = 0; i < 12; i++) { const c = new T.Mesh(new T.TorusGeometry(0.35, 0.09, 8, 20), coinM); c.position.set(pool.x - pool.w / 2 + 1.5 + (i % 6) * 3.6, 0.6, pool.z - 2 + Math.floor(i / 6) * 4); g.add(c); coins.push(c); }
+  let got = 0; app.onUpdate((dt, t) => { const P = app.player.position; for (const c of coins) { if (!c.visible) continue; c.rotation.y += dt * 2; c.position.y = 0.6 + Math.sin(t * 2 + c.position.x) * 0.1; if (Math.hypot(P.x - (TOP.x + c.position.x), P.z - (TOP.z + c.position.z)) < 1.1) { c.visible = false; got++; app.buzz && app.buzz(30); app.toast('🪙 ' + got + ' / ' + coins.length + ' pool coins'); if (got === coins.length) { app.celebrate && app.celebrate('🏆'); app.toast('🏆 All 12 pool coins! They respawn in 30 seconds.', 4000); setTimeout(() => { got = 0; coins.forEach(q => q.visible = true); }, 30000); } } } });
+  const tv = app.addScreen(TOP.x + 4, gy + 7.3, TOP.z - 5.15, Math.PI, 'fAJfDP3b5_U', { w: 10, h: 3, title: 'Coburn\'s big screen', accent: '#38f0ff', radius: 8 });
+  const games = () => app.popup('🎮 Coburn\'s game wall', '<p>Pick a game. Every one of these is a real world you can play in your browser.</p>', [{ label: '🧭 Virtual Reality Adventure', href: 'https://virtualrealityadventure.com/', newTab: true }, { label: '✈️ VR Flying Simulator', href: 'https://vrflyingsimulator.com/', newTab: true }, { label: '🪐 The VR Galaxy', href: 'https://thevrgalaxy.com/', newTab: true }, { label: '🌀 Another Dimension VR', href: 'https://anotherdimensionvr.com/', newTab: true }, { label: '💥 Comics Come Alive', href: 'https://comicscomealive.com/', newTab: true }]);
+  const gw = new T.Group(); gw.position.set(-10, 1.6, -3.1); g.add(gw); box(4, 2.4, 0.2, dark, 0, 0, 0, gw); const gwt = textPlane(['🎮 GAME WALL', 'tap to play'], 3.8, 2.2, { bg: '#0b1033', fg: '#fff', accent: '#ff4fd8', font: 'bold 80px Poppins, Arial' }); gwt.position.z = -0.12; gwt.rotation.y = Math.PI; gw.add(gwt); app.addHotspot(gw, { fn: games }); app.addInteractable(TOP.x - 10, TOP.z - 4.5, 3, '🎮 Coburn\'s game wall', games);
+  /* seasons */
+  const run = { mesh: null }; const snowM = new T.MeshStandardMaterial({ color: 0xf4f8ff, roughness: 0.6 }); const grassM = new T.MeshStandardMaterial({ color: 0x5f9e3a, roughness: 0.95 });
+  const setSeason = (sz) => { STATE.season = sz; try { for (let dx = -120; dx <= 120; dx += 60) for (let dz = -120; dz <= 120; dz += 60) W.chunks.rebuildAt(MTN.x + dx, MTN.z + dz); } catch (e) { } if (run.mesh) run.mesh.material = sz === 'summer' ? grassM : snowM; app.toast(sz === 'summer' ? '☀️ Summer on the mountain: the run turns into a grass slide.' : '❄️ Winter on the mountain: fresh powder!', 3600); };
+  const seasonKiosk = (x, z) => { const k = new T.Group(); k.position.set(x, ty(x, z), z); S.add(k); box(0.25, 2.6, 0.25, dark, 0, 1.3, 0, k); const t = makeSprite('❄️ / ☀️ Seasons', { scale: 2.6, accent: '#ffffff' }); t.position.y = 3; k.add(t); const f = () => setSeason(STATE.season === 'summer' ? 'winter' : 'summer'); app.addHotspot(k, { fn: f }); app.addInteractable(x, z, 2.6, '❄️ Switch season (winter ↔ summer)', f); };
+  seasonKiosk(TOP.x - 14, TOP.z - 22); seasonKiosk(base.x - 8, base.z + 2);
+  /* ski run */
+  const pts = [[top.x - 8, top.z - 4], [top.x - 24, top.z - 18], [top.x - 4, top.z - 36], [top.x - 26, top.z - 54], [top.x - 6, top.z - 70], [base.x - 10, base.z + 6]].map(([x, z]) => new T.Vector3(x, 0, z));
+  const curve = new T.CatmullRomCurve3(pts); const N = 220; const half = 7; const pos = []; const uv = []; const idx = [];
+  for (let i = 0; i <= N; i++) { const k = i / N; const p = curve.getPointAt(k); const tg = curve.getTangentAt(k); const nx = -tg.z, nz = tg.x; for (const sd of [-1, 1]) { const x = p.x + nx * half * sd, z = p.z + nz * half * sd; pos.push(x, ty(x, z) + 0.12, z); uv.push(sd > 0 ? 1 : 0, k * 20); } if (i < N) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } }
+  const rg = new T.BufferGeometry(); rg.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); rg.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); rg.setIndex(idx); rg.computeVertexNormals(); run.mesh = new T.Mesh(rg, STATE.season === 'summer' ? grassM : snowM); run.mesh.receiveShadow = true; run.mesh.userData.noCollide = true; S.add(run.mesh);
+  const gates = []; for (let i = 1; i <= 9; i++) { const k = i / 10.5; const p = curve.getPointAt(k), tg = curve.getTangentAt(k); const nx = -tg.z, nz = tg.x; const off = (i % 2 ? 1 : -1) * 2.6; const col = i % 2 ? 0xe11d48 : 0x2563eb; const gx = p.x + nx * off, gz = p.z + nz * off; for (const sd of [-1.6, 1.6]) { const pole = cyl(0.06, 0.06, 1.8, glow(col, 0.6), gx + nx * sd, ty(gx + nx * sd, gz + nz * sd) + 0.9, gz + nz * sd, S, 6); pole.userData.noCollide = true; } gates.push({ k, off, hit: false }); }
+  for (let i = 0; i < 46; i++) { const k = (i + 0.5) / 46; const p = curve.getPointAt(k), tg = curve.getTangentAt(k); const nx = -tg.z, nz = tg.x; const sd = (i % 2 ? 1 : -1) * (half + 2 + (i % 3) * 1.5); const x = p.x + nx * sd, z = p.z + nz * sd; const tr = new T.Mesh(new T.ConeGeometry(1.3, 4.5, 8), M(0x1f5c3a, { roughness: 0.9 })); tr.position.set(x, ty(x, z) + 2.3, z); tr.userData.noCollide = true; S.add(tr); }
+  const sCoins = []; for (let i = 0; i < 24; i++) { const k = 0.04 + i / 25; const p = curve.getPointAt(k), tg = curve.getTangentAt(k); const off = Math.sin(i * 0.9) * 4; const x = p.x - tg.z * off, z = p.z + tg.x * off; const c = new T.Mesh(new T.TorusGeometry(0.4, 0.1, 8, 18), coinM); c.position.set(x, ty(x, z) + 1.2, z); c.userData.noCollide = true; S.add(c); sCoins.push({ c, k, off }); }
+  const best = () => { try { return JSON.parse(localStorage.getItem('aou_ski_best') || 'null'); } catch (e) { return null; } };
+  const hud = document.createElement('div'); hud.id = 'ski-hud'; hud.innerHTML = '<div class="sk-top"><b id="sk-t">0.0 s</b><span id="sk-s">0 pts</span></div><div class="sk-btns"><button id="sk-l" aria-label="Steer left">◀</button><button id="sk-r" aria-label="Steer right">▶</button></div>'; hud.style.display = 'none'; (document.getElementById('wvm-stage') || document.body).appendChild(hud);
+  const st = document.createElement('style'); st.textContent = '#ski-hud{position:absolute;inset:0;pointer-events:none;z-index:40;font-family:Poppins,Arial}#ski-hud .sk-top{position:absolute;top:64px;left:50%;transform:translateX(-50%);display:flex;gap:14px;background:rgba(255,255,255,.94);padding:8px 16px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-weight:900;color:#0f172a}#ski-hud .sk-btns{position:absolute;bottom:26px;left:0;right:0;display:flex;justify-content:space-between;padding:0 18px}#ski-hud .sk-btns button{pointer-events:auto;width:84px;height:84px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:30px;box-shadow:0 8px 24px rgba(0,0,0,.3);touch-action:none}'; document.head.appendChild(st);
+  const ski = { on: false, k: 0, u: 0, v: 0, steer: 0, t0: 0, pts: 0 }; const keys = new Set();
+  addEventListener('keydown', (e) => { if (!ski.on) return; keys.add(e.key.toLowerCase()); }); addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+  const hold = (id, v) => { const b = hud.querySelector(id); b.onpointerdown = () => { ski.steer = v; }; b.onpointerup = b.onpointerleave = b.onpointercancel = () => { if (ski.steer === v) ski.steer = 0; }; }; hold('#sk-l', -1); hold('#sk-r', 1);
+  const skis = new T.Group(); for (const sx of [-0.16, 0.16]) box(0.1, 0.04, 1.7, M(0xe11d48), sx, 0.03, 0.2, skis); skis.visible = false; app.player.add(skis);
+  const startSki = () => { if (ski.on) return; ski.on = true; ski.k = 0; ski.u = 0; ski.v = 3; ski.t0 = app.t; ski.pts = 0; gates.forEach(q => q.hit = false); sCoins.forEach(q => q.c.visible = true); hud.style.display = ''; skis.visible = true; app.toast('⛷️ GO! Steer with A/D, the arrow keys or the ◀ ▶ buttons. Pass through the flag gates.', 3800);
+    app.ride = { pos: () => { const dt = Math.min(0.05, app._skiDt || 0.016); const tg = curve.getTangentAt(Math.min(0.999, ski.k)); const p = curve.getPointAt(Math.min(0.999, ski.k)); const steer = ski.steer || (keys.has('a') || keys.has('arrowleft') ? -1 : keys.has('d') || keys.has('arrowright') ? 1 : 0); ski.u = Math.max(-half + 0.8, Math.min(half - 0.8, ski.u + steer * dt * 7)); const ahead = curve.getPointAt(Math.min(1, ski.k + 0.01)); const drop = (ty(p.x, p.z) - ty(ahead.x, ahead.z)) / (curve.getLength() * 0.01); ski.v = Math.max(5, Math.min(28, ski.v + (drop * 14 - Math.abs(steer) * 1.5 - 0.6) * dt)); ski.k += ski.v * dt / curve.getLength();
+        const nx = -tg.z, nz = tg.x; const x = p.x + nx * ski.u, z = p.z + nz * ski.u; app.ride.yaw = Math.atan2(tg.x, tg.z); if (app.avatar) app.avatar.rotation.z = -steer * 0.25;
+        for (const gt of gates) if (!gt.hit && ski.k > gt.k) { gt.hit = true; if (Math.abs(ski.u - gt.off) < 1.7) { ski.pts += 100; app.toast('🚩 Gate! +100', 900); } else { ski.t0 -= 3; app.toast('❌ Missed a gate: +3 s', 900); } }
+        for (const sc of sCoins) if (sc.c.visible && Math.abs(sc.k - ski.k) < 0.006 && Math.abs(sc.off - ski.u) < 1.4) { sc.c.visible = false; ski.pts += 10; }
+        hud.querySelector('#sk-t').textContent = (app.t - ski.t0).toFixed(1) + ' s'; hud.querySelector('#sk-s').textContent = ski.pts + ' pts';
+        if (ski.k >= 0.995 && !ski.ending) { ski.ending = true; setTimeout(() => { ski.ending = false; endSki(); }, 0); } return new T.Vector3(x, ty(x, z) + 0.15, z); }, yaw: 0 }; };
+  const endSki = () => { if (!ski.on) return; ski.on = false; const time = app.t - ski.t0; const b = best(); const score = Math.round(ski.pts + Math.max(0, 600 - time * 10)); const nb = !b || score > b.score; if (nb) localStorage.setItem('aou_ski_best', JSON.stringify({ score, time: +time.toFixed(1) })); app.ride = null; hud.style.display = 'none'; skis.visible = false; if (app.avatar) app.avatar.rotation.z = 0; const end = curve.getPointAt(1); app.player.position.set(end.x - 6, ty(end.x - 6, end.z), end.z); app.celebrate && app.celebrate(nb ? '🏆' : '⛷️'); app.popup('⛷️ Run complete', `<p><b>${time.toFixed(1)} s</b> · ${ski.pts} gate + coin points · score <b>${score}</b></p><p>${nb ? '🏆 New personal best!' : 'Best: ' + b.score + ' (' + b.time + ' s)'}</p>`, [{ label: '🚡 Ride the lift back up', primary: true, fn: rideLift }]); };
+  app.onUpdate((dt) => { app._skiDt = dt; for (const sc of sCoins) sc.c.rotation.y += dt * 3; });
+  /* chairlift */
+  const L = new T.Vector3(base.x, 0, base.z), U = new T.Vector3(top.x, 0, top.z); const len = L.distanceTo(U); const towers = Math.ceil(len / 16);
+  const cab = (k) => { const x = L.x + (U.x - L.x) * k, z = L.z + (U.z - L.z) * k; const h = ty(L.x, L.z) + 10 + (ty(U.x, U.z) + 10 - ty(L.x, L.z) - 10) * k; return new T.Vector3(x, Math.max(h, ty(x, z) + 7), z); };
+  for (let i = 0; i <= towers; i++) { const k = i / towers; const p = cab(k); const tw = cyl(0.3, 0.45, p.y - ty(p.x, p.z) + 1, M(0x9aa3ad, { metalness: 0.6 }), p.x, (p.y + ty(p.x, p.z)) / 2 + 0.5, p.z, S, 10); tw.userData.noCollide = true; const arm = box(5, 0.25, 0.3, M(0x9aa3ad, { metalness: 0.6 }), p.x, p.y + 0.9, p.z, S); arm.rotation.y = Math.atan2(U.x - L.x, U.z - L.z) + Math.PI / 2; }
+  for (const sd of [-2, 2]) { const cg = new T.BufferGeometry().setFromPoints([...Array(41)].map((_, i) => { const p = cab(i / 40); return new T.Vector3(p.x + sd, p.y + 0.9, p.z); })); S.add(new T.Line(cg, new T.LineBasicMaterial({ color: 0x222222 }))); }
+  const chairs = []; for (let i = 0; i < 12; i++) { const c = new T.Group(); box(1.4, 0.12, 0.6, M(0x2563eb), 0, -1.6, 0, c); box(1.4, 0.6, 0.1, M(0x2563eb), 0, -1.3, -0.3, c); box(0.06, 1.7, 0.06, M(0x444444), 0, -0.8, 0, c); S.add(c); chairs.push({ c, k: i / 12, dir: i % 2 ? 1 : -1 }); }
+  app.onUpdate((dt) => { for (const ch of chairs) { ch.k = (ch.k + dt * 0.02) % 1; const k = ch.dir > 0 ? ch.k : 1 - ch.k; const p = cab(k); ch.c.position.set(p.x + ch.dir * 2, p.y + 0.9, p.z); ch.c.rotation.y = Math.atan2(U.x - L.x, U.z - L.z) + (ch.dir > 0 ? 0 : Math.PI); } });
+  const rideLift = () => { if (app.ride) return; const yaw = Math.atan2(U.x - L.x, U.z - L.z); const t0 = app.t, dur = 26; if (app.avatar) { const { sitPerson } = window.AOU_ENGINE || {}; } app.toast('🚡 Up we go. Enjoy the view.', 3000); try { window.AOU_SIT && window.AOU_SIT(app.avatar, true); } catch (e) { }
+    app.ride = { pos: (t) => { const k = Math.min(1, (t - t0) / dur); const p = cab(k); return new T.Vector3(p.x + 2, p.y - 1.75, p.z); }, yaw, until: t0 + dur, done: () => { try { window.AOU_SIT && window.AOU_SIT(app.avatar, false); } catch (e) { } app.player.position.set(top.x - 4, ty(top.x - 4, top.z + 3), top.z + 3); app.toast('🏔️ Summit! Coburn\'s Place is up the hill. The ⛷️ start gate is right here.', 4200); } }; };
+  const station = (p, label, fn, tagTxt) => { const s = new T.Group(); s.position.set(p.x, ty(p.x, p.z), p.z); S.add(s); box(6, 0.3, 4, dark, 0, 3.4, 0, s); for (const sx of [-2.8, 2.8]) box(0.25, 3.4, 0.25, dark, sx, 1.7, 1.8, s); const t = makeSprite(tagTxt, { scale: 3.2, accent: '#38f0ff' }); t.position.y = 5; s.add(t); app.addHotspot(s, { fn }); app.addInteractable(p.x, p.z, 4, label, fn); };
+  station(base, '🚡 Ride the ski lift up', rideLift, '🚡 SKI LIFT · up to Coburn\'s');
+  station({ x: top.x - 8, z: top.z - 2 }, '⛷️ Start the ski run', startSki, '⛷️ START GATE · tap to ski');
+  app.addPlace({ id: 'ski', name: '🚡 Ski lift (base)', icon: '🚡', x: base.x - 4, z: base.z - 6, cat: 'Fun', keys: 'ski lift chairlift mountain snow coburn', say: 'Ride the lift up to Coburn\'s Place.' });
+  app.addPlace({ id: 'coburn', name: '🏔️ Coburn\'s Place', icon: '🏔️', x: TOP.x, z: TOP.z - 24, yaw: 0, cat: 'Homes', keys: 'coburn mountain mansion pool ski summit games', say: 'Coburn\'s Place: pool coins, the game wall and the ski run.' });
+  return { setSeason, startSki, rideLift };
+}
+
+/* ============================================================
+   CONFERENCE CENTER · 72 seats, a 26 m screen, podium, voice
+   ============================================================ */
+export function buildConference(app, W, api) {
+  const S = app.scene; const { x: X, z: Z } = SPOTS.conf; const y0 = terrainY(X, Z) + 0.05; const g = new T.Group(); g.position.set(X, y0, Z); g.rotation.y = 0; S.add(g); g.userData.noCollide = true;
+  const w = 46, d = 34, h = 15; const hw = w / 2, hd = d / 2; const white = M(0xf4f1ea, { roughness: 0.5 }); const dark = M(0x111827, { metalness: 0.4, roughness: 0.4 }); const gold = M(0xc9a24a, { metalness: 0.85, roughness: 0.25 });
+  box(w + 4, 0.4, d + 4, M(0xd9d2c5), 0, 0, 0, g); const fl = box(w - 0.4, 0.06, d - 0.4, M(0x2a2f45, { roughness: 0.9 }), 0, 0.23, 0, g); fl.userData.noOcclude = true;
+  // walls: front (−x, faces the plaza) glass with a wide entrance
+  const gap = 5; for (const sz of [-1, 1]) { const len = hd - gap; const gp = box(0.2, h, len, M(0xcff6ff, { transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.3, depthWrite: false }), -hw, h / 2, sz * (gap + len / 2), g); gp.userData.noOcclude = true; app.addBox(X - hw, Z + sz * (gap + len / 2), 0.4, len / 2); }
+  const back = box(0.6, h, d, white, hw, h / 2, 0, g); app.addBox(X + hw, Z, 0.5, hd);
+  for (const sz of [-1, 1]) { const sw = box(w, h, 0.6, white, 0, h / 2, sz * hd, g); sw.userData.noOcclude = true; app.addBox(X, Z + sz * hd, hw, 0.5); }
+  const roof = box(w + 2, 0.8, d + 2, white, 0, h + 0.4, 0, g); roof.userData.noOcclude = true; for (let i = 0; i < 8; i++) box(w - 2, 0.1, 0.4, glow(i % 2 ? 0x38f0ff : 0xffffff, 1.2), 0, h - 0.4, -hd + 2 + i * 4.3, g);
+  const name = textPlane(['ALL OF US · CONFERENCE CENTER'], 30, 2.2, { bg: 'rgba(0,0,0,0)', fg: '#1a1a1a', accent: '#c9a24a', font: 'bold 120px Poppins, Arial', border: null }); name.rotation.y = -Math.PI / 2; name.position.set(-hw - 0.35, h - 1.6, 0); g.add(name);
+  // stage + giant screen on the back wall
+  box(10, 1.2, 26, M(0x1f2937, { roughness: 0.6 }), hw - 6, 0.6, 0, g); app.addBox(X + hw - 6, Z, 5, 13);
+  const sw2 = 26, sh2 = 14.6; const frame = box(0.4, sh2 + 0.6, sw2 + 0.6, dark, hw - 0.6, 8.3, 0, g);
+  const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 900; const ctx = cv.getContext('2d'); const tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace; const scrM = new T.MeshBasicMaterial({ map: tex, toneMapped: false }); const scr = plane(sw2, sh2, scrM, g); scr.rotation.y = -Math.PI / 2; scr.position.set(hw - 0.85, 8.3, 0);
+  const card = (lines, bg = ['#0b1033', '#3b0d4a']) => { const gr = ctx.createLinearGradient(0, 0, 1600, 900); gr.addColorStop(0, bg[0]); gr.addColorStop(1, bg[1]); ctx.fillStyle = gr; ctx.fillRect(0, 0, 1600, 900); ctx.textAlign = 'center'; lines.forEach((l, i) => { ctx.fillStyle = i ? '#a5f3fc' : '#ffffff'; ctx.font = (i ? '600 54px' : 'bold 96px') + ' Poppins, Arial'; ctx.fillText(String(l).slice(0, 48), 800, 380 + i * 90); }); tex.needsUpdate = true; };
+  const image = (url) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1600, 900); const k = Math.min(1600 / im.width, 900 / im.height); ctx.drawImage(im, (1600 - im.width * k) / 2, (900 - im.height * k) / 2, im.width * k, im.height * k); tex.needsUpdate = true; }; im.src = url; };
+  card(['ALL OF US · CONFERENCE CENTER', 'Walk to the podium and tap 📽️ Present']);
+  // seats: 6 rows of 12, instanced
+  const seatG = new T.BoxGeometry(0.9, 0.9, 0.9); const seats = new T.InstancedMesh(seatG, M(0x7c3aed, { roughness: 0.8 }), 72); const m4 = new T.Matrix4(); let n = 0; for (let r = 0; r < 6; r++) for (let c = 0; c < 12; c++) { m4.makeTranslation(-hw + 8 + r * 3.2, 0.7, -hd + 5 + c * 2.2 + (c >= 6 ? 1.6 : 0)); seats.setMatrixAt(n++, m4); } seats.userData.noCollide = true; g.add(seats);
+  const podium = new T.Group(); podium.position.set(hw - 9.5, 1.2, -8); g.add(podium); box(1.2, 1.4, 0.9, gold, 0, 0.7, 0, podium); const pt = makeSprite('📽️ Podium · tap to present', { scale: 3, accent: '#ffd23f' }); pt.position.y = 2.8; podium.add(pt);
+  const present = () => api.openConference && api.openConference(); app.addHotspot(podium, { fn: present }); app.addHotspot(frame, { fn: present }); app.addInteractable(X + hw - 9.5, Z - 8, 3.4, '📽️ Present on the giant screen', present);
+  const voiceSpot = new T.Group(); voiceSpot.position.set(-hw + 4, 0.25, hd - 4); g.add(voiceSpot); const vs = new T.Mesh(new T.CircleGeometry(1.8, 32), glow(0x7cff6b, 1)); vs.rotation.x = -Math.PI / 2; voiceSpot.add(vs); const vt = makeSprite('🎙️ Join conference voice', { scale: 2.8, accent: '#7cff6b' }); vt.position.y = 2.4; voiceSpot.add(vt); const joinV = () => api.joinVoice && api.joinVoice('conference'); app.addHotspot(voiceSpot, { fn: joinV }); app.addInteractable(X - hw + 4, Z + hd - 4, 2.6, '🎙️ Join conference voice chat', joinV);
+  
+  app.addPlace({ id: 'conference', name: '🎤 Conference Center', icon: '🎤', x: X - hw - 6, z: Z, yaw: Math.PI / 2, cat: 'Places', keys: 'conference center presentation stage screen meeting event pdf powerpoint voice business', say: 'The Conference Center. 72 seats, a 26 m screen. Tap the podium to present.' });
+  const inside = () => { const P = app.player.position; return Math.abs(P.x - X) < hw && Math.abs(P.z - Z) < hd; };
+  return { card, image, inside };
 }

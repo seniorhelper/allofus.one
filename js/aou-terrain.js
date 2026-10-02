@@ -27,7 +27,9 @@ export const CLIFF_X = -276;                        // west cliffs rise past her
 export const ORBIT = { x: -20000, z: -20000 };      // Orbit Garden (space), teleport only
 export const FLATS = [];            // {x,z,r,y,soft} or {x1,z1,x2,z2,y,soft}
 export const PATHS = [];            // life paths: {pts:[[x,z]...], w}
-export const STATE = { diving: false, dive: 0, space: false };
+export const STATE = { diving: false, dive: 0, space: false, season: 'winter' };
+/* v4: Coburn's mountain (ski lift + ski run + mountain mansion on top) */
+export const MTN = { x: 330, z: 330, r: 100, h: 66, top: 60 };
 
 export function addFlat(f) { FLATS.push(Object.assign({ y: 0, soft: 10 }, f)); }
 
@@ -35,7 +37,7 @@ export function addFlat(f) { FLATS.push(Object.assign({ y: 0, soft: 10 }, f)); }
 function oceanDepth(x, z) { const d = Math.hypot(x - OCEAN.x, z - OCEAN.z) * (1 + 0.08 * Math.sin(Math.atan2(z - OCEAN.z, x - OCEAN.x) * 3)); if (d > 205) return null; if (d > 168) return -1.2 + 1.9 * smooth(168, 205, d); return -1.2 - 15 * smooth(150, 30, d) - 1.5 * smooth(168, 140, d); }
 function bowl(x, z, c, depth) { const d = Math.hypot(x - c.x, z - c.z); if (d > c.r + 7) return null; return -depth * smooth(c.r + 6, c.r * 0.35, d) + 0.25 * smooth(c.r, c.r + 7, d); }
 export function isDesert(x, z) { if (Math.abs(x) < HUB && Math.abs(z) < HUB) return x > 195 && z < 140 && z > -330 ? 1 : 0; return smooth(0.56, 0.66, fbm(x / 1400 + 31, z / 1400 - 7, 2)); }
-export function isSnow(x, z) { if (Math.abs(x) < HUB + 200 && Math.abs(z) < HUB + 200) return 0; return smooth(0.62, 0.72, fbm(x / 1700 - 51, z / 1700 + 12, 2)); }
+export function isSnow(x, z) { const dm = Math.hypot(x - MTN.x, z - MTN.z); if (dm < MTN.r + 10) return STATE.season === 'summer' ? 0 : smooth(MTN.r + 10, MTN.r * 0.55, dm); if (Math.abs(x) < HUB + 200 && Math.abs(z) < HUB + 200) return 0; return smooth(0.62, 0.72, fbm(x / 1700 - 51, z / 1700 + 12, 2)); }
 
 /* raw terrain before roads / flats */
 function rawH(x, z) {
@@ -47,6 +49,7 @@ function rawH(x, z) {
   const ds = isDesert(x, z); if (ds > 0) h = h * (1 - ds * 0.4) + ds * (Math.abs(Math.sin(x / 23 + Math.sin(z / 41) * 2)) * 2.6 + fbm(x / 90, z / 90) * 3);
   // west cliffs + waterfall
   if (x < CLIFF_X + 6 && Math.abs(z + 20) < 210 && r < HUB + 40) { const k = smooth(CLIFF_X + 4, CLIFF_X - 14, x) * smooth(210, 150, Math.abs(z + 20)); h = h * (1 - k) + k * (42 + fbm(x / 30, z / 30) * 8); }
+  { const dm = Math.hypot(x - MTN.x, z - MTN.z); if (dm < MTN.r) { const k = smooth(MTN.r, 0, dm); h = h * (1 - k) + MTN.h * Math.pow(k, 1.35) + (fbm(x / 26, z / 26, 2) - 0.5) * 5 * k * (1 - k); } }
   const oc = oceanDepth(x, z); if (oc !== null) { const d = Math.hypot(x - OCEAN.x, z - OCEAN.z); const k = smooth(210, 175, d); h = h * (1 - k) + oc * k; }
   for (const [c, dp] of [[LAKE, 5.5], [POOL, 4.5]]) { const b = bowl(x, z, c, dp); if (b !== null) { const d = Math.hypot(x - c.x, z - c.z); const k = smooth(c.r + 7, c.r, d); h = h * (1 - k) + b * k; } }
   return h;

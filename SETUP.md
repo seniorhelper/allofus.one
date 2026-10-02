@@ -45,3 +45,9 @@ Supabase does not email you about new accounts by default. The 🛡️ Admin con
 1. Make a free Zapier (or Make.com) account → new Zap → trigger **Webhooks by Zapier → Catch Hook** → copy the webhook URL.
 2. Supabase → Database → Webhooks → **Create a new hook** → table `profiles`, event **Insert**, type **HTTP Request**, method POST, paste the URL.
 3. Zap action **Gmail → Send Email** to yourself with the name and city fields. Turn it on.
+
+## v4 upgrade (Oct 2 2026)
+1. Upload this folder to the repo root.
+2. Supabase → SQL Editor → run `supabase/v4-storage.sql` (conference uploads).
+3. Voice chat works out of the box (peer-to-peer). On very strict networks add a TURN server in `js/aou-config.js`.
+4. One login with World VR Mall: when the mall is upgraded it gets `js/aou-sso.js` and the same Supabase keys; travel links then carry your login over.

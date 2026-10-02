@@ -29,7 +29,7 @@
  {"@type":"WebSite","@id":"https://allofus.one/#site","url":"https://allofus.one/","name":"allofus.one","description":"A free 3D world for connecting humanity.","inLanguage":"en-US"},
  {"@type":"Organization","@id":"https://allofus.one/#org","name":"allofus.one","url":"https://allofus.one/","logo":"https://allofus.one/images/allofus-mark.svg","founder":{"@type":"Person","name":"Zachary Tye Wennstedt","url":"https://zacharytyewennstedt.com/"},"sameAs":["https://www.facebook.com/share/1FCtkAgToH/"]},
  {"@type":"WebApplication","name":"allofus.one world","url":"https://allofus.one/","applicationCategory":"SocialNetworkingApplication","operatingSystem":"Any (web browser, WebXR headsets)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
- {"@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "What is in the Lifeboard?", "acceptedAnswer": {"@type": "Answer", "text": "Your private life dashboard: Today (a daily affirmation that never repeats on a loop, top 3 priorities and a streak), Life Dash with every tool on one screen, goals, a vision board, a focus timer, trackers with real charts, reminders you can add to your phone calendar, a journal, a sealed letter to future you, money calculators (budget, debt payoff, savings, compound growth, emergency fund), hugs and a halo sign. All free, private to your account."}},{"@type": "Question", "name": "Can I visit Zach's house?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. No. 1 Unity Road is the allofus.one model home and anyone can walk in: twin waterfalls, gallery halls, a 360 Dream Room built from a real photo, animated shag carpet, neon light switches, a fireplace you can change, an elevator to the office and a roof-deck pool you can swim in, plus a backyard rocket that launches when you walk up. Lifeboards always stay private."}},{"@type": "Question", "name": "Is allofus.one family friendly?", "acceptedAnswer": {"@type": "Answer", "text": "Always. No adult content or language of any kind, a chat language filter, report and block on every profile, accounts for ages 13 and up, and friend scan only matches teens with teens and adults with adults. Read the Community Rules at allofus.one/community-rules/."}},{"@type": "Question", "name": "How do hugs work?", "acceptedAnswer": {"@type": "Answer", "text": "Tap 🤗 on anyone to send a burst of hearts their way, and they get a hug notice wherever they are in the world. You can also email a hug card to anyone, even if they are not on allofus.one yet."}},
+ {"@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Can I design my own house?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Claim free land, then open ✨ More → 🏗️ Home builder: pick a shape, floors, walls, a roof type and material (slate, aluminum, clay, cedar, copper, solar or a living roof), draw your own pool with fish, add gardens, solar, wind, a sign and a mailbox, or build anything with Lifeblocks. You see it in 3D as you go."}},{"@type": "Question", "name": "Can people visit my home from outside the world?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every home has a street address and a unique address code. Share your link from the builder or the 📒 Directory and it walks visitors right to your door."}},{"@type": "Question", "name": "Is there voice chat?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Real peer-to-peer voice rooms: people near you, the plaza, the conference hall and more. Teens only hear teens and adults only hear adults, and nothing is recorded."}},{"@type": "Question", "name": "Can I give a presentation?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The Conference Center has 72 seats and a 26 meter screen. Upload or link a PDF, PowerPoint, Word file, MP3, video, image, YouTube video or web page and everyone in the hall sees it live."}},{"@type": "Question", "name": "What is in the Lifeboard?", "acceptedAnswer": {"@type": "Answer", "text": "Your private life dashboard: Today (a daily affirmation that never repeats on a loop, top 3 priorities and a streak), Life Dash with every tool on one screen, goals, a vision board, a focus timer, trackers with real charts, reminders you can add to your phone calendar, a journal, a sealed letter to future you, money calculators (budget, debt payoff, savings, compound growth, emergency fund), hugs and a halo sign. All free, private to your account."}},{"@type": "Question", "name": "Can I visit Zach's house?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. No. 1 Unity Road is the allofus.one model home and anyone can walk in: twin waterfalls, gallery halls, a 360 Dream Room built from a real photo, animated shag carpet, neon light switches, a fireplace you can change, an elevator to the office and a roof-deck pool you can swim in, plus a backyard rocket that launches when you walk up. Lifeboards always stay private."}},{"@type": "Question", "name": "Is allofus.one family friendly?", "acceptedAnswer": {"@type": "Answer", "text": "Always. No adult content or language of any kind, a chat language filter, report and block on every profile, accounts for ages 13 and up, and friend scan only matches teens with teens and adults with adults. Read the Community Rules at allofus.one/community-rules/."}},{"@type": "Question", "name": "How do hugs work?", "acceptedAnswer": {"@type": "Answer", "text": "Tap 🤗 on anyone to send a burst of hearts their way, and they get a hug notice wherever they are in the world. You can also email a hug card to anyone, even if they are not on allofus.one yet."}},
   {"@type":"Question","name":"Is allofus.one free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Making an avatar, walking the world, connecting, Global Match, your Lifeboard and claiming land are free."}},
   {"@type":"Question","name":"Do I need a VR headset?","acceptedAnswer":{"@type":"Answer","text":"No. It runs in any modern browser on a phone, tablet or laptop. On a headset like Meta Quest, open allofus.one in the headset browser and tap Enter VR."}},
   {"@type":"Question","name":"What is Global Match?","acceptedAnswer":{"@type":"Answer","text":"A board where people post what they have and what they need, for items and services. When a have meets a need, both people get a match. No money changes hands on allofus.one."}},
@@ -131,6 +131,7 @@ footer.site-foot nav a{color:var(--ink);font-weight:700;text-decoration:none}
 @media (prefers-reduced-motion:reduce){.heart{animation:none}html{scroll-behavior:auto}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
+<link rel="manifest" href="/manifest.webmanifest"><style>@view-transition{navigation:auto}</style>
 </head>
 <body>
 <div id="wvm-stage"><div id="wvm-preload">Opening the world…</div><button id="scrollhint" type="button">How it works ↓</button></div>
@@ -288,6 +289,10 @@ footer.site-foot nav a{color:var(--ink);font-weight:700;text-decoration:none}
     <details><summary>Can I visit Zach's house?</summary><p>Yes. No. 1 Unity Road is the allofus.one model home and anyone can walk in: twin waterfalls, gallery halls, a 360 Dream Room built from a real photo, animated shag carpet, neon light switches, a fireplace you can change, an elevator to the office and a roof-deck pool you can swim in, plus a backyard rocket that launches when you walk up. Lifeboards always stay private.</p></details>
     <details><summary>Is allofus.one family friendly?</summary><p>Always. No adult content or language of any kind, a chat language filter, report and block on every profile, accounts for ages 13 and up, and friend scan only matches teens with teens and adults with adults. Read the Community Rules at allofus.one/community-rules/.</p></details>
     <details><summary>How do hugs work?</summary><p>Tap 🤗 on anyone to send a burst of hearts their way, and they get a hug notice wherever they are in the world. You can also email a hug card to anyone, even if they are not on allofus.one yet.</p></details>
+    <details><summary>Can I design my own house?</summary><p>Yes. Claim free land, then open ✨ More → 🏗️ Home builder: pick a shape, floors, walls, a roof type and material (slate, aluminum, clay, cedar, copper, solar or a living roof), draw your own pool with fish, add gardens, solar, wind, a sign and a mailbox, or build anything with Lifeblocks. You see it in 3D as you go.</p></details>
+    <details><summary>Can people visit my home from outside the world?</summary><p>Yes. Every home has a street address and a unique address code. Share your link from the builder or the 📒 Directory and it walks visitors right to your door.</p></details>
+    <details><summary>Is there voice chat?</summary><p>Yes. Real peer-to-peer voice rooms: people near you, the plaza, the conference hall and more. Teens only hear teens and adults only hear adults, and nothing is recorded.</p></details>
+    <details><summary>Can I give a presentation?</summary><p>Yes. The Conference Center has 72 seats and a 26 meter screen. Upload or link a PDF, PowerPoint, Word file, MP3, video, image, YouTube video or web page and everyone in the hall sees it live.</p></details>
     <details><summary>Is it free?</summary><p>Yes. Your avatar, the world, connecting, chat, Global Match, your Lifeboard and your land are free.</p></details>
     <details><summary>Do I need a VR headset?</summary><p>No. It runs in the browser on phones, tablets and laptops. On a headset like Meta Quest, open allofus.one in the headset browser and tap Enter VR.</p></details>
     <details><summary>How do I move around?</summary><p>On a laptop: WASD or the arrow keys, Shift to run, drag to look, click anything that glows. On a phone: the stick on the left to move, drag to look, tap the ground to walk there. Q dives in deep water, H opens your Lifeboard.</p></details>
@@ -302,14 +307,14 @@ footer.site-foot nav a{color:var(--ink);font-weight:700;text-decoration:none}
 <footer class="site site-foot">
   <div class="wrap">
     <img src="/images/allofus-mark.svg" alt="allofus.one" width="56" height="56">
-    <nav aria-label="Footer"><a href="#top-world" data-act="enter">Enter the world</a><a href="#h-how">How it works</a><a href="#h-lb">Lifeboard</a><a href="#h-match">Global Match</a><a href="#h-faq">FAQ</a><a href="https://zacharytyewennstedt.com/" target="_blank" rel="noopener">Founder</a><a href="/community-rules/">Community Rules</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/accessibility/">Accessibility</a></nav>
+    <nav aria-label="Footer"><a href="#top-world" data-act="enter">Enter the world</a><a href="#h-how">How it works</a><a href="#h-lb">Lifeboard</a><a href="#h-match">Global Match</a><a href="#h-faq">FAQ</a><a href="https://zacharytyewennstedt.com/" target="_blank" rel="noopener">Founder</a><a href="/community-rules/">Community Rules</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a><a href="/accessibility/">Accessibility</a><a href="https://worldvrmall.com/tour/">Take the tour</a><a href="https://worldvrmall.com/">World VR Mall</a></nav>
     <p>© 2026 allofus.one. All rights reserved. Family friendly, always.</p>
   </div>
   <div class="sig"><span class="heart" aria-hidden="true">❤</span><a href="https://eyetoad.com/" target="_blank" rel="noopener">Need a website?</a></div>
 </footer>
 
 <script type="module">
-import { WVM, THREE, SKIES } from '/js/aou-engine.js';
+import { WVM, THREE, SKIES, sitPerson } from '/js/aou-engine.js';
 import { groundY } from '/js/aou-terrain.js';
 import { buildWorld } from '/js/aou-world.js';
 import { buildLife } from '/js/aou-life.js';
@@ -317,6 +322,10 @@ import { initLumi } from '/js/aou-lumi.js';
 import { initSocial } from '/js/aou-social.js';
 import { buildEstates } from '/js/aou-estate.js';
 import { initPlus } from '/js/aou-plus.js';
+import { initBuild } from '/js/aou-build.js';
+import { initConference } from '/js/aou-conf.js';
+import { ssoReceive, ssoWire } from '/js/aou-sso.js';
+import { CONFIG } from '/js/aou-config.js';
 
 const app = new WVM({
   title: 'allofus.one', worldName: 'allofus.one · The Hub', page: 'index',
@@ -324,23 +333,30 @@ const app = new WVM({
   bounds: 1e6, fog: 0xcfe3f2, fogNear: 140, fogFar: 500, camFar: 4000, maxDist: 1500, cullDist: 700, spriteFar: 80,
   showSelfieOnFirstVisit: false,
 });
-window.WVM_APP = app;
+window.WVM_APP = app; window.AOU_SIT = sitPerson;
 const api = { isNight: () => !!app.isNight };
 app.start(async (a) => {
   const W = await buildWorld(a, api);
   buildLife(W);
   const lumi = initLumi(a, W);
+  // one login across our worlds: arriving from World VR Mall signed in
+  if (/aou_sso=/.test(location.hash)) { try { const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'); await ssoReceive(createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY)); } catch (e) { } }
   const UI = await initSocial(a, W, lumi);
-  let P = null; // the plus layer answers ownership + fingerprint questions for the estates
-  const eapi = { isNight: () => !!a.isNight, isOwner: (s) => !!(P && P.isOwner(s)), deviceUnlock: (s) => P ? P.deviceUnlock(s) : Promise.resolve(false), openLifeboard: (t) => W.api.openLifeboard(t), openRoom: (id) => W.api.openRoom(id), openCollab: () => W.api.openCollab(), openWorlds: () => P && P.openWorlds(), setNight: (n) => { a.setSky(n ? SKIES.night : SKIES.day, { night: !!n }); } };
+  let P = null, C = null; // the plus layer answers ownership + fingerprint questions for the estates
+  const eapi = { isNight: () => !!a.isNight, isOwner: (s) => !!(P && P.isOwner(s)), deviceUnlock: (s) => P ? P.deviceUnlock(s) : Promise.resolve(false), openLifeboard: (t) => W.api.openLifeboard(t), openRoom: (id) => W.api.openRoom(id), openCollab: () => W.api.openCollab(), openWorlds: () => P && P.openWorlds(), openConference: () => C && C.openConference(), joinVoice: (r) => P && P.joinVoice(r), setNight: (n) => { a.setSky(n ? SKIES.night : SKIES.day, { night: !!n }); } };
   const estates = buildEstates(a, W, eapi);
-  P = initPlus(a, W, UI, lumi, { estates });
-  window.AOU = Object.assign(window.AOU || {}, { W, app: a, plus: P, estates });
+  const B = initBuild(a, W, UI);
+  P = initPlus(a, W, UI, lumi, { estates, build: B });
+  C = initConference(a, W, UI, { joinVoice: (r) => P.joinVoice(r) });
+  if (UI.DB && UI.DB.sb) ssoWire(UI.DB.sb);
+  window.AOU = Object.assign(window.AOU || {}, { W, app: a, plus: P, estates, build: B, conf: C });
   setTimeout(() => { try { if (!localStorage.getItem('aou_seen')) { localStorage.setItem('aou_seen', '1'); lumi.say('Welcome to allofus.one! 🌍 No. 1 Unity Road is first on the right. Tap ✨ More for every world, weather and hugs.'); } } catch (e) { } }, 3500);
 });
 const go = (fn) => { document.getElementById('wvm-stage').scrollIntoView({ behavior: 'smooth' }); setTimeout(() => { if (window.AOU && window.AOU[fn]) window.AOU[fn](); }, 600); };
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (!b) return; e.preventDefault(); const a = b.dataset.act; if (a === 'join') go('join'); else if (a === 'invite') go('openInvite'); else go(null); });
 document.getElementById('scrollhint').onclick = () => document.getElementById('story').scrollIntoView({ behavior: 'smooth' });
+
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 </script>
 </body>
 </html>

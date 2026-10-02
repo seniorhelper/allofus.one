@@ -131,7 +131,7 @@ async function liveDB(app, W) {
       ch.on('broadcast', { event: 'fx' }, ({ payload }) => { try { W.onFx && W.onFx(payload); } catch (e) { } });
       ch.on('broadcast', { event: 'pos' }, ({ payload }) => { if (!payload || (me && payload.id === me.id)) return; W.profileCache.set(payload.id, payload.profile); W.remoteUpsert(payload.id, payload); })
         .on('presence', { event: 'leave' }, ({ key }) => W.remoteRemove(key))
-        .subscribe(async (st) => { if (st !== 'SUBSCRIBED') return; await ch.track({ online_at: now() }); let last = ''; setInterval(() => { const s = getState(); if (!s) return; const k = [Math.round(s.x * 4), Math.round(s.z * 4), Math.round(s.yaw * 10), s.mode].join(','); if (k === last && Math.random() > 0.1) return; last = k; ch.send({ type: 'broadcast', event: 'pos', payload: s }); }, 200); }); },
+        .subscribe(async (st) => { if (st !== 'SUBSCRIBED') return; await ch.track({ online_at: now() }); let last = '', lastSent = 0; setInterval(() => { if (document.hidden) return; const s = getState(); if (!s) return; const k = [Math.round(s.x * 3), Math.round(s.z * 3), Math.round(s.yaw * 8), s.mode, s.profile && s.profile.avatar && s.profile.avatar.v].join(','); const t = Date.now(); if (k === last && t - lastSent < 5000) return; last = k; lastSent = t; ch.send({ type: 'broadcast', event: 'pos', payload: s }); }, 400); }); },
   };
   return DB;
 }
