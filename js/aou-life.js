@@ -183,7 +183,7 @@ function buildResidents(W) {
   // real people (live mode): stand on the path they chose, even when they are offline
   W.placeProfile = (prof) => { if (!prof || !prof.paths || !prof.paths.length) return; if (W.residents.find(r => r.prof.id === prof.id)) return; const P = LIFE_PATHS.find(p => p.id === prof.paths[0]); if (!P || !P.spots) return; const k = used[P.id] = (used[P.id] || 0) + 1; const spot = P.spots[(2 + k * 2) % P.spots.length]; const side = k % 2 ? 1 : -1; const x = spot.x + spot.nx * 4.4 * side, z = spot.z + spot.nz * 4.4 * side; const look = (prof.avatar && prof.avatar.look) || {}; const person = makePerson({ age: 'adult', shirt: look.shirt || 0x38f0ff, hair: look.hair || 0x4a2e15, skin: look.skin || 0xe0ac7e, faceTex: prof.avatar && prof.avatar.face && W.faceTex ? W.faceTex(prof.avatar.face) : null }); const g = new T.Group(); g.add(person); g.position.set(x, terrainY(x, z), z); S.add(g); const mode = MODES[prof.mode] || MODES.hanging; const ring = ringMesh(mode.color); g.add(ring); const tag = makeSprite(mode.icon + ' ' + (prof.name || 'Someone') + ' · ' + P.icon, { scale: 3.2, accent: mode.css }); tag.position.y = 2.75; g.add(tag); W.residents.push({ prof, g, person, ring, tag, walk: false, phase: Math.random() * 6, spot, P }); app.addHotspot(g, { fn: () => W.api.openProfile(prof) }); };
 }
-export function ringMesh(color) { const m = new T.Mesh(new T.TorusGeometry(0.62, 0.07, 8, 40), new T.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 1.6, roughness: 0.3 })); m.rotation.x = Math.PI / 2; m.position.y = 0.08; m.userData.noCollide = true; m.userData.noOcclude = true; return m; }
+export function ringMesh(color) { const m = new T.Mesh(new T.TorusGeometry(0.26, 0.035, 10, 40), new T.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 2, roughness: 0.3 })); m.rotation.x = Math.PI / 2; m.position.y = 2.18; m.userData.halo = true; m.userData.noCollide = true; m.userData.noOcclude = true; return m; }
 
 /* ---------- LIVE PLAYERS (Supabase presence) ---------- */
 function buildRemote(W) {
@@ -210,7 +210,7 @@ function buildRemote(W) {
 }
 
 /* ---------- YOUR STATUS RING ---------- */
-function buildMyRing(W) { const { app } = W; const ring = ringMesh(MODES.hanging.color); app.player.add(ring); W.myRing = ring; W.setMyMode = (mode) => { const M2 = MODES[mode] || MODES.hanging; ring.material.color.setHex(M2.color); ring.material.emissive.setHex(M2.color); }; app.onUpdate((dt, t) => { ring.visible = !app.vehicle && !(STATE.dive > 0.1); ring.material.emissiveIntensity = 1.3 + Math.sin(t * 3) * 0.5; ring.rotation.z += dt * 0.6; }); }
+function buildMyRing(W) { const { app } = W; const ring = ringMesh(MODES.hanging.color); app.player.add(ring); W.myRing = ring; W.setMyMode = (mode) => { const M2 = MODES[mode] || MODES.hanging; ring.material.color.setHex(M2.color); ring.material.emissive.setHex(M2.color); }; app.onUpdate((dt, t) => { ring.visible = !app.vehicle && !(STATE.dive > 0.1) && app.dist > 0.6; ring.position.y = 2.18 + Math.sin(t * 2) * 0.03; ring.material.emissiveIntensity = 1.3 + Math.sin(t * 3) * 0.5; ring.rotation.z += dt * 0.6; }); }
 
 /* ---------- LUMI: the guide orb that floats by your shoulder ---------- */
 function buildLumi(W) {

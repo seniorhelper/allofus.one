@@ -127,11 +127,17 @@ async function liveDB(app, W) {
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'connections', filter: 'requester=eq.' + me.id }, async (pl) => { await refreshConns(); if (pl.new.status === 'accepted') fire({ type: 'accepted', from: W.profileCache.get(pl.new.addressee) || { id: pl.new.addressee, name: 'Someone' } }); })
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: 'room=neq.' }, (pl) => { const m = pl.new; if (!m.room) return; (rooms[m.room] = rooms[m.room] || []).push({ name: m.sender_name, body: m.body, at: m.created_at, me: m.sender === me.id }); fire({ type: 'room', room: m.room }); })
         .subscribe(); },
+    /* v41 area split: everyone stays on 'world' for hugs, presentations and who-left notices,
+       but positions only travel inside your 250 m area, so you only receive the people near you. */
     presence(getState) { const ch = sb.channel('world', { config: { presence: { key: me ? me.id : uid() }, broadcast: { self: false } } }); this._world = ch;
+      const onPos = ({ payload }) => { if (!payload || (me && payload.id === me.id)) return; W.profileCache.set(payload.id, payload.profile); W.remoteUpsert(payload.id, payload); };
       ch.on('broadcast', { event: 'fx' }, ({ payload }) => { try { W.onFx && W.onFx(payload); } catch (e) { } });
-      ch.on('broadcast', { event: 'pos' }, ({ payload }) => { if (!payload || (me && payload.id === me.id)) return; W.profileCache.set(payload.id, payload.profile); W.remoteUpsert(payload.id, payload); })
-        .on('presence', { event: 'leave' }, ({ key }) => W.remoteRemove(key))
-        .subscribe(async (st) => { if (st !== 'SUBSCRIBED') return; await ch.track({ online_at: now() }); let last = '', lastSent = 0; setInterval(() => { if (document.hidden) return; const s = getState(); if (!s) return; const k = [Math.round(s.x * 3), Math.round(s.z * 3), Math.round(s.yaw * 8), s.mode, s.profile && s.profile.avatar && s.profile.avatar.v].join(','); const t = Date.now(); if (k === last && t - lastSent < 5000) return; last = k; lastSent = t; ch.send({ type: 'broadcast', event: 'pos', payload: s }); }, 400); }); },
+      ch.on('presence', { event: 'leave' }, ({ key }) => W.remoteRemove(key));
+      let area = null, areaKey = ''; const cell = (x, z) => Math.round(x / 250) + '_' + Math.round(z / 250);
+      const joinArea = (k) => { if (area) { try { sb.removeChannel(area); } catch (e) { } } areaKey = k; area = sb.channel('pos-' + k, { config: { broadcast: { self: false } } }); area.on('broadcast', { event: 'pos' }, onPos); area.subscribe(); };
+      ch.subscribe(async (st) => { if (st !== 'SUBSCRIBED') return; await ch.track({ online_at: now() }); let last = '', lastSent = 0;
+        setInterval(() => { const s = getState(); if (!s) return; const k = cell(s.x, s.z); if (k !== areaKey) { joinArea(k); last = ''; } }, 1500);
+        setInterval(() => { if (document.hidden || !area) return; const s = getState(); if (!s) return; const k = [Math.round(s.x * 3), Math.round(s.z * 3), Math.round(s.yaw * 8), s.mode, s.profile && s.profile.avatar && s.profile.avatar.v].join(','); const t = Date.now(); if (k === last && t - lastSent < 5000) return; last = k; lastSent = t; area.send({ type: 'broadcast', event: 'pos', payload: s }); }, 400); }); },
   };
   return DB;
 }

@@ -15,6 +15,7 @@ import { M, glow, glass, box, cyl, sph, plane, textPlane, waterMaterial, paintAr
 import { terrainY, addFlat, addDeck, openGround, MTN, STATE } from './aou-terrain.js';
 import { plantGarden, makeFlower } from './aou-garden.js';
 import { TEX, buildCustomHome } from './aou-build.js';
+import { buildUnityV5 } from './aou-unity.js';
 const T = THREE;
 const MOB = isMobile();
 
@@ -309,7 +310,7 @@ export function buildMansion(app, W, api, house, X, Z) {
   const smokeTex = (() => { const c2 = document.createElement('canvas'); c2.width = c2.height = 64; const q2 = c2.getContext('2d'); const gr = q2.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); q2.fillStyle = gr; q2.fillRect(0, 0, 64, 64); return new T.CanvasTexture(c2); })();
   const puffs = []; for (let i = 0; i < (MOB ? 24 : 48); i++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0 })); sp.userData.noCollide = true; S.add(sp); puffs.push({ sp, life: 0 }); }
   const cdSprite = makeSprite('🚀 Walk onto the pad to launch', { scale: 4, accent: '#ffd23f' }); cdSprite.position.set(0, 11, 0); pad2.add(cdSprite);
-  const RS = { phase: 'ready', k: 0, cool: 0, pi: 0 }; const BURST = ['#ff4f79', '#38f0ff', '#ffd23f', '#7cff6b', '#b08cff'];
+  const RS = { phase: 'ready', k: 0, cool: 0, pi: 0 }; W.launchRocket = () => { if (RS.phase !== 'ready' || RS.cool > 0) { app.toast('🚀 The rocket is busy. Give it a moment!', 2200); return; } RS.phase = 'count'; RS.k = 3.99; app.toast('🚀 Launch sequence started from the front-yard console! Look over the roof…', 3200); }; const BURST = ['#ff4f79', '#38f0ff', '#ffd23f', '#7cff6b', '#b08cff'];
   const burst = (pos) => { for (let i = 0; i < 40; i++) { const sp = new T.Sprite(new T.SpriteMaterial({ color: new T.Color(BURST[i % 5]), transparent: true, depthWrite: false, blending: T.AdditiveBlending })); sp.scale.setScalar(1.6); sp.position.copy(pos); S.add(sp); const v = new T.Vector3(Math.random() - 0.5, Math.random() - 0.3, Math.random() - 0.5).normalize().multiplyScalar(14 + Math.random() * 8); let life = 0; const f = (dt) => { life += dt; v.y -= 6 * dt; sp.position.addScaledVector(v, dt); sp.material.opacity = Math.max(0, 1 - life / 2.2); if (life > 2.2) { S.remove(sp); sp.material.dispose(); app.updaters = app.updaters.filter(q => q !== f); } }; app.onUpdate(f); } };
   app.onUpdate((dt, t) => { const P = app.player.position; const d = Math.hypot(P.x - RK.x, P.z - RK.z); RS.cool -= dt;
     if (RS.phase === 'ready' && d < 7 && RS.cool <= 0 && !app.level) { RS.phase = 'count'; RS.k = 3.99; app.toast('🚀 Launch sequence started! Stand back…', 2400); }
@@ -485,6 +486,7 @@ export function buildEstates(app, W, api) {
   try { buildWorldsKiosk(app, W, api); } catch (e) { console.error('worlds', e); }
   try { out.coburn = buildCoburn(app, W, api); } catch (e) { console.error('coburn', e); }
   try { out.conf = buildConference(app, W, api); W.confScreen = out.conf; } catch (e) { console.error('conference', e); }
+  try { out.unity = buildUnityV5(app, W, 44, 105); } catch (e) { console.error('unity v5', e); }
   return out;
 }
 
@@ -581,7 +583,7 @@ export function buildCoburn(app, W, api) {
         for (const gt of gates) if (!gt.hit && ski.k > gt.k) { gt.hit = true; if (Math.abs(ski.u - gt.off) < 1.7) { ski.pts += 100; app.toast('🚩 Gate! +100', 900); } else { ski.t0 -= 3; app.toast('❌ Missed a gate: +3 s', 900); } }
         for (const sc of sCoins) if (sc.c.visible && Math.abs(sc.k - ski.k) < 0.006 && Math.abs(sc.off - ski.u) < 1.4) { sc.c.visible = false; ski.pts += 10; }
         hud.querySelector('#sk-t').textContent = (app.t - ski.t0).toFixed(1) + ' s'; hud.querySelector('#sk-s').textContent = ski.pts + ' pts';
-        if (ski.k >= 0.995 && !ski.ending) { ski.ending = true; setTimeout(() => { ski.ending = false; endSki(); }, 0); } return new T.Vector3(x, ty(x, z) + 0.15, z); }, yaw: 0 }; };
+        if (ski.k >= 0.995 && !ski.ending) { ski.ending = true; setTimeout(() => { ski.ending = false; endSki(); }, 0); } return new T.Vector3(x, ty(x, z) + 0.15, z); }, yaw: 0, stand: true }; };
   const endSki = () => { if (!ski.on) return; ski.on = false; const time = app.t - ski.t0; const b = best(); const score = Math.round(ski.pts + Math.max(0, 600 - time * 10)); const nb = !b || score > b.score; if (nb) localStorage.setItem('aou_ski_best', JSON.stringify({ score, time: +time.toFixed(1) })); app.ride = null; hud.style.display = 'none'; skis.visible = false; if (app.avatar) app.avatar.rotation.z = 0; const end = curve.getPointAt(1); app.player.position.set(end.x - 6, ty(end.x - 6, end.z), end.z); app.celebrate && app.celebrate(nb ? '🏆' : '⛷️'); app.popup('⛷️ Run complete', `<p><b>${time.toFixed(1)} s</b> · ${ski.pts} gate + coin points · score <b>${score}</b></p><p>${nb ? '🏆 New personal best!' : 'Best: ' + b.score + ' (' + b.time + ' s)'}</p>`, [{ label: '🚡 Ride the lift back up', primary: true, fn: rideLift }]); };
   app.onUpdate((dt) => { app._skiDt = dt; for (const sc of sCoins) sc.c.rotation.y += dt * 3; });
   /* chairlift */
