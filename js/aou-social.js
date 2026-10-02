@@ -175,11 +175,11 @@ export async function initSocial(app, W, lumi) {
       <button data-a="lifeboard" title="My Lifeboard (home dashboard)">🏠<small>Lifeboard</small></button>
       <button data-a="chat" title="Messages & rooms">💬<small>Chat</small>${unread ? `<i>${unread}</i>` : ''}</button>
       <button data-a="people" title="People near you">👥<small>People</small></button>
-      <button data-a="more" class="more" title="Worlds, weather, hugs, halo, map and more">✨<small>More</small></button>
+      <button data-a="feed" title="FLAT: your feed + page">📰<small>Feed</small></button><button data-a="more" class="more" title="Worlds, weather, hugs, halo, map and more">✨<small>More</small></button>
       <button data-a="dive" class="dive" title="Dive / surface" style="display:${W.canDive() ? '' : 'none'}">${W._diving ? '⬆️' : '🤿'}<small>${W._diving ? 'Surface' : 'Dive'}</small></button>
       ${me ? '' : '<button data-a="join" class="join">✨<small>Join</small></button>'}`; }
   dock.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
-    if (a === 'mode') openModes(); else if (a === 'lifeboard') openLifeboard('overview'); else if (a === 'chat') openChat(); else if (a === 'people') openPeople(); else if (a === 'match') openMatch(); else if (a === 'invite') openInvite(); else if (a === 'join') join(); else if (a === 'more') { if (W.api.openMore) W.api.openMore(); }
+    if (a === 'mode') openModes(); else if (a === 'lifeboard') openLifeboard('overview'); else if (a === 'chat') openChat(); else if (a === 'feed') location.href = '/flat/'; else if (a === 'people') openPeople(); else if (a === 'match') openMatch(); else if (a === 'invite') openInvite(); else if (a === 'join') join(); else if (a === 'more') { if (W.api.openMore) W.api.openMore(); }
     else if (a === 'night') { const night = !app.isNight; app.setSky(night ? SKIES.night : SKIES.day, { night }); setTimeout(renderDock, 50); app.toast(night ? '🌙 Night mode. Projector\'s on at Zach\'s.' : '☀️ Good morning.'); }
     else if (a === 'dive') { W._diving = !W._diving; if (W._diving && !W.setDive(true)) W._diving = false; if (!W._diving) W.setDive(false); renderDock(); } });
   let lastCan = null; app.onUpdate(() => { const c = W.canDive(); if (c !== lastCan) { lastCan = c; if (!c) W._diving = false; renderDock(); } });
