@@ -29,7 +29,7 @@ export const FLATS = [];            // {x,z,r,y,soft} or {x1,z1,x2,z2,y,soft}
 export const PATHS = [];            // life paths: {pts:[[x,z]...], w}
 export const STATE = { diving: false, dive: 0, space: false, season: 'winter' };
 /* v4: Coburn's mountain (ski lift + ski run + mountain mansion on top) */
-export const MTN = { x: 330, z: 330, r: 100, h: 66, top: 60 };
+export const MTN = { x: 330, z: 330, r: 175, h: 118, top: 60 };
 
 export function addFlat(f) { FLATS.push(Object.assign({ y: 0, soft: 10 }, f)); }
 

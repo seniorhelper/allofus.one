@@ -15,7 +15,10 @@ import { M, glow, glass, box, cyl, sph, plane, textPlane, waterMaterial, paintAr
 import { terrainY, addFlat, addDeck, openGround, MTN, STATE } from './aou-terrain.js';
 import { plantGarden, makeFlower } from './aou-garden.js';
 import { TEX, buildCustomHome } from './aou-build.js';
-import { buildUnityV5 } from './aou-unity.js';
+import { buildUnityV5, buildUnityV6 } from './aou-unity.js';
+import { buildSki2 } from './aou-ski2.js';
+import { buildLakes } from './aou-lakes.js';
+import { buildCoaster } from './aou-coaster.js';
 const T = THREE;
 const MOB = isMobile();
 
@@ -487,6 +490,10 @@ export function buildEstates(app, W, api) {
   try { out.coburn = buildCoburn(app, W, api); } catch (e) { console.error('coburn', e); }
   try { out.conf = buildConference(app, W, api); W.confScreen = out.conf; } catch (e) { console.error('conference', e); }
   try { out.unity = buildUnityV5(app, W, 44, 105); } catch (e) { console.error('unity v5', e); }
+  try { buildUnityV6(app, W, 44, 105); } catch (e) { console.error('unity v6', e); }
+  try { buildSki2(app, W); } catch (e) { console.error('ski2', e); }
+  try { buildLakes(app, W, api); } catch (e) { console.error('lakes', e); }
+  try { buildCoaster(app, W); } catch (e) { console.error('coaster', e); }
   return out;
 }
 
@@ -536,7 +543,7 @@ function mansionV4(app, W, api, g, X, Z, y0, F) {
    seasons switch (winter snow ↔ summer green)
    ============================================================ */
 export function buildCoburn(app, W, api) {
-  const S = app.scene; const TOP = { x: MTN.x, z: MTN.z }; const base = { x: MTN.x + 16, z: MTN.z - 108 }, top = { x: MTN.x + 16, z: MTN.z - 26 };
+  const S = app.scene; const TOP = { x: MTN.x, z: MTN.z }; const base = { x: MTN.x + 16, z: MTN.z - MTN.r - 10 }, top = { x: MTN.x + 16, z: MTN.z - 30 };
   const ty = (x, z) => terrainY(x, z);
   /* summit mansion */
   const g = new T.Group(); const gy = ty(TOP.x, TOP.z) + 0.05; g.position.set(TOP.x, gy, TOP.z); S.add(g); g.userData.noCollide = true;
@@ -559,7 +566,7 @@ export function buildCoburn(app, W, api) {
   const gw = new T.Group(); gw.position.set(-10, 1.6, -3.1); g.add(gw); box(4, 2.4, 0.2, dark, 0, 0, 0, gw); const gwt = textPlane(['🎮 GAME WALL', 'tap to play'], 3.8, 2.2, { bg: '#0b1033', fg: '#fff', accent: '#ff4fd8', font: 'bold 80px Poppins, Arial' }); gwt.position.z = -0.12; gwt.rotation.y = Math.PI; gw.add(gwt); app.addHotspot(gw, { fn: games }); app.addInteractable(TOP.x - 10, TOP.z - 4.5, 3, '🎮 Coburn\'s game wall', games);
   /* seasons */
   const run = { mesh: null }; const snowM = new T.MeshStandardMaterial({ color: 0xf4f8ff, roughness: 0.6 }); const grassM = new T.MeshStandardMaterial({ color: 0x5f9e3a, roughness: 0.95 });
-  const setSeason = (sz) => { STATE.season = sz; try { for (let dx = -120; dx <= 120; dx += 60) for (let dz = -120; dz <= 120; dz += 60) W.chunks.rebuildAt(MTN.x + dx, MTN.z + dz); } catch (e) { } if (run.mesh) run.mesh.material = sz === 'summer' ? grassM : snowM; app.toast(sz === 'summer' ? '☀️ Summer on the mountain: the run turns into a grass slide.' : '❄️ Winter on the mountain: fresh powder!', 3600); };
+  const setSeason = (sz) => { STATE.season = sz; try { for (let dx = -200; dx <= 200; dx += 60) for (let dz = -200; dz <= 200; dz += 60) W.chunks.rebuildAt(MTN.x + dx, MTN.z + dz); } catch (e) { } if (run.mesh) run.mesh.material = sz === 'summer' ? grassM : snowM; app.toast(sz === 'summer' ? '☀️ Summer on the mountain: the run turns into a grass slide.' : '❄️ Winter on the mountain: fresh powder!', 3600); };
   const seasonKiosk = (x, z) => { const k = new T.Group(); k.position.set(x, ty(x, z), z); S.add(k); box(0.25, 2.6, 0.25, dark, 0, 1.3, 0, k); const t = makeSprite('❄️ / ☀️ Seasons', { scale: 2.6, accent: '#ffffff' }); t.position.y = 3; k.add(t); const f = () => setSeason(STATE.season === 'summer' ? 'winter' : 'summer'); app.addHotspot(k, { fn: f }); app.addInteractable(x, z, 2.6, '❄️ Switch season (winter ↔ summer)', f); };
   seasonKiosk(TOP.x - 14, TOP.z - 22); seasonKiosk(base.x - 8, base.z + 2);
   /* ski run */
@@ -573,7 +580,7 @@ export function buildCoburn(app, W, api) {
   const best = () => { try { return JSON.parse(localStorage.getItem('aou_ski_best') || 'null'); } catch (e) { return null; } };
   const hud = document.createElement('div'); hud.id = 'ski-hud'; hud.innerHTML = '<div class="sk-top"><b id="sk-t">0.0 s</b><span id="sk-s">0 pts</span></div><div class="sk-btns"><button id="sk-l" aria-label="Steer left">◀</button><button id="sk-r" aria-label="Steer right">▶</button></div>'; hud.style.display = 'none'; (document.getElementById('wvm-stage') || document.body).appendChild(hud);
   const st = document.createElement('style'); st.textContent = '#ski-hud{position:absolute;inset:0;pointer-events:none;z-index:40;font-family:Poppins,Arial}#ski-hud .sk-top{position:absolute;top:64px;left:50%;transform:translateX(-50%);display:flex;gap:14px;background:rgba(255,255,255,.94);padding:8px 16px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-weight:900;color:#0f172a}#ski-hud .sk-btns{position:absolute;bottom:26px;left:0;right:0;display:flex;justify-content:space-between;padding:0 18px}#ski-hud .sk-btns button{pointer-events:auto;width:84px;height:84px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:30px;box-shadow:0 8px 24px rgba(0,0,0,.3);touch-action:none}'; document.head.appendChild(st);
-  const ski = { on: false, k: 0, u: 0, v: 0, steer: 0, t0: 0, pts: 0 }; const keys = new Set();
+  const ski = { on: false, k: 0, u: 0, v: 0, steer: 0, t0: 0, pts: 0 }; const keys = new Set(); W.ski = { state: ski, curve, ty, half, top, base, chairs: null };
   addEventListener('keydown', (e) => { if (!ski.on) return; keys.add(e.key.toLowerCase()); }); addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
   const hold = (id, v) => { const b = hud.querySelector(id); b.onpointerdown = () => { ski.steer = v; }; b.onpointerup = b.onpointerleave = b.onpointercancel = () => { if (ski.steer === v) ski.steer = 0; }; }; hold('#sk-l', -1); hold('#sk-r', 1);
   const skis = new T.Group(); for (const sx of [-0.16, 0.16]) box(0.1, 0.04, 1.7, M(0xe11d48), sx, 0.03, 0.2, skis); skis.visible = false; app.player.add(skis);
@@ -596,8 +603,9 @@ export function buildCoburn(app, W, api) {
   const rideLift = () => { if (app.ride) return; const yaw = Math.atan2(U.x - L.x, U.z - L.z); const t0 = app.t, dur = 26; if (app.avatar) { const { sitPerson } = window.AOU_ENGINE || {}; } app.toast('🚡 Up we go. Enjoy the view.', 3000); try { window.AOU_SIT && window.AOU_SIT(app.avatar, true); } catch (e) { }
     app.ride = { pos: (t) => { const k = Math.min(1, (t - t0) / dur); const p = cab(k); return new T.Vector3(p.x + 2, p.y - 1.75, p.z); }, yaw, until: t0 + dur, done: () => { try { window.AOU_SIT && window.AOU_SIT(app.avatar, false); } catch (e) { } app.player.position.set(top.x - 4, ty(top.x - 4, top.z + 3), top.z + 3); app.toast('🏔️ Summit! Coburn\'s Place is up the hill. The ⛷️ start gate is right here.', 4200); } }; };
   const station = (p, label, fn, tagTxt) => { const s = new T.Group(); s.position.set(p.x, ty(p.x, p.z), p.z); S.add(s); box(6, 0.3, 4, dark, 0, 3.4, 0, s); for (const sx of [-2.8, 2.8]) box(0.25, 3.4, 0.25, dark, sx, 1.7, 1.8, s); const t = makeSprite(tagTxt, { scale: 3.2, accent: '#38f0ff' }); t.position.y = 5; s.add(t); app.addHotspot(s, { fn }); app.addInteractable(p.x, p.z, 4, label, fn); };
-  station(base, '🚡 Ride the ski lift up', rideLift, '🚡 SKI LIFT · up to Coburn\'s');
-  station({ x: top.x - 8, z: top.z - 2 }, '⛷️ Start the ski run', startSki, '⛷️ START GATE · tap to ski');
+  W.rideLift = rideLift; W.startSki = startSki; W.ski.chairs = chairs; W.ski.cab = cab; W.ski.L = L; W.ski.U = U;
+  station(base, '🚡 Ride the gondola up', () => (W.rideLift2 || rideLift)(), '🚡 GONDOLA · up to Coburn\'s');
+  station({ x: top.x - 8, z: top.z - 2 }, '⛷️ Ski run · pick a level', () => (W.startSki2 || startSki)(), '⛷️ START GATE · tap to ski');
   app.addPlace({ id: 'ski', name: '🚡 Ski lift (base)', icon: '🚡', x: base.x - 4, z: base.z - 6, cat: 'Fun', keys: 'ski lift chairlift mountain snow coburn', say: 'Ride the lift up to Coburn\'s Place.' });
   app.addPlace({ id: 'coburn', name: '🏔️ Coburn\'s Place', icon: '🏔️', x: TOP.x, z: TOP.z - 24, yaw: 0, cat: 'Homes', keys: 'coburn mountain mansion pool ski summit games', say: 'Coburn\'s Place: pool coins, the game wall and the ski run.' });
   return { setSeason, startSki, rideLift };
