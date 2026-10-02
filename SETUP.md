@@ -34,3 +34,14 @@
 - Free Supabase pauses after 7 days with zero visits; just click "Restore" in the dashboard. Upgrade ($25/mo) when traffic grows.
 - Real paintings: drop photos into `/images/art/` named like `pulling-away.jpg` (title, lowercase, dashes) and they replace the digital studies.
 - Demo residents are labeled "Demo resident" on their cards. Remove them later in `js/aou-life.js` (DEMO_PEOPLE).
+
+## v3 upgrade (Oct 2 2026)
+1. Upload this whole folder to the repo root (replace everything).
+2. In Supabase → SQL Editor, run the private `allofus-admin-upgrade.sql` you received separately (never commit it: it lists owner emails). It adds the admin console, ownership for No. 1 Unity Road and 8 Silk Lane, reports, and bans.
+3. Sign out and back in. The 🛡️ Admin tile appears under ✨ More for the admin email.
+
+### Email me when someone joins (optional, about 10 minutes)
+Supabase does not email you about new accounts by default. The 🛡️ Admin console shows "new since your last visit," and for real emails:
+1. Make a free Zapier (or Make.com) account → new Zap → trigger **Webhooks by Zapier → Catch Hook** → copy the webhook URL.
+2. Supabase → Database → Webhooks → **Create a new hook** → table `profiles`, event **Insert**, type **HTTP Request**, method POST, paste the URL.
+3. Zap action **Gmail → Send Email** to yourself with the name and city fields. Turn it on.

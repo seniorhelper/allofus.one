@@ -72,7 +72,11 @@ export const WATERS = [];
 export function waterAt(x, z) { if (bridgeAt(x, z) !== null) return null; for (const w of WATERS) { const d = Math.hypot(x - w.x, z - w.z); if (d < w.r) return w; } return null; }
 
 /* where the player stands (the engine calls this every frame) */
+/* v3 upper floors: rectangles you can stand on when the player is on that level (mansion office, roof deck). */
+export const DECKS = []; // { level, y, x1, z1, x2, z2 }
+export function addDeck(d) { DECKS.push(d); return d; }
 export function groundY(x, z) {
+  const lv = (globalThis.WVM_APP && globalThis.WVM_APP.level) || 0; if (lv) { for (const d of DECKS) if (d.level === lv && x >= d.x1 && x <= d.x2 && z >= d.z1 && z <= d.z2) return d.y; }
   const b = bridgeAt(x, z); if (b !== null) return Math.max(b, terrainY(x, z));
   const t = terrainY(x, z); const w = waterAt(x, z);
   if (w && t < w.y - 0.3) { if (STATE.diving && w.dive) return Math.max(t + 1.0, w.y - 0.6 - STATE.dive * (w.y - t)); return Math.max(t, w.y - 1.1); }

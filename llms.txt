@@ -11,10 +11,25 @@
 - Global Match: I Have / I Need for items and services only. No money changes hands on allofus.one.
 - Land: open lots along roads that continue without end; home styles include Eco Deco, Bungalow, Beach Villa, Treehouse, Space Villa, Loft Apartment and Cliffside Mansion.
 - Feed: newest first from people the user chooses; no ranking algorithm.
-- Lumi: a scripted guide (not AI).
+- Lifeboard tools (all free, private): Today (daily affirmation that does not loop, top 3, streak), Life Dash (every tool on one screen), focus timer, trackers with charts, reminders that export to phone calendars (.ics), journal, sealed letters to future you, money calculators (50/30/20 budget, snowball vs avalanche debt payoff, savings goal, compound growth, emergency fund), hugs, halo sign.
+- Everyone sees each player's real avatar: same character, colors, body type (regular, slim, muscle, sumo, comic big-head, tall, mini), clothing extras and optional selfie face.
+- Hugs: send hearts to any player in-world, or email a hug card link to anyone.
+- Halo sign: a glowing line of text that floats above an avatar (mood, cause, what they are looking for, or a pinned affirmation).
+- Friend scan: matches by life paths and causes; teens only with teens, adults only with adults.
+- Weather control (personal view): clear, golden hour, rain, thunderstorm, snow, fog, northern lights, tropical sky, night.
+- Worlds globe: a spinning directory linking World VR Mall, Comics Come Alive, The VR Galaxy, Another Dimension VR, Virtual Reality Adventure, VR Flying Simulator, Sparkle Diner, USA Business Search, CO Business List and more.
+- Places: No. 1 Unity Road (Zach's net-zero model home: waterfalls, gallery, 360 Dream Room, elevator office, roof pool, backyard rocket), 8 Silk Lane (a spider field guide with 16 species and scientific names), Comic Lane (Captain Kapow and Comics Come Alive).
+- Lumi: a scripted guide (not AI) that never pops open on its own.
+- Family friendly with no exceptions: language filter, report and block, accounts 13+.
 
 ## Founder
 - Zachary Tye Wennstedt: https://zacharytyewennstedt.com/
 
-## Key page
+## Key pages
 - https://allofus.one/ (the world on top, how-it-works guide and FAQ below)
+- https://allofus.one/community-rules/
+- https://allofus.one/terms/
+- https://allofus.one/privacy/
+- https://allofus.one/accessibility/
+
+© 2026 allofus.one. All rights reserved.

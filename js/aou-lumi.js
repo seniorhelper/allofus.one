@@ -56,5 +56,15 @@ export function initLumi(app, W) {
   tab.querySelector('.in').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (!v) return; inp.value = ''; add(esc(v), true); setTimeout(() => answer(v), 280); };
   tab.querySelector('.chips').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; add(esc(b.textContent), true); setTimeout(() => answer(b.textContent), 280); };
   inp.addEventListener('keydown', (e) => e.stopPropagation());
-  return { open, close, say: (txt) => { add(esc(txt)); tab.classList.add('open'); } };
+  // v3: Lumi never pops open on his own. Tips show as a small bubble that fades, and you can tuck him away.
+  const bub = document.createElement('div'); bub.className = 'lbub'; bub.setAttribute('role', 'status'); tab.appendChild(bub); let bt = 0;
+  const tuck = (on) => { tab.classList.toggle('tucked', on); try { localStorage.setItem('aou_lumi_tucked', on ? '1' : ''); } catch (e) { } if (on) close(); };
+  try { if (localStorage.getItem('aou_lumi_tucked')) tab.classList.add('tucked'); } catch (e) { }
+  const hide = document.createElement('button'); hide.className = 'lhide'; hide.title = 'Tuck Lumi away'; hide.setAttribute('aria-label', 'Tuck Lumi away'); hide.textContent = '⇥'; tab.querySelector('.lh').insertBefore(hide, tab.querySelector('.lx')); hide.onclick = () => tuck(true);
+  tab.querySelector('.orb').addEventListener('click', () => { if (tab.classList.contains('tucked')) { tuck(false); } });
+  const st2 = document.createElement('style'); st2.textContent = `#aou-lumi .lbub{position:absolute;right:58px;top:50%;transform:translateY(-50%) scale(.9);opacity:0;pointer-events:none;width:max-content;max-width:min(260px,62vw);background:#fff;color:#0f172a;border:1px solid #fde68a;border-radius:14px;padding:8px 12px;font-size:13px;line-height:1.4;box-shadow:0 10px 30px rgba(2,6,23,.25);transition:.25s}#aou-lumi .lbub.on{opacity:1;transform:translateY(-50%) scale(1)}#aou-lumi.open .lbub{display:none}
+#aou-lumi .lhide{border:1px solid #e5e7eb;background:#fff;color:#0f172a;border-radius:10px;width:32px;height:32px;cursor:pointer;margin-left:auto}#aou-lumi .lhide+.lx{margin-left:6px}
+#aou-lumi.tucked{top:auto;bottom:150px;transform:none}#aou-lumi.tucked .orb{width:34px;height:34px;margin-right:-12px;opacity:.75;animation:none}#aou-lumi.tucked .orb .face{transform:scale(.55);left:2px;top:9px}#aou-lumi.tucked .lbub{display:none}
+@media (max-width:720px){#aou-lumi .orb{width:50px;height:50px}#aou-lumi .face{left:9px!important;top:16px!important}}`; document.head.appendChild(st2);
+  return { open, close, tuck, say: (txt) => { add(esc(txt)); if (tab.classList.contains('open') || tab.classList.contains('tucked')) return; bub.textContent = txt; bub.classList.add('on'); clearTimeout(bt); bt = setTimeout(() => bub.classList.remove('on'), 6500); } };
 }
