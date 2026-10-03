@@ -23,6 +23,7 @@ import { buildParty } from './aou-party.js';
 import { buildJamoke } from './aou-jamoke.js';
 import { buildStreets } from './aou-streets.js';
 import { skyLift, buildElias, buildEthan, buildFrontPool, buildSnowboard } from './aou-family.js';
+import { buildTruck, buildWing, buildBanquet } from './aou-truck.js';
 const T = THREE;
 const MOB = isMobile();
 
@@ -487,7 +488,7 @@ export function buildEstates(app, W, api) {
   const engineBlocked = WVM.prototype._blocked; const worldBlocked = app._blocked; app._blocked = (x, z) => app.level ? engineBlocked.call(app, x, z) : worldBlocked(x, z);
   const travel0 = app.travel.bind(app); app.travel = (pl, mode) => { if (app.level) app.level = 0; return travel0(pl, mode); };
   const out = {};
-  try { out.mansion = buildMansion(app, W, api, W.house, 44, 105); } catch (e) { console.error('mansion', e); }
+  try { out.mansion = buildMansion(app, W, api, W.house, 44, 105); } catch (e) { console.error('mansion', e); } W.estate = out;
   try { out.silk = buildSpiderHouse(app, W, api); } catch (e) { console.error('silk', e); }
   try { buildComicLane(app, W, api); } catch (e) { console.error('comics', e); }
   try { buildWorldsKiosk(app, W, api); } catch (e) { console.error('worlds', e); }
@@ -501,6 +502,7 @@ export function buildEstates(app, W, api) {
   app.addZone('coaster', { x: -170, z: 60 }, 260, (a) => buildCoaster(a, W));
   app.addZone('party49', { x: 44, z: 105 }, 220, (a) => buildParty(a, W, 44, 105));
   app.addZone('jamoke', { x: 44, z: 105 }, 240, (a) => buildJamoke(a, W, 44, 105));
+  app.addZone('truck-wing', { x: 44, z: 105 }, 240, (a) => { try { buildTruck(a, W, 44, 105); } catch (e) { console.error('truck', e); } try { buildWing(a, W, 44, 105); } catch (e) { console.error('wing', e); } try { buildBanquet(a, W, 44, 105); } catch (e) { console.error('banquet', e); } });
   app.addZone('family', { x: 44 - 120, z: 105 + 10 }, 420, (a) => { try { buildElias(a, W, 44 - 125, 105 - 48, 0.6); buildEthan(a, W, 44 - 135, 105 + 62, -0.5); buildFrontPool(a, W, 44 - 60, 105 - 24); skyLift(a, 44 - 14, 105 + 24, 80, "Zach's", 0xff4fd8); } catch (e) { console.error('family', e); } });
   app.addZone('snowboard', { x: 360, z: 340 }, 380, (a) => { try { buildSnowboard(a, W); } catch (e) { console.error('snowboard', e); } });
   app.addZone('unity-heights', { x: 44 - 44 + 120, z: 105 - 90 }, 460, (a) => { try { buildStreets(a, W, 44, 105); } catch (e) { console.error('streets', e); } });

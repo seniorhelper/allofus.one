@@ -758,7 +758,7 @@ export class WVM {
 
     const scene = this.scene = new THREE.Scene();
     scene.fog = new THREE.Fog(o.fog, o.fogNear, o.fogFar);
-    const camera = this.camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.3, 2400);
+    const camera = this.camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.18, 2400);
     this.rig = new THREE.Group(); this.rig.add(camera); scene.add(this.rig);
     this.baseFov = 70;
 
