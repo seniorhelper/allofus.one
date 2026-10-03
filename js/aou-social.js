@@ -175,11 +175,11 @@ export async function initSocial(app, W, lumi) {
       <button data-a="lifeboard" title="My LIFEboard (home dashboard)">🏠<small>LIFEboard</small></button>
       <button data-a="chat" title="Messages & rooms">💬<small>Chat</small>${unread ? `<i>${unread}</i>` : ''}</button>
       <button data-a="people" title="People near you">👥<small>People</small></button>
-      <button data-a="feed" title="FLAT: your feed + page">📰<small>Feed</small></button><button data-a="more" class="more" title="Worlds, weather, hugs, halo, map and more">✨<small>More</small></button>
+      <button data-a="feed" title="FLAT: your feed + page">📰<small>FLAT</small></button>${me ? `<button data-a="me" title="My profile + page" style="padding:0;overflow:hidden">${(() => { let f = null; try { f = UI.faceSmall || localStorage.getItem("wvm_face"); } catch (e) { } return f ? `<img src="${f}" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover">` : "🙂"; })()}<small>Me</small></button>` : ""}<button data-a="more" class="more" title="Worlds, weather, hugs, halo, map and more">✨<small>More</small></button>
       <button data-a="dive" class="dive" title="Dive / surface" style="display:${W.canDive() ? '' : 'none'}">${W._diving ? '⬆️' : '🤿'}<small>${W._diving ? 'Surface' : 'Dive'}</small></button>
       ${me ? '' : '<button data-a="join" class="join">✨<small>Join</small></button>'}`; }
   dock.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
-    if (a === 'mode') openModes(); else if (a === 'lifeboard') openLifeboard('overview'); else if (a === 'chat') openChat(); else if (a === 'feed') location.href = '/flat/'; else if (a === 'people') openPeople(); else if (a === 'match') openMatch(); else if (a === 'invite') openInvite(); else if (a === 'join') join(); else if (a === 'more') { if (W.api.openMore) W.api.openMore(); }
+    if (a === 'mode') openModes(); else if (a === 'lifeboard') openLifeboard('overview'); else if (a === 'chat') openChat(); else if (a === 'feed') location.href = '/flat/'; else if (a === 'me') { if (me) openProfile(me); else join(); } else if (a === 'people') openPeople(); else if (a === 'match') openMatch(); else if (a === 'invite') openInvite(); else if (a === 'join') join(); else if (a === 'more') { if (W.api.openMore) W.api.openMore(); }
     else if (a === 'night') { const night = !app.isNight; app.setSky(night ? SKIES.night : SKIES.day, { night }); setTimeout(renderDock, 50); app.toast(night ? '🌙 Night mode. Projector\'s on at Zach\'s.' : '☀️ Good morning.'); }
     else if (a === 'dive') { W._diving = !W._diving; if (W._diving && !W.setDive(true)) W._diving = false; if (!W._diving) W.setDive(false); renderDock(); } });
   let lastCan = null; app.onUpdate(() => { const c = W.canDive(); if (c !== lastCan) { lastCan = c; if (!c) W._diving = false; renderDock(); } });
@@ -389,7 +389,7 @@ function injectCSS() { if (document.getElementById('aou-css')) return; const s =
 #wvm-list,#wvm-bag,#wvm-coins{display:none!important}
 #aou-ui{position:absolute;inset:0;pointer-events:none;z-index:30;font-family:Poppins,"Segoe UI",Arial,sans-serif}
 #aou-ui>*{pointer-events:auto}
-#aou-dock{position:absolute;left:10px;bottom:12px;display:flex;flex-direction:column;gap:7px;z-index:31}
+#aou-dock{position:absolute;left:10px;bottom:12px;display:flex;flex-direction:column;gap:7px;z-index:44}
 #aou-dock button{position:relative;width:58px;height:54px;border-radius:16px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.92);color:#0f172a;font-size:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(2,6,23,.25);font-family:inherit;line-height:1}
 #aou-dock button small{font-size:9.5px;font-weight:800;margin-top:3px;color:#334155;letter-spacing:.2px}
 #aou-dock button.ring{border:3px solid var(--rc);box-shadow:0 0 0 3px rgba(255,255,255,.7),0 0 18px var(--rc)}
