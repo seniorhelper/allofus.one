@@ -20,6 +20,7 @@ import { buildSki2 } from './aou-ski2.js';
 import { buildLakes } from './aou-lakes.js';
 import { buildCoaster } from './aou-coaster.js';
 import { buildParty } from './aou-party.js';
+import { buildJamoke } from './aou-jamoke.js';
 const T = THREE;
 const MOB = isMobile();
 
@@ -490,13 +491,14 @@ export function buildEstates(app, W, api) {
   try { buildWorldsKiosk(app, W, api); } catch (e) { console.error('worlds', e); }
   try { out.coburn = buildCoburn(app, W, api); } catch (e) { console.error('coburn', e); }
   try { out.conf = buildConference(app, W, api); W.confScreen = out.conf; } catch (e) { console.error('conference', e); }
-  [['skyrange', '⛳ Unity Links · Sky Range golf', '⛳', 44 + 24, 105 - 14, 'Fun', 'golf driving range sky'], ['treeoflife', '🌳 The Tree of Life · No. 1 Unity Road garden', '🌳', 44 - 2, 105 - 37, 'Places', 'tree of life garden flowers'], ['observatory', '🔭 The Observatory · No. 1 Unity Road', '🔭', 44 - 26, 105 + 31, 'Places', 'observatory telescope'], ['party49', "🎉 Zach's 49th birthday party · No. 1 Unity Road", '🎉', 44 - 28, 105, 'Fun', 'birthday party balloons cake'], ['coaster', '🎢 The Peace Coaster', '🎢', -166, 68, 'Fun', 'roller coaster ride'], ['cobes', '🏔️ Mount Cobes · 4 runs, blizzard mode, gear shop', '🏔️', MTN.x + 14, MTN.z - 17, 'Fun', 'ski snowboard mount cobes runs'], ['lake-unity', '🏞️ Lake Unity · Como-shaped', '🏞️', -260, -290, 'Places', 'lake unity swim'], ['pond-mirror', '🪷 Mirror Pond', '🪷', -120, 286, 'Places', 'pond'], ['pond-dragonfly', '🪷 Dragonfly Pond', '🪷', 250, -208, 'Places', 'pond']].forEach(([id, name, icon, x, z, cat, keys]) => { if (!(app.places || []).some(q => q.id === id)) app.addPlace({ id, name, icon, x, z, cat, keys, top: cat === 'Fun' }); });
+  [['skyrange', '⛳ Unity Links · Sky Range golf', '⛳', 44 + 24, 105 - 14, 'Fun', 'golf driving range sky'], ['treeoflife', '🌳 The Tree of Life · No. 1 Unity Road garden', '🌳', 44 - 2, 105 - 37, 'Places', 'tree of life garden flowers'], ['observatory', '🔭 The Observatory · No. 1 Unity Road', '🔭', 44 - 26, 105 + 31, 'Places', 'observatory telescope'], ['party49', "🎉 Zach's 49th birthday party · No. 1 Unity Road", '🎉', 44 - 28, 105, 'Fun', 'birthday party balloons cake'], ['coaster', '🎢 The Peace Coaster', '🎢', -166, 68, 'Fun', 'roller coaster ride'], ['cobes', '🏔️ Mount Cobes · 4 runs, blizzard mode, gear shop', '🏔️', MTN.x + 14, MTN.z - 17, 'Fun', 'ski snowboard mount cobes runs'], ['lake-unity', '🏞️ Lake Unity · Como-shaped', '🏞️', -260, -290, 'Places', 'lake unity swim'], ['pond-mirror', '🪷 Mirror Pond', '🪷', -120, 286, 'Places', 'pond'], ['pond-dragonfly', '🪷 Dragonfly Pond', '🪷', 250, -208, 'Places', 'pond'], ['jamoke', '🐕 Jamoke · Zach\'s dog', '🐕', 44 - 30, 105 + 21, 'Fun', 'dog jamoke pet fetch']].forEach(([id, name, icon, x, z, cat, keys]) => { if (!(app.places || []).some(q => q.id === id)) app.addPlace({ id, name, icon, x, z, cat, keys, top: cat === 'Fun' }); });
   app.addZone('unity-v5', { x: 44, z: 105 }, 200, (a) => { out.unity = buildUnityV5(a, W, 44, 105); });
   app.addZone('unity-v6', { x: 44, z: 105 }, 200, (a) => buildUnityV6(a, W, 44, 105));
   app.addZone('ski2', { x: MTN.x, z: MTN.z - 60 }, MTN.r + 220, (a) => buildSki2(a, W));
   try { buildLakes(app, W, api); } catch (e) { console.error('lakes', e); }
   app.addZone('coaster', { x: -170, z: 60 }, 260, (a) => buildCoaster(a, W));
   app.addZone('party49', { x: 44, z: 105 }, 220, (a) => buildParty(a, W, 44, 105));
+  app.addZone('jamoke', { x: 44, z: 105 }, 240, (a) => buildJamoke(a, W, 44, 105));
   return out;
 }
 

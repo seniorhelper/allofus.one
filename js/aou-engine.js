@@ -59,8 +59,8 @@ const isTouch = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0
 export const isMobile = () => isTouch() && Math.min(innerWidth, innerHeight) < 900;
 export const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 /* Phones get half-size generated textures (a quarter of the GPU memory). iPhones are the strictest: Safari kills a tab that uses too much. */
-export const TEX_SCALE = isMobile() ? 0.5 : 1;
-export function canvasTex(c) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; if (isMobile()) { t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; } return t; }
+export const TEX_SCALE = isMobile() ? 0.75 : (window.devicePixelRatio > 1.3 ? 1.6 : 1.25);
+export function canvasTex(c) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; if (isMobile()) { t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; } else { t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; } return t; }
 
 /* ---- Sky presets (files live in /images/) ---- */
 export const SKIES = {
@@ -1586,7 +1586,7 @@ export class WVM {
     const hud = this.hud = document.createElement('div'); hud.id = 'wvm-hud';
     hud.innerHTML = `
       <div class="wvm-top">
-        <a class="wvm-brand" href="/" title="allofus.one home"><img class="wvm-logo-full" src="/images/allofus-logo.svg" alt="allofus.one"><img class="wvm-logo-mini" src="/images/allofus-mark.svg" alt="allofus.one"></a>
+        <a class="wvm-brand" href="/" title="allofus.one home"><img class="wvm-logo-full" src="/images/logo-orbital.webp" alt="allofus.one"><img class="wvm-logo-mini" src="/images/allofus-mark.svg" alt="allofus.one"></a>
         <div class="wvm-where">${esc(this.opts.worldName)}</div>
         <div class="wvm-tools">
           <button class="wvm-ico" id="wvm-find" title="Search: find any store or place (F)">🔍</button>
@@ -1627,7 +1627,7 @@ export class WVM {
       </div></div>
       <div id="wvm-fade"></div>
       <div id="wvm-loader"><div class="wvm-tele">
-        <img src="/images/allofus-logo.svg" alt="allofus.one">
+        <img src="/images/logo-orbital.webp" alt="allofus.one">
         <div class="wvm-machine">
           <div class="wvm-ring wvm-ring-top"></div>
           <div class="wvm-beam"><div class="wvm-beamcol"></div><div class="wvm-beam-lines"></div>
