@@ -83,7 +83,7 @@ function photoRoom(url, radius, eye) {
    NO. 1 UNITY ROAD
    ============================================================ */
 export function buildMansion(app, W, api, house, X, Z) {
-  const S = app.scene; const y0 = terrainY(X, Z) + 0.05;
+  const S = app.scene; const y0 = terrainY(X, Z) + 0.05; addFlat({ x1: X - 21, x2: X + 13, z1: Z - 13, z2: Z + 13, y: y0 + 0.24, soft: 3 });
   // footprint (house-local): front faces the road (−x)
   const x1 = -21, x2 = 13, z1 = -13, z2 = 13; const L1 = 6.6, L2 = 13.0;
   /* 1) clear the old single-story shell, keep the eco yard (pond, garden, RO tank, geothermal, wind, movie night) */
