@@ -1,2 +1,1 @@
-# allofus.one
-allofus.one
+Static site.
