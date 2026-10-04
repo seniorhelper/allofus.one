@@ -1540,7 +1540,7 @@ export class WVM {
   _activate(h, hit) {
     if (h.fn) { h.fn(this, hit); return; }
     if (h.go) { this.go(h.go, h.label || 'Entering…'); return; }
-    if (this.renderer.xr && this.renderer.xr.isPresenting && h.actions && h.actions.length) { const act = h.actions.find(x => x.fn && x.primary) || h.actions.find(x => x.fn); if (act) { this.toast((h.title || '') + ' → ' + act.label, 2500); act.fn(this); return; } }
+    if (this.renderer.xr && this.renderer.xr.isPresenting && !this._xrLayer && h.actions && h.actions.length) { const act = h.actions.find(x => x.fn && x.primary) || h.actions.find(x => x.fn); if (act) { this.toast((h.title || '') + ' → ' + act.label, 2500); act.fn(this); return; } }
     if (h.title) this.popup(h.title, h.html || '', h.actions || []);
   }
   _marker(pt) {
