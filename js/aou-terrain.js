@@ -5,7 +5,7 @@
    chunks stream in around you forever (roads every 400 m,
    claimable lots along every road, biomes, landmarks).
    ============================================================ */
-import { THREE, isMobile, makeSign } from './aou-engine.js';
+import { THREE, isMobile, makeSign , realTex } from './aou-engine.js';
 
 /* ---------- noise ---------- */
 const hash = (x, z) => { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -89,6 +89,8 @@ export function groundY(x, z) {
 /* ---------- colors ---------- */
 const C = { grass: new THREE.Color(0x5f9e3c), grass2: new THREE.Color(0x86b84a), dry: new THREE.Color(0xa9b25a), sand: new THREE.Color(0xe8d3a0), wet: new THREE.Color(0xc2ab7a), rock: new THREE.Color(0x8b8378), rock2: new THREE.Color(0x6e675f), desert: new THREE.Color(0xe0a868), desert2: new THREE.Color(0xc9824e), sea: new THREE.Color(0x3f8f8a), snow: new THREE.Color(0xf4f7fb), space: new THREE.Color(0x9aa3b8) };
 const tmp = new THREE.Color();
+export function splatAt(x, z, h, slope, out) { // [sand, snow, rock, dirt]; grass = rest
+  const sn = isSnow(x, z); const ds = isDesert(x, z); const sand = h < 1.4 ? smooth(1.4, 0.2, h) : 0; const snow = (sn > 0 && h > 18) ? sn * smooth(18, 34, h) : 0; const rock = slope > 0.55 ? smooth(0.55, 1.1, slope) : 0; const dirt = Math.max(ds * 0.8, smooth(0.6, 0.85, fbm(x / 260 + 4, z / 260, 2)) * 0.45); out[0] = sand; out[1] = snow; out[2] = rock; out[3] = Math.max(0, dirt - sand - snow); return out; }
 function colorAt(x, z, h, slope, out) {
   if (Math.abs(x - ORBIT.x) < 600 && Math.abs(z - ORBIT.z) < 600) return out.copy(C.space);
   const n = fbm(x / 35, z / 35, 2);
@@ -109,30 +111,32 @@ export class Ground {
   constructor(app) {
     this.app = app; const mob = isMobile(); this.size = mob ? 820 : 1040; this.seg = mob ? 136 : 208;
     const geo = this.geo = new THREE.PlaneGeometry(this.size, this.size, this.seg, this.seg); geo.rotateX(-Math.PI / 2);
-    geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(geo.attributes.position.count * 3), 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(geo.attributes.position.count * 3), 3)); geo.setAttribute('splat', new THREE.BufferAttribute(new Float32Array(geo.attributes.position.count * 4), 4));
     const tex = detailTex(); tex.repeat.set(this.size / 6, this.size / 6);
     this.mat = new THREE.MeshStandardMaterial({ vertexColors: true, map: tex, roughness: 0.95, metalness: 0 });
+    /* real ground: five Poly Haven textures blended per vertex by biome, world-space tiled, vertex color kept as a soft tint */
+    try { const U = { tGrass: { value: realTex('grass', 1) }, tSand: { value: realTex('sand', 1) }, tSnow: { value: realTex('snow', 1) }, tRock: { value: realTex('rock', 1) }, tDirt: { value: realTex('dirt', 1) } }; this.mat.onBeforeCompile = (sh) => { Object.assign(sh.uniforms, U); sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 splat; varying vec4 vSplat; varying vec3 vWp;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvSplat = splat; vWp = (modelMatrix * vec4(position, 1.0)).xyz;'); sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D tGrass, tSand, tSnow, tRock, tDirt; varying vec4 vSplat; varying vec3 vWp;').replace('#include <map_fragment>', 'vec2 wuv = vWp.xz / 5.0; vec2 wuv2 = vWp.xz / 11.0; float sG = max(0.0, 1.0 - vSplat.x - vSplat.y - vSplat.z - vSplat.w); vec4 tc = texture2D(tGrass, wuv) * sG + texture2D(tSand, wuv) * vSplat.x + texture2D(tSnow, wuv) * vSplat.y + texture2D(tRock, wuv2) * vSplat.z + texture2D(tDirt, wuv) * vSplat.w; vec4 tcB = texture2D(tGrass, wuv2 * 0.37) * sG + texture2D(tSand, wuv2 * 0.37) * vSplat.x + texture2D(tSnow, wuv2 * 0.37) * vSplat.y + texture2D(tRock, wuv * 0.37) * vSplat.z + texture2D(tDirt, wuv2 * 0.37) * vSplat.w; tc = mix(tc, tcB, 0.4); diffuseColor *= tc * 1.15;').replace('#include <color_fragment>', '#if defined( USE_COLOR )\n diffuseColor.rgb *= mix(vec3(1.0), vColor, 0.45);\n#endif'); }; this.mat.needsUpdate = true; } catch (e) { console.warn('splat', e); }
     this.mesh = new THREE.Mesh(geo, this.mat); this.mesh.receiveShadow = true; this.mesh.userData.noCollide = true; this.mesh.userData.noCull = true; this.mesh.userData.ground = true; this.mesh.frustumCulled = false;
     app.scene.add(this.mesh); this.cx = 1e9; this.cz = 1e9; this.rebuild(app.player.position.x, app.player.position.z);
     app.onUpdate(() => { const p = app.player.position; if (Math.abs(p.x - this.cx) > 70 || Math.abs(p.z - this.cz) > 70) this.rebuild(p.x, p.z); });
   }
   rebuild(px, pz) {
     const step = this.size / this.seg; const cx = Math.round(px / step) * step, cz = Math.round(pz / step) * step; this.cx = cx; this.cz = cz;
-    const pos = this.geo.attributes.position, col = this.geo.attributes.color, n = this.seg + 1; const half = this.size / 2; const col3 = new THREE.Color();
+    const pos = this.geo.attributes.position, col = this.geo.attributes.color, spl = this.geo.attributes.splat, sp4 = [0, 0, 0, 0], n = this.seg + 1; const half = this.size / 2; const col3 = new THREE.Color();
     const H = new Float32Array(n * n);
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const x = cx - half + i * step, z = cz - half + j * step; H[j * n + i] = terrainY(x, z); }
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const k = j * n + i, x = cx - half + i * step, z = cz - half + j * step, h = H[k];
       const hx = H[j * n + Math.min(n - 1, i + 1)] - H[j * n + Math.max(0, i - 1)], hz = H[Math.min(n - 1, j + 1) * n + i] - H[Math.max(0, j - 1) * n + i]; const slope = Math.hypot(hx, hz) / (2 * step);
-      pos.setXYZ(k, x, h, z); colorAt(x, z, h, slope, col3); col.setXYZ(k, col3.r, col3.g, col3.b);
+      pos.setXYZ(k, x, h, z); colorAt(x, z, h, slope, col3); col.setXYZ(k, col3.r, col3.g, col3.b); splatAt(x, z, h, slope, sp4); spl.setXYZW(k, sp4[0], sp4[1], sp4[2], sp4[3]);
     }
-    pos.needsUpdate = true; col.needsUpdate = true; this.geo.computeVertexNormals(); this.geo.computeBoundingSphere();
+    pos.needsUpdate = true; col.needsUpdate = true; spl.needsUpdate = true; this.geo.computeVertexNormals(); this.geo.computeBoundingSphere();
   }
 }
 
 /* ---------- endless chunks: roads, lots, trees, rocks, landmarks ---------- */
 export const CHUNK = 200;
-const roadMat = (() => { let m = null; return () => m || (m = new THREE.MeshStandardMaterial({ map: roadTex(), roughness: 0.85, metalness: 0.05, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); })();
+const roadMat = (() => { let m = null; return () => m || (m = new THREE.MeshStandardMaterial({ map: (() => { const t = realTex('dirt', 1); return t; })(), normalMap: realTex('dirt-n', 1, { linear: true }), roughness: 0.95, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); })();
 function ribbon(x1, z1, x2, z2, w, yOff, mat, step = 4) {
   const len = Math.hypot(x2 - x1, z2 - z1), n = Math.max(2, Math.ceil(len / step)); const dx = (x2 - x1) / len, dz = (z2 - z1) / len; const nx = -dz, nz = dx;
   const pos = new Float32Array((n + 1) * 2 * 3), uv = new Float32Array((n + 1) * 2 * 2), idx = [];
