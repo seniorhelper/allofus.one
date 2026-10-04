@@ -6,6 +6,7 @@
    ============================================================ */
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const KB = [
+  [/advertis|searchboost|boost|run an ad|my ad|ad maker|banner|campaign builder|marketing hub|packages?|pricing/, () => '🚀 searchBOOST is the marketing hub: allofus.one/boost/. Free ad maker in every size, a campaign builder that scores to 100%, rare rated-G ads in the feed that readers control, and packages from $299/mo (Starter, Growth, Domination) or build your own. 1-800-481-8638.'],
   [/balloon|pop/, () => '🎈 Balloons float in Kindness Commons (Unity Heights). Tap one, point the VR laser and pull the trigger, or walk into it: it pops and comes back later. Directory → Balloons.'],
   [/flat|3d mode|vr mode|three modes|switch mode|which mode/, () => 'Three modes, one site: ▭ Flat (feed, pages, groups, connections at /flat/), 🧊 3D (this world) and 🕶️ VR (same world in a headset). The rail at the top of every page switches; it remembers your choice.'],
   [/connection|friend request|connect with|add friend/, () => 'We do connections, not friends. Flat side → 🤝 Connections: find people by @username, send a request, accept theirs. Connections-only posts and the Connections feed filter follow from that.'],
