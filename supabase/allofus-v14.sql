@@ -30,12 +30,22 @@ create table if not exists public.leads (
   kind text not null default 'brand-build',
   name text, business text, email text, phone text, website text, details text,
   created_at timestamptz default now());
+alter table public.leads add column if not exists user_id uuid references auth.users(id) on delete set null;
+alter table public.leads add column if not exists kind text not null default 'brand-build';
+alter table public.leads add column if not exists name text;
+alter table public.leads add column if not exists business text;
+alter table public.leads add column if not exists email text;
+alter table public.leads add column if not exists phone text;
+alter table public.leads add column if not exists website text;
+alter table public.leads add column if not exists details jsonb;
+alter table public.leads add column if not exists created_at timestamptz default now();
 alter table public.leads enable row level security;
 drop policy if exists "leads admin read" on public.leads;
 create policy "leads admin read" on public.leads for select using (public.is_admin());
+drop function if exists public.submit_lead(text,text,text,text,text,text,text);
 create or replace function public.submit_lead(p_kind text, p_name text, p_business text, p_email text, p_phone text, p_website text, p_details text) returns bigint
 language sql security definer set search_path = public as $$
-  insert into public.leads (user_id, kind, name, business, email, phone, website, details) values (auth.uid(), coalesce(p_kind, 'brand-build'), left(p_name, 120), left(p_business, 160), left(p_email, 160), left(p_phone, 60), left(p_website, 240), left(p_details, 2000)) returning id;
+  insert into public.leads (user_id, kind, name, business, email, phone, website, details) values (auth.uid(), coalesce(p_kind, 'brand-build'), left(p_name, 120), left(p_business, 160), left(p_email, 160), left(p_phone, 60), left(p_website, 240), to_jsonb(left(p_details, 2000))) returning id;
 $$;
 do $$ begin
   begin execute 'alter publication supabase_realtime add table public.hub_messages'; exception when others then null; end;
