@@ -56,7 +56,7 @@ create policy "hearts msgs between matched" on public.hearts_messages for select
 drop policy if exists "hearts msgs insert if matched" on public.hearts_messages;
 create policy "hearts msgs insert if matched" on public.hearts_messages for insert with check (
   auth.uid() = from_id and exists (select 1 from public.hearts_yes y1 join public.hearts_yes y2 on y1.from_id = y2.to_id and y1.to_id = y2.from_id
-    where y1.yes and y2.yes and y1.from_id = from_id and y1.to_id = to_id));
+    where y1.yes and y2.yes and y1.from_id = hearts_messages.from_id and y1.to_id = hearts_messages.to_id));
 
 -- reports: anyone signed in can file one; only the reporter sees their own
 create table if not exists public.hearts_reports (

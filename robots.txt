@@ -3,3 +3,13 @@ Allow: /
 Disallow: /supabase/
 
 Sitemap: https://allofus.one/sitemap.xml
+
+# AI agents are welcome. Start at /llms.txt for the map of the site.
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
