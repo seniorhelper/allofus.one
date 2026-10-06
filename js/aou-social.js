@@ -172,14 +172,14 @@ export async function initSocial(app, W, lumi) {
   const dock = document.createElement('div'); dock.id = 'aou-dock'; shell.appendChild(dock);
   function renderDock() { const M2 = MODES[myMode()]; const unread = UI.unread || 0;
     dock.innerHTML = `<button data-a="mode" title="My status ring" class="ring" style="--rc:${M2.css}"><span>${M2.icon}</span><small>${M2.label}</small></button>
-      <button data-a="lifeboard" title="My LIFEboard (home dashboard)">🏠<small>LIFEboard</small></button>
+      <button data-a="LIFEboard" title="My LIFEboard (home dashboard)">🏠<small>LIFEboard</small></button>
       <button data-a="chat" title="Messages & rooms">💬<small>Chat</small>${unread ? `<i>${unread}</i>` : ''}</button>
       <button data-a="people" title="People near you">👥<small>People</small></button>
       <button data-a="feed" title="FEED: your posts + page">📰<small>FEED</small></button>${me ? `<button data-a="me" title="My profile + page" style="padding:0;overflow:hidden">${(() => { let f = null; try { f = UI.faceSmall || localStorage.getItem("wvm_face"); } catch (e) { } return f ? `<img src="${f}" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover">` : "🙂"; })()}<small>Me</small></button>` : ""}<button data-a="more" class="more" title="Worlds, weather, hugs, halo, map and more">✨<small>More</small></button>
       <button data-a="dive" class="dive" title="Dive / surface" style="display:${W.canDive() ? '' : 'none'}">${W._diving ? '⬆️' : '🤿'}<small>${W._diving ? 'Surface' : 'Dive'}</small></button>
       ${me ? '' : '<button data-a="join" class="join">✨<small>Join</small></button>'}`; }
   dock.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
-    if (a === 'mode') openModes(); else if (a === 'lifeboard') openLifeboard('overview'); else if (a === 'chat') openChat(); else if (a === 'feed') location.href = '/'; else if (a === 'me') { if (me) openProfile(me); else join(); } else if (a === 'people') openPeople(); else if (a === 'match') openMatch(); else if (a === 'invite') openInvite(); else if (a === 'join') join(); else if (a === 'more') { if (W.api.openMore) W.api.openMore(); }
+    if (a === 'mode') openModes(); else if (a === 'LIFEboard') openLifeboard('overview'); else if (a === 'chat') openChat(); else if (a === 'feed') location.href = '/'; else if (a === 'me') { if (me) openProfile(me); else join(); } else if (a === 'people') openPeople(); else if (a === 'match') openMatch(); else if (a === 'invite') openInvite(); else if (a === 'join') join(); else if (a === 'more') { if (W.api.openMore) W.api.openMore(); }
     else if (a === 'night') { const night = !app.isNight; app.setSky(night ? SKIES.night : SKIES.day, { night }); setTimeout(renderDock, 50); app.toast(night ? '🌙 Night mode. Projector\'s on at Zach\'s.' : '☀️ Good morning.'); }
     else if (a === 'dive') { W._diving = !W._diving; if (W._diving && !W.setDive(true)) W._diving = false; if (!W._diving) W.setDive(false); renderDock(); } });
   let lastCan = null; app.onUpdate(() => { const c = W.canDive(); if (c !== lastCan) { lastCan = c; if (!c) W._diving = false; renderDock(); } });
@@ -303,7 +303,7 @@ export async function initSocial(app, W, lumi) {
     { const lu = document.getElementById('aou-lumi'); if (lu) lu.classList.remove('open'); } const ov = document.createElement('div'); ov.id = 'aou-cinema'; ov.innerHTML = `<div class="beam"></div><div class="screen"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(o.videoId)}?autoplay=1&rel=0&modestbranding=1&playsinline=1" title="${esc(o.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div><div class="bar"><b>🍿 ${esc(o.title)}</b><button class="aou-btn primary" id="cin-up">🚶 Get up</button></div>`; shell.appendChild(ov); requestAnimationFrame(() => ov.classList.add('on'));
     $('#cin-up', ov).onclick = () => { ov.remove(); o.movie.on = false; sitPerson(av, false); av.position.y = 0; app.locked = false; app.targetDist = 7; }; }
 
-  /* ---------- LIFEBOARD ---------- */
+  /* ---------- LIFEboard ---------- */
   const TABS = [['overview', '🧭', 'Overview'], ['goals', '🎯', 'Goals'], ['vision', '🗺️', 'Vision'], ['social', '🤝', 'Social'], ['wellness', '🌿', 'Wellness'], ['work', '💼', 'Work'], ['giving', '❤️', 'Giving'], ['create', '🎨', 'Create'], ['paths', '🛤️', 'Paths'], ['home', '🏡', 'My home'], ['buttons', '🔘', 'Buttons']];
   function openLifeboard(tab = 'overview') { const lb = LB(); const M2 = MODES[myMode()];
     const ALL = lbTabs(); let grp = ''; const m = modal('🏠 LIFEboard', `<div class="lb"><nav>${ALL.map(([id, ic, n, gname]) => { const h = gname && gname !== grp ? `<em class="lbg">${(grp = gname)}</em>` : ''; return h + `<button data-t="${id}">${ic}<span>${n}</span></button>`; }).join('')}</nav><section id="lb-main"></section></div>`, { full: true });

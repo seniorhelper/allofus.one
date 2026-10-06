@@ -239,12 +239,12 @@ export function buildMansion(app, W, api, house, X, Z) {
   app.addHotspot(panel, { fn: neonPanel }); app.addInteractable(X - 8.9, Z - 1.6, 2.2, '💡 Lights + shag carpet', neonPanel);
   // kitchen island + bar
   box(6, 1, 1.6, white, 8, 0.7, 8.8, g); box(6.2, 0.1, 1.8, M(0x222831, { metalness: 0.3, roughness: 0.12 }), 8, 1.25, 8.8, g); app.addBox(X + 8, Z + 8.8, 3.2, 1); for (let i = 0; i < 4; i++) { cyl(0.22, 0.22, 0.08, gold, 6 + i * 1.3, 0.85, 7.4, g, 12); cyl(0.04, 0.04, 0.7, gold, 6 + i * 1.3, 0.5, 7.4, g, 6); }
-  // the Lifeboard holo table: always opens YOUR OWN Lifeboard (never Zach's)
+  // the LIFEboard holo table: always opens YOUR OWN LIFEboard (never Zach's)
   const holo = new T.Group(); holo.position.set(-6, 0.2, 6.4); g.add(holo); cyl(1.1, 1.2, 0.9, dark, 0, 0.45, 0, holo, 24); const ring = new T.Mesh(new T.TorusGeometry(1.0, 0.04, 8, 48), glow(NEON, 2)); ring.rotation.x = Math.PI / 2; ring.position.y = 0.92; holo.add(ring);
   const holoBeam = new T.Mesh(new T.CylinderGeometry(0.9, 1.0, 2.2, 32, 1, true), new T.MeshBasicMaterial({ color: 0x38f0ff, transparent: true, opacity: 0.12, side: T.DoubleSide, depthWrite: false, blending: T.AdditiveBlending })); holoBeam.position.y = 2; holo.add(holoBeam);
-  const holoTxt = makeSprite('🏠 YOUR Lifeboard', { scale: 3, accent: '#38f0ff' }); holoTxt.position.y = 2.4; holo.add(holoTxt);
+  const holoTxt = makeSprite('🏠 YOUR LIFEboard', { scale: 3, accent: '#38f0ff' }); holoTxt.position.y = 2.4; holo.add(holoTxt);
   app.onUpdate((dt, t) => { ring.rotation.z = t; holoBeam.material.opacity = 0.1 + Math.sin(t * 3) * 0.04; holoTxt.position.y = 2.4 + Math.sin(t * 1.5) * 0.08; });
-  const openLB = () => api.openLifeboard ? api.openLifeboard('today') : null; app.addHotspot(holo, { fn: openLB }); app.addInteractable(X - 6, Z + 6.4, 2.6, '🏠 Open your Lifeboard (private to you)', openLB);
+  const openLB = () => api.openLifeboard ? api.openLifeboard('today') : null; app.addHotspot(holo, { fn: openLB }); app.addInteractable(X - 6, Z + 6.4, 2.6, '🏠 Open your LIFEboard (private to you)', openLB);
   app.addObstacle(X - 6, Z + 6.4, 1.3);
 
   /* 7) the 360 Dream Room: Zach's real net-zero photo becomes a room you stand inside */
