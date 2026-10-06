@@ -14,4 +14,8 @@
 <url><loc>https://allofus.one/games/</loc><lastmod>2026-10-05</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 <url><loc>https://allofus.one/moments/</loc><lastmod>2026-10-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 <url><loc>https://allofus.one/meet/</loc><lastmod>2026-10-06</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://allofus.one/?v=spaces</loc><lastmod>2026-10-06</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://allofus.one/?v=events</loc><lastmod>2026-10-06</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://allofus.one/?v=courses</loc><lastmod>2026-10-06</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://allofus.one/?v=board</loc><lastmod>2026-10-06</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>
