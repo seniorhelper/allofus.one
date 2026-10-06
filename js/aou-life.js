@@ -210,7 +210,7 @@ function buildRemote(W) {
 }
 
 /* ---------- YOUR STATUS RING ---------- */
-function buildMyRing(W) { const { app } = W; const ring = ringMesh(MODES.hanging.color); app.player.add(ring); W.myRing = ring; W.setMyMode = (mode) => { const M2 = MODES[mode] || MODES.hanging; ring.material.color.setHex(M2.color); ring.material.emissive.setHex(M2.color); }; app.onUpdate((dt, t) => { ring.visible = !app.vehicle && !(STATE.dive > 0.1) && app.dist > 0.6; ring.position.y = 2.18 + Math.sin(t * 2) * 0.03; ring.material.emissiveIntensity = 1.3 + Math.sin(t * 3) * 0.5; ring.rotation.z += dt * 0.6; }); }
+function buildMyRing(W) { const { app } = W; const ring = ringMesh(MODES.hanging.color); app.player.add(ring); W.myRing = ring; W.setMyMode = (mode) => { const M2 = MODES[mode] || MODES.hanging; ring.material.color.setHex(M2.color); ring.material.emissive.setHex(M2.color); }; app.onUpdate((dt, t) => { ring.visible = !app.vehicle && !(STATE.dive > 0.1) && app.dist > 0.6; if (!app._avHT || t - app._avHT > 1.5) { app._avHT = t; try { const b = new T.Box3().setFromObject(app.avatar); if (isFinite(b.max.y)) app._avH = Math.max(1.2, Math.min(6, b.max.y - app.player.position.y)); } catch (e) { } } ring.position.y = (app._avH || 1.85) + 0.3 + Math.sin(t * 2) * 0.03; ring.material.emissiveIntensity = 1.3 + Math.sin(t * 3) * 0.5; ring.rotation.z += dt * 0.6; }); }
 
 /* ---------- LUMI: the guide orb that floats by your shoulder ---------- */
 function buildLumi(W) {

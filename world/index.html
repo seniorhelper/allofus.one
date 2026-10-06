@@ -38,18 +38,18 @@
 ]}
 </script>
 <script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
-               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+{ "imports": { "three": "/vendor/three/three.module.min.js",
+               "three/addons/": "/vendor/three/jsm/" } }
 </script>
-<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js">
-<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js">
+<link rel="modulepreload" href="/vendor/three/three.module.min.js">
+<link rel="modulepreload" href="/vendor/three/jsm/loaders/GLTFLoader.js">
 <style>
 :root{--ink:#1b1f3b;--ink2:#3b4166;--paper:#faf6ee;--card:#fffdf8;--line:#e8dfcf;--gold:#c9a24a;--p1:#e0a800;--p2:#2f86ff;--p3:#22a35a;--p4:#e8671e;--p5:#e11d48;--p6:#7c3aed;--p7:#0d9488}
 html{scroll-behavior:smooth}
 #wvm-stage{position:relative;width:100%;height:100vh;height:100dvh;background:#0d1b3a}
 #wvm-preload{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:700 18px Manrope,Arial,sans-serif;background:radial-gradient(circle at 50% 40%,#2a3a7a,#0d1b3a)}
 .wvm-brand img.wvm-logo-full{height:40px;width:auto}
-#scrollhint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:20;border:0;background:rgba(255,253,248,.95);color:var(--ink);font:800 13px Manrope,Arial,sans-serif;padding:9px 16px;border-radius:999px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#scrollhint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:20;border:0;background:rgba(255,253,248,.95);color:var(--ink);font:800 13px Manrope,Arial,sans-serif;padding:9px 16px;border-radius:12px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 @media(max-width:720px){#scrollhint{bottom:auto;top:58px;left:auto;right:8px;transform:none;font-size:11.5px;padding:7px 11px}}
 .site{background:var(--paper);color:var(--ink);font-family:Manrope,"Segoe UI",Arial,sans-serif;font-size:17px;line-height:1.65}
 .site *{box-sizing:border-box}
@@ -63,7 +63,7 @@ html{scroll-behavior:smooth}
 .eyebrow{font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:12.5px;color:var(--ink2)}
 section{padding:84px 0;border-bottom:1px solid var(--line)}
 .lede{font-size:clamp(19px,2.2vw,23px);color:var(--ink2);max-width:760px}
-.btn{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);background:var(--ink);color:#fff!important;text-decoration:none;font:800 16px Manrope,Arial,sans-serif;padding:13px 22px;border-radius:999px;cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--ink);background:var(--ink);color:#fff!important;text-decoration:none;font:800 16px Manrope,Arial,sans-serif;padding:13px 22px;border-radius:12px;cursor:pointer}
 .btn.alt{background:transparent;color:var(--ink)!important}
 .btn:hover{transform:translateY(-1px)}
 .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
@@ -134,7 +134,7 @@ footer.site-foot nav a{color:var(--ink);font-weight:700;text-decoration:none}
 <link rel="manifest" href="/manifest.webmanifest"><style>@view-transition{navigation:auto}</style>
 </head>
 <body>
-<div id="wvm-stage"><div id="wvm-preload">Opening the world…</div><button id="scrollhint" type="button">How it works ↓</button></div>
+<div id="wvm-stage"><div id="wvm-preload">Opening the world…</div><button id="scrollhint" type="button" style="bottom:54px">How it works ↓</button></div>
 
 <main class="site" id="story">
 <div class="spectrum" aria-hidden="true"></div>
@@ -362,7 +362,8 @@ if ('serviceWorker' in navigator) addEventListener('load', () => navigator.servi
 (async () => { const ready = () => window.WVM_APP && window.WVM_APP.renderer; for (let k = 0; k < 200 && !ready(); k++) await new Promise(r => setTimeout(r, 250)); if (!ready()) return; try { const FE = JSON.parse(localStorage.getItem('frame_errors') || '[]'); if (FE.length) { const app0 = window.WVM_APP; app0.toast('⚠️ Last session logged ' + FE.length + ' render error(s): ' + FE[FE.length - 1].m.slice(0, 80) + ' (copied to clipboard)', 9000); try { navigator.clipboard.writeText(JSON.stringify(FE, null, 1)); } catch (e) { } localStorage.setItem('frame_errors', '[]'); } } catch (e) { } if (new URLSearchParams(location.search).get('vr') === 'basic') return; try { const x = await import('/js/aou-xr.js'); const app = window.WVM_APP; import('/js/aou-orbit3d.js').then(o => o.spawnOrbit(app, { hidden: () => !!(app.ride && !app.ride.stand) })).catch(e => console.warn('orbit3d', e)); try { const rs = JSON.parse(localStorage.getItem('aou_resume') || 'null'); if (rs && Date.now() - rs.t < 120000) { localStorage.removeItem('aou_resume'); app.player.position.set(rs.x, app.player.position.y, rs.z); if (rs.yaw !== undefined) app.yaw = rs.yaw; app.toast && app.toast('Back where you were.'); } } catch (e) { } window.WVM_XR = x.initXR(app, { name: 'allofus.one', extra: (window.AOU && window.AOU.W && window.AOU.W.vrExtra) || [], onBugs: (list) => { const last = list.slice(-5).reverse(); const html = '<p>Logged in VR. Add a line about what went wrong and send.</p>' + last.map((b, i) => `<div style="border:1px solid #e2e8f0;border-radius:12px;padding:8px;margin:6px 0"><b>#${list.length - i}</b> · ${b.near || 'unknown spot'} · (${b.x}, ${b.y}, ${b.z})${b.act ? ' · near: ' + b.act : ''}${b.ride ? ' · on a ride' : ''}<br><input data-bug="${list.length - 1 - i}" placeholder="What happened?" style="width:100%;margin-top:6px;border:1px solid #cbd5e1;border-radius:8px;padding:6px 8px;font:600 13px Poppins,Arial"></div>`).join('') + '<button class="mp-btn holo" id="bug-send">📤 Send bug reports</button>'; const m = (window.AOU_UI && window.AOU_UI.modal) ? window.AOU_UI.modal('🐞 VR bug reports', html) : null; if (!m) return; m.querySelector('#bug-send').onclick = async () => { const notes = {}; m.querySelectorAll('[data-bug]').forEach(i => notes[i.dataset.bug] = i.value); const body = list.map((b, i) => `#${i + 1} ${b.t} ${b.page} at (${b.x},${b.y},${b.z}) yaw ${b.yaw} near "${b.near}" act "${b.act}" ride ${b.ride} :: ${notes[i] || ''}`).join('\n'); try { await navigator.clipboard.writeText(body); } catch (e) { } const mail = 'mailto:zach@eyetoad.com?subject=' + encodeURIComponent('VR bug reports · ' + location.host) + '&body=' + encodeURIComponent(body); window.open(mail, '_blank'); localStorage.setItem('vr_bugs', '[]'); window.AOU_UI.close && window.AOU_UI.close(); app.toast('📤 Copied + opened in your mail app.', 3000); }; } }); } catch (e) { console.error('xr', e); } })();
 
 /* ?vr=1: a one-tap door into VR (headsets need a tap to start a session) */
-(() => { try { if (new URLSearchParams(location.search).get('vr') !== '1') return; const wait = setInterval(() => { const v = document.getElementById('wvm-vr'); if (!v) return; clearInterval(wait); const o = document.createElement('button'); o.textContent = '🕶️ Tap to enter VR'; o.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:80;border:0;border-radius:999px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font:900 20px Poppins,Arial;padding:18px 32px;box-shadow:0 16px 40px rgba(2,8,30,.5)'; o.onclick = () => { v.click(); o.remove(); }; document.body.appendChild(o); setTimeout(() => o.remove(), 60000); }, 500); } catch (e) { } })();
+(() => { try { if (new URLSearchParams(location.search).get('vr') !== '1') return; const wait = setInterval(() => { const v = document.getElementById('wvm-vr'); if (!v) return; clearInterval(wait); const o = document.createElement('button'); o.textContent = '🕶️ Tap to enter VR'; o.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:80;border:0;border-radius:12px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font:900 20px Poppins,Arial;padding:18px 32px;box-shadow:0 16px 40px rgba(2,8,30,.5)'; o.onclick = () => { v.click(); o.remove(); }; document.body.appendChild(o); setTimeout(() => o.remove(), 60000); }, 500); } catch (e) { } })();
 </script>
+<script type="module">import { watchEmoji, ICON_CSS } from "/js/aou-icons.js"; const st = document.createElement("style"); st.textContent = ICON_CSS; document.head.appendChild(st); watchEmoji(document.body);</script>
 </body>
 </html>
