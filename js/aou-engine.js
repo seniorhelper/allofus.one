@@ -1518,6 +1518,8 @@ export class WVM {
       if (dx * dx + dz * dz < z.radius * z.radius) { z._queued = true; q.push(z); }
     }
     if (!q.length) return;
+    /* while the arrival gate is still up nothing is on screen yet: build everything due at once (places, streets and homes register here) */
+    if (this.loader && !this.loader.classList.contains('off')) { while (q.length) this._buildZone(q.shift()); return; }
     q.sort((a, b) => ((a.center.x - p.x) ** 2 + (a.center.z - p.z) ** 2) - ((b.center.x - p.x) ** 2 + (b.center.z - p.z) ** 2));
     const z = q[0]; const dz2 = (z.center.x - p.x) ** 2 + (z.center.z - p.z) ** 2;
     /* a zone you are already well inside builds now; the ones you are only approaching wait while the frame is paying off build debt */
@@ -1985,14 +1987,14 @@ export class WVM {
       #wvm-pad[data-mode=dpad] .wvm-stick{display:none} #wvm-pad[data-mode=dpad] .wvm-dpad{display:grid}
       @media (hover:hover) and (pointer:fine){ #wvm-pad{opacity:.55} #wvm-pad:hover{opacity:1} }
       #wvm-hud.xr > *{display:none} #wvm-hud.xr #wvm-vr{display:block}
-      .wvm-vrbadge{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(8,20,50,.7);border:1px solid rgba(124,248,255,.35);border-radius:12px;padding:6px 12px;font-size:12px;font-weight:700;color:#9fd3ff;pointer-events:none}
+      .wvm-vrbadge{position:absolute;bottom:18px;left:auto;right:12px;transform:none;background:rgba(8,20,50,.7);border:1px solid rgba(124,248,255,.35);border-radius:12px;padding:6px 12px;font-size:12px;font-weight:700;color:#9fd3ff;pointer-events:none}
       #wvm-act{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);background:#7cff6b;color:#04122a;border:0;border-radius:12px;padding:14px 26px;font-weight:900;font-size:17px;display:none;box-shadow:0 8px 30px rgba(124,255,107,.45);font-family:inherit;cursor:pointer;animation:wvmpop .4s;max-width:70vw}
       #wvm-act.on{display:block} @keyframes wvmpop{from{transform:translateX(-50%) scale(.7)}to{transform:translateX(-50%) scale(1)}}
       #wvm-turbo{position:absolute;left:186px;right:auto;bottom:80px;width:92px;height:92px;border-radius:50%;border:3px solid #ffd23f;background:radial-gradient(circle at 40% 35%,#ff8a3d,#c1121f);color:#fff;font-weight:900;font-size:14px;display:none;box-shadow:0 8px 30px rgba(255,80,40,.5);font-family:inherit;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
       #wvm-turbo.on{display:block} #wvm-turbo:active{transform:scale(.94)}
       @media (prefers-reduced-motion: reduce){#wvm-act{animation:none} .wvm-ring{animation:none}}
-      .wvm-go-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 10px} .wvm-go-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;max-height:52vh;overflow:auto} .wvm-go-grid .wvm-place{margin:0}
-      @media (max-width:820px){#wvm-pad{bottom:84px} #wvm-vr{right:90px!important;bottom:92px!important;padding:8px 14px!important;font-size:13px!important} #wvm-act{bottom:244px} #wvm-turbo{left:186px;bottom:160px;width:76px;height:76px}}
+      .wvm-go-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 10px} .wvm-go-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;max-height:52vh;overflow:auto} .wvm-go-grid .wvm-place{margin:0;color:#0f172a;background:rgba(15,23,42,.05);border-color:#cbd5e1} .wvm-go-grid .wvm-place:hover,.wvm-go-grid .wvm-place:focus{background:rgba(56,240,255,.22)} .wvm-go-grid .wvm-place b{color:#0f172a;font-size:13px} .wvm-go-grid .wvm-place small{color:#64748b} .wvm-go-grid .wvm-place span{color:#0ea5e9}
+      @media (max-width:820px){#wvm-pad{bottom:84px} #wvm-vr{right:90px!important;bottom:92px!important;padding:8px 14px!important;font-size:13px!important} .wvm-vrbadge{right:90px;bottom:92px} #wvm-act{bottom:244px} #wvm-turbo{left:186px;bottom:160px;width:76px;height:76px}}
       .wvm-scrollhint{position:absolute;bottom:14px;right:14px;background:rgba(8,20,50,.75);border:1px solid rgba(124,248,255,.4);border-radius:12px;padding:6px 12px;font-size:12px;font-weight:700}
     `;
     document.head.appendChild(s);

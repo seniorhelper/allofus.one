@@ -398,7 +398,7 @@ function injectCSS() { if (document.getElementById('aou-css')) return; const s =
 #aou-dock button.join{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff}#aou-dock button.join small{color:#fff}
 #aou-dock button.dive{background:#0e7490;color:#fff}#aou-dock button.dive small{color:#fff}
 #aou-dock i{position:absolute;top:-4px;right:-4px;background:#e11d48;color:#fff;font-style:normal;font-size:11px;font-weight:800;border-radius:12px;padding:2px 6px}
-@media (max-width:820px){#aou-dock{left:0;right:0;bottom:0;top:auto;height:64px;box-sizing:border-box;padding:7px 6px 7px 124px;gap:5px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;background:rgba(8,20,50,.94);border-top:1px solid rgba(124,248,255,.35);scrollbar-width:none}#aou-dock::-webkit-scrollbar{display:none}#aou-dock button{flex:none;width:48px;height:48px;font-size:17px;border-radius:12px}#aou-dock button small{font-size:8.5px}}
+@media (max-width:820px){#aou-dock{left:0;right:0;bottom:0;top:auto;height:64px;box-sizing:border-box;padding:7px 6px 7px 134px;gap:5px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;background:rgba(8,20,50,.94);border-top:1px solid rgba(124,248,255,.35);scrollbar-width:none}#aou-dock::-webkit-scrollbar{display:none}#aou-dock button{flex:none;width:48px;height:48px;font-size:17px;border-radius:12px}#aou-dock button small{font-size:8.5px}}
 .aou-modal{position:absolute;inset:0;background:rgba(2,6,23,.45);display:flex;align-items:center;justify-content:center;padding:12px;z-index:40;animation:aouIn .18s ease}
 @keyframes aouIn{from{opacity:0}to{opacity:1}}
 .aou-card{background:#fff;color:#0f172a;border-radius:20px;width:min(560px,96vw);max-height:88vh;overflow:auto;box-shadow:0 24px 70px rgba(2,6,23,.45);border:1px solid #e2e8f0}
