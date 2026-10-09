@@ -71,3 +71,30 @@ Supabase does not email you about new accounts by default. The 🛡️ Admin con
    - "Happening now" shows real posts only — feed posts with photo / video thumbnails first, 3D-world posts merged in; filler only when there is not a single real post.
    - Life Dash on the LIFEboard is a widget board: every tool is a tile (S / M / L), with ⚙ options (size, colour, order, hide), drag to reorder, expand to full screen. The layout saves in `lifeboards.data.dash`.
 4. Brand pages: the header is the ad now (full-bleed cover with the brand colour, logo badge, headline, proof chips, Call / Website / Message + Follow / Share / Visit in 3D). Managers get the **⚙ Manage** bar: cover, logo, tagline, main button, **Pre-link managers by email** (writes `admin_emails`), **VR home spot** (writes `vr_home`). **Pages I manage** (profile + Control panel) lists every page you own or manage; network admins also see the built-in brands with a one-tap **Set up network pages** that inserts the missing rows with the v17 columns.
+
+## v19 (Oct 9 2026) — client accounts (Ritchie, Elevation Health), founder connection fixes, 3D mailbox
+**Run order in Supabase → SQL Editor** (each is additive and safe to re-run; run every one even if you ran an earlier one before):
+1. `supabase/allofus-v17.sql` — `pages.admin_emails` / `vr_home` / `claimed_at`, the welcome trigger (new member → connected to Zach, pre-linked pages attached), `claim_my_pages()`, hugs, the network page seed.
+2. `supabase/allofus-v18.sql` — `page_follows`, defensive columns, Feed indexes, realtime.
+3. `supabase/allofus-v19-clients.sql` — the client accounts:
+   - Raised In a Barn Furniture (`raised-in-a-barn`): pre-links **wasraisedinabarn@gmail.com** (both Zach emails stay), VR home **Art Garden** (`art`), phone, website and the World VR Mall store link. If Ritchie already has an account he is linked into `pages.admins` immediately. An older row saved under `raised-in-a-barn-furniture` is renamed if the short slug is free.
+   - Elevation Health: Meredith + Lindsay stay pre-linked, owner stays Zach (the row is created for Zach if it is missing).
+   - Anyone on any page's `admin_emails` who already has an account is linked now.
+   - Pre-linked emails may edit and post as their page even before the account is linked (policy on the signed-in email). **Keep Authentication → Email → Confirm email ON** so nobody can sign up with an address they do not own.
+   - Re-creates the welcome trigger and `claim_my_pages()` with fixes: `on conflict do nothing` (v11's unordered-pair index made v17's version fail with a unique violation for anyone who had already asked Zach to connect, so their pages never attached), NULL-safe `admins`, and a pending member → Zach request is accepted.
+   - New table `page_edit_requests`: when an edit is not allowed yet the app files it here and tells the person "Saved for review — Zach will publish it". Review them in Table Editor → `page_edit_requests` (status `pending`), copy the `patch` onto the page, set status `published`.
+4. `supabase/allofus-v19-comm.sql` — the Comm Hub upgrade (from the Comm work stream; see its own header).
+
+**Works before any SQL is run:** the client accounts are also in `js/aou-onboard.js` (`VIP`), so their first sign-in guide, page editing (saved for review when the database refuses) and the built-in page previews work on the current database. Members with no connection to Zach send him a pending request and see "Request sent to Zach (the founder). He'll say hi." (the database trigger does the real auto-connect once v17/v19 are in).
+
+### Client accounts
+| Person | Sign-in email | Page | What they see on first sign-in | Re-open the guide |
+|---|---|---|---|---|
+| Ritchie (Raised In a Barn Furniture) | wasraisedinabarn@gmail.com | `/?page=raised-in-a-barn` | The **simple guide**: big type and buttons, one thing per screen, "Step N of 6", Back / Next, "I'll do this later", auto-save, and "Call Zach for help: 1-800-481-8638" + "Email Zach" on every screen. 1 Welcome ("Zach set this up for you") → 2 Add your photo → 3 A sentence about you (pre-written, he can keep it) → 4 His business page preview (cover, tagline, phone, website) with **Looks good** / **Change the picture** → 5 "Your store in the 3D mall": **Walk into my store** (worldvrmall.com/mall/?to=raised-in-a-barn) and **Explore allofus in 3D** → 6 "You're all set": Post a photo of my furniture · Invite a friend · Go to my page. Until he finishes, a **Help me get set up** button stays on screen. | allofus.one/?guide=1, the Help me get set up button, or the button on his page |
+| Meredith Cross (Elevation Health) | meredith@elevationhealth.co | `/?page=elevation-health` (admin; owner Zach) | The 4-step claim flow, personalised ("Welcome, Meredith · You manage Elevation Health"), a thank-you note that Zach is giving Elevation Health free advertising for helping test, then profile → page review → VR home, and an optional **Take the 2-minute tour** at the end. | allofus.one/?guide=1, or Help me get set up on the page |
+| Lindsay Gayman (Elevation Health) | lindsay@elevationhealth.co | `/?page=elevation-health` (admin; owner Zach) | Same as Meredith, with her name. | allofus.one/?guide=1, or Help me get set up on the page |
+
+On any page they manage they see **You manage this page · Switch to my profile · Help me get set up** above the ⚙ Manage bar.
+
+### 3D mailbox
+Zach's giant mailbox (and the Classic style in the home builder) were missing the back quarter of the round lid; both are closed from every angle now. No action needed.
