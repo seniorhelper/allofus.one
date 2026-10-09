@@ -37,7 +37,7 @@ begin
   if v_founder is not null and v_founder <> new.id then
     insert into public.connections (requester, addressee, kind, status)
       values (v_founder, new.id, 'connect', 'accepted')
-      on conflict (requester, addressee) do nothing;
+      on conflict do nothing;
   end if;
 
   -- (1) pre-claimed business pages
@@ -45,8 +45,12 @@ begin
     update public.pages
        set admins = array_append(admins, new.id),
            claimed_at = coalesce(claimed_at, now())
-     where v_email = any(admin_emails) and not (new.id = any(admins));
+     where v_email = any(admin_emails) and not (coalesce(new.id = any(admins), false));
   end if;
+  return new;
+exception when others then
+  -- never block a signup because of the welcome extras
+  raise warning 'welcome_new_member skipped: %', sqlerrm;
   return new;
 end $$;
 drop trigger if exists profiles_welcome_v17 on public.profiles;
@@ -64,7 +68,7 @@ begin
   v_founder := public.founder_id();
   if v_founder is not null and v_founder <> auth.uid() then
     insert into public.connections (requester, addressee, kind, status) values (v_founder, auth.uid(), 'connect', 'accepted')
-      on conflict (requester, addressee) do nothing;
+      on conflict do nothing;
   end if;
   return n;
 end $$;
@@ -156,4 +160,4 @@ end $$;
 insert into public.connections (requester, addressee, kind, status)
   select public.founder_id(), p.id, 'connect', 'accepted' from public.profiles p
    where public.founder_id() is not null and p.id <> public.founder_id()
-  on conflict (requester, addressee) do nothing;
+  on conflict do nothing;
