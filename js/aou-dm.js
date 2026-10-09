@@ -56,7 +56,9 @@ export async function dmView(body, ctx) {
   const fit = () => { if (!host.isConnected) return; const top = host.getBoundingClientRect().top + scrollY; const bb = document.querySelector('.fl-bottom'); const bh = bb && getComputedStyle(bb).display !== 'none' ? bb.offsetHeight : 0; host.style.height = Math.max(380, innerHeight - top - bh - (bh ? 0 : 12)) + 'px'; };
   fit(); addEventListener('resize', fit);
   await store.loadAll(); store.subscribe(); app.renderList();
-  if (withU) await app.open(withU);
+  if (withU) { const got = await app.open(withU); if (!got) { const found = await store.searchPeople(withU).catch(() => []); const box = document.createElement('div'); box.className = 'cm-nf'; box.setAttribute('role', 'status');
+    box.innerHTML = `<b>No member with the username @${C.esc ? C.esc(withU) : withU.replace(/[<>&"]/g, '')}.</b><span>${found.length ? 'Did you mean:' : 'Check the spelling, or find them in People.'}</span><div class="cm-nf-list">${found.map(f => `<button type="button" data-u="${(f.username || f.id).replace(/"/g, '')}">${C.avatarHTML(f, 32)}<span><b>${(C.nameOf(f) || '').replace(/[<>&]/g, '')}</b><small>@${(f.username || '').replace(/[<>&]/g, '')}</small></span></button>`).join('')}</div><a class="cm-nf-go" href="/?v=conn">Open People</a>`;
+    host.prepend(box); box.addEventListener('click', async (e) => { const b = e.target.closest('[data-u]'); if (!b) return; const ok = await app.open(b.dataset.u); if (ok) { box.remove(); history.replaceState(null, '', '/?v=dm&with=' + encodeURIComponent(b.dataset.u)); } }); } }
   /* leaving the view (the Feed re-renders #fl-body): drop realtime + listeners */
   const watch = setInterval(() => { if (!host.isConnected) { clearInterval(watch); removeEventListener('resize', fit); app.destroy(); store.destroy(); } }, 1500);
   setTimeout(fit, 300);

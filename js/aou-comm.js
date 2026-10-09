@@ -212,8 +212,12 @@ export function createStore({ sb, me, toast = commToast }) {
     setOpen(peer) { S.open = peer; },
     async ensurePeer(idOrUser) {
       if (!idOrUser) return null; const u = String(idOrUser).replace(/^@/, ''); let p = S.prof[u] || Object.values(S.prof).find(x => x.username && x.username.toLowerCase() === u.toLowerCase());
-      if (!p && sb) { let r = await safe(sb.from('profiles').select('id,username,display_name,home').ilike('username', u).limit(1)); p = (r.data || [])[0]; if (!p && /^[0-9a-f-]{8,}$|^u-/.test(u)) { r = await safe(sb.from('profiles').select('id,username,display_name,home').eq('id', u).limit(1)); p = (r.data || [])[0]; } if (p) { await loadProfiles([p.id]).catch(() => { }); S.prof[p.id] = S.prof[p.id] || p; } }
+      if (!p && sb) { let r = await safe(sb.from('profiles').select('id,username,display_name,home').ilike('username', u).limit(1)); p = (r.data || [])[0]; if (!p && u.length >= 2) { const lk = u.replace(/[%_,()]/g, ' ').trim(); r = await safe(sb.from('profiles').select('id,username,display_name,home').ilike('display_name', lk).limit(2)); if ((r.data || []).length === 1) p = r.data[0]; if (!p) { r = await safe(sb.from('profiles').select('id,username,display_name,home').ilike('display_name', lk + '%').limit(2)); if ((r.data || []).length === 1) p = r.data[0]; } } if (!p && /^[0-9a-f-]{8,}$|^u-/.test(u)) { r = await safe(sb.from('profiles').select('id,username,display_name,home').eq('id', u).limit(1)); p = (r.data || [])[0]; } if (p) { await loadProfiles([p.id]).catch(() => { }); S.prof[p.id] = S.prof[p.id] || p; } }
       if (!p && S.by.has(u)) p = { id: u }; if (p) bucket(p.id); return p || null;
+    },
+    async searchPeople(q) {
+      const t = String(q || '').replace(/^@/, '').replace(/[%_,()]/g, ' ').trim(); if (!t || !sb) return [];
+      const r = await safe(sb.from('profiles').select('id,username,display_name,home').or(`username.ilike.%${t}%,display_name.ilike.%${t}%`).limit(8)); return (r.data || []).filter(x => x.id !== me.id);
     },
     gate(peer) {
       if (peer === me.id) return { ok: true }; if (S.blocked.has(peer)) return { ok: false, mine: true, why: 'You blocked this person. Unblock them to write again.' };
@@ -537,6 +541,7 @@ export function mountSettings(main, { store, toast = commToast, onBack }) {
 
 /* ============================================================ CSS (FLAT design: Poppins, ink #14183a, sky→indigo) */
 export const COMM_CSS = `
+.cm-nf{display:flex;flex-direction:column;gap:8px;margin:0 0 10px;padding:14px 16px;border:1px solid #fcd34d;background:#fffbeb;border-radius:12px;color:#78350f;font:500 14px Poppins,Arial}.cm-nf b{font-weight:800}.cm-nf-list{display:flex;flex-wrap:wrap;gap:8px}.cm-nf-list button{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 12px 6px 6px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;color:#0f172a;cursor:pointer;font:600 14px Poppins,Arial;text-align:left}.cm-nf-list button:hover,.cm-nf-list button:focus-visible{border-color:#2563eb;outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.18)}.cm-nf-list small{display:block;color:#64748b;font-weight:500}.cm-nf-go{align-self:flex-start;color:#1d4ed8;font-weight:700}
 .cm-app,.cm-menu,.cm-scope,#hub{--ink:#14183a;--mut:#64748b;--line:#e5e7eb;--line2:#cbd5e1;--bg:#f6f8fc;--sky:#0ea5e9;--ind:#4f46e5;--acc:#0369a1;--soft:#f1f5f9;--red:#dc2626}
 .cm-app{font-family:Poppins,"Segoe UI",Arial,sans-serif;color:var(--ink);display:grid;grid-template-columns:340px minmax(0,1fr);height:100%;min-height:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-sizing:border-box}
 .cm-app *,.cm-menu *,.cm-app *::before{box-sizing:border-box}.cm-app [hidden],.cm-menu [hidden],#hub [hidden]{display:none!important}.cm-app.single{grid-template-columns:minmax(0,1fr)}
