@@ -127,14 +127,14 @@ declare v_founder uuid := public.founder_id(); r record;
 begin
   if v_founder is null then raise notice 'Founder account not found yet — pages will be seeded next run.'; return; end if;
   for r in select * from (values
-    ('eye-to-ad-media','Eye To Ad Media','Denver SEO, AI search optimization and custom websites since 2012.','1-800-481-8638','https://eyetoad.com/','Denver, CO','gateway',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
+    ('eye-to-ad-media','Eye To Ad Media','Denver SEO, AI search optimization and custom websites since 2012.','1-800-481-8638','https://eyetoad.com/','Denver, CO','gate',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('search-converts','Search Converts','Conversion-first marketing: CRO, paid search, funnels, websites.','1-800-481-8638','https://searchconverts.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('aging-safely-baths','Aging Safely Baths','Walk-in tubs and accessible showers since 2012.','888-779-2284','https://www.agingsafelybaths.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('showers4less','Showers4Less','Roll-in and ADA showers, made in the USA, shipped nationwide.','888-779-2284','https://showers4less.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
-    ('elevation-health','Elevation Health','GLP-1 weight loss with real dietitian support. The 90-Day Transformation.','','https://loseweightonglp1.com/','Telehealth · United States','waterfall',array['meredith@elevationhealth.co','lindsay@elevationhealth.co','zach@eyetoad.com','zachwennstedt@gmail.com']),
+    ('elevation-health','Elevation Health','GLP-1 weight loss with real dietitian support. The 90-Day Transformation.','','https://loseweightonglp1.com/','Telehealth · United States','falls',array['meredith@elevationhealth.co','lindsay@elevationhealth.co','zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('bighorn-painting','Bighorn Painting','Interior and exterior painting across the Denver metro.','','https://denverpaintcontractors.com/','Arvada, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('painting-brighton','Painting Brighton','House painting in Brighton and the north metro.','','https://paintingbrighton.com/','Brighton, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
-    ('raised-in-a-barn','Raised In a Barn Furniture','Handcrafted barnwood furniture, free shipping.','(970) 518-2883','https://rusticbarnwoodfurniture.com/','Colorado','market',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
+    ('raised-in-a-barn','Raised In a Barn Furniture','Handcrafted barnwood furniture, free shipping.','(970) 518-2883','https://rusticbarnwoodfurniture.com/','Colorado','plaza',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('bear-creek-auto-glass','Bear Creek Auto Glass','Windshields and auto glass, Littleton.','','https://bearcreekautoglass.com/','Littleton, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('my-sales-help','My Sales Help','Sales training that actually gets used.','','https://mysaleshelp.com/','Denver, CO','library',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('world-vr-mall','World VR Mall','The free 3D mall you walk through. Built in Denver, open to the world.','1-800-481-8638','https://worldvrmall.com/','Everywhere','starport',array['zach@eyetoad.com','zachwennstedt@gmail.com'])
