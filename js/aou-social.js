@@ -107,10 +107,10 @@ async function liveDB(app, W) {
     connections() { return Object.entries(conns).filter(([, c]) => c.status === 'connected').map(([id]) => ({ id, name: (W.profileCache.get(id) || {}).name || 'Friend' })); },
     incoming() { return Object.entries(conns).filter(([, c]) => c.status === 'incoming').map(([id, c]) => ({ id, kind: c.row.kind, name: (W.profileCache.get(id) || {}).name || 'Someone' })); },
     thread(id) { return threads[id] || []; },
-    async loadThread(id) { const { data } = await sb.from('messages').select('*').or(`and(sender.eq.${me.id},recipient.eq.${id}),and(sender.eq.${id},recipient.eq.${me.id})`).order('created_at').limit(200); threads[id] = (data || []).map(m => ({ me: m.sender === me.id, body: m.body, at: m.created_at })); return threads[id]; },
+    async loadThread(id) { const { data } = await sb.from('messages').select('*').or(`and(sender.eq.${me.id},recipient.eq.${id}),and(sender.eq.${id},recipient.eq.${me.id})`).order('created_at').limit(200); threads[id] = (data || []).filter(m => !/^::react:/.test(String(m.body || '').trim())).map(m => ({ me: m.sender === me.id, body: commPlain(m.body), at: m.created_at })); return threads[id]; },
     async send(p, body) { const { error } = await sb.from('messages').insert({ sender: me.id, recipient: p.id, body }); if (error) throw error; (threads[p.id] = threads[p.id] || []).push({ me: true, body, at: now() }); },
     room(id) { return rooms[id] || []; },
-    async loadRoom(id) { const { data } = await sb.from('messages').select('*').eq('room', id).order('created_at', { ascending: false }).limit(60); rooms[id] = (data || []).reverse().map(m => ({ name: m.sender_name, body: m.body, at: m.created_at, me: me && m.sender === me.id })); return rooms[id]; },
+    async loadRoom(id) { const { data } = await sb.from('messages').select('*').eq('room', id).order('created_at', { ascending: false }).limit(60); rooms[id] = (data || []).reverse().filter(m => !/^::react:/.test(String(m.body || '').trim())).map(m => ({ name: m.sender_name, body: commPlain(m.body), at: m.created_at, me: me && m.sender === me.id })); return rooms[id]; },
     async sendRoom(id, m, body) { const { error } = await sb.from('messages').insert({ sender: m.id, sender_name: m.name, room: id, body }); if (error) throw error; },
     onEvent(f) { listeners.push(f); },
     async matchPosts() { const { data } = await sb.from('match_posts').select('*').eq('status', 'open').order('created_at', { ascending: false }).limit(200); return (data || []).map(r => ({ id: r.id, user: r.user_id, name: r.user_name, kind: r.kind, cat: r.category, title: r.title, details: r.details, city: r.city, at: r.created_at })); },
@@ -146,6 +146,10 @@ async function liveDB(app, W) {
 /* ============================================================
    UI
    ============================================================ */
+/* Comm Hub stores cards, quotes and pictures as ::kind:value:: markers inside message text; show them as plain words in 3D chat */
+const commPlain = (b) => { const raw = String(b == null ? '' : b); const t = raw.trim(); const m = /^::([a-z]+):([\s\S]*)::$/.exec(t);
+  if (m && !t.includes('\n')) { if (m[1] === 'call') return 'Started a Unity Call. Open the Comm Hub to join.'; if (m[1] === 'meet') return 'Scheduled a Unity Call. See the Comm Hub.'; if (m[1] === 'vibe') return 'Sent a ' + m[2]; }
+  return raw.split('\n').filter(l => !/^::re:/.test(l.trim())).map(l => (/^::img:.*::$/.test(l.trim()) ? '[photo]' : l)).join('\n').trim(); };
 export async function initSocial(app, W, lumi) {
   injectCSS();
   W.profileCache = new Map();
