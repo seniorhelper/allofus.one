@@ -25,7 +25,8 @@ const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } cat
 
 export const WORLDS = [
   ['allofus.one', 'https://allofus.one/', '🌍', 'You are here: the hub world for all of us', 'Social', 40, -100],
-  ['World VR Mall', 'https://worldvrmall.com/', '🛍️', 'Walk-in 3D mall with real stores', 'Shopping', 20, 10],
+  ['World VR Mall', 'https://worldvrmall.com/', '🛍️', 'The island: mall exterior, beach, park', 'Shopping', 20, 10],
+  ['Inside the mall', 'https://worldvrmall.com/mall/?from=allofus', '🏬', 'Walk the atrium + wings, real stores', 'Shopping', 28, 22],
   ['Comics Come Alive', 'https://comicscomealive.com/', '💥', 'Animated comics, games + bedtime stories', 'Family', -10, 60],
   ['The VR Galaxy', 'https://thevrgalaxy.com/', '🪐', '15 never-seen-before planets', 'Explore', 60, 150],
   ['Another Dimension VR', 'https://anotherdimensionvr.com/', '🌀', 'A browser VR game world', 'Games', -30, 120],
@@ -158,7 +159,7 @@ export function initPlus(app, W, UI, lumi, opts = {}) { globalThis.AOU_SB = UI.D
   /* ---------- 🌐 Worlds globe directory ---------- */
   const openWorlds = () => { const o = document.createElement('div'); o.className = 'pl-worlds'; o.innerHTML = `<div class="pw-card" role="dialog" aria-label="All our worlds"><div class="pw-head"><b>🌐 All our worlds</b><input id="pw-q" placeholder="Search worlds: shopping, comics, flight, business…" aria-label="Search worlds"><button class="aou-x" aria-label="Close">✕</button></div><div class="pw-body"><canvas id="pw-globe" width="560" height="560" aria-label="Spinning globe of worlds. Drag to spin, tap a pin."></canvas><div class="pw-list" id="pw-list"></div></div><p class="pw-foot">Drag the globe to spin it. Tap a glowing pin or a card to travel. Same login is coming to every world.</p></div>`; document.body.appendChild(o); app.paused = true;
     const close = () => { o.remove(); app.paused = false; cancelAnimationFrame(raf); }; o.querySelector('.aou-x').onclick = close; o.onclick = (e) => { if (e.target === o) close(); };
-    const list = $('#pw-list', o); const draw = (q = '') => { const ql = q.toLowerCase(); list.innerHTML = WORLDS.filter(w => !ql || (w[0] + w[3] + w[4]).toLowerCase().includes(ql)).map((w, i) => `<a class="pw-item" href="${w[1]}" ${w[0] === 'allofus.one' ? '' : 'target="_blank" rel="noopener"'} data-i="${WORLDS.indexOf(w)}"><span>${w[2]}</span><div><b>${esc(w[0])}</b><small>${esc(w[3])} · ${w[4]}</small></div></a>`).join('') || '<p class="lt-empty">No world matches yet.</p>'; };
+    const list = $('#pw-list', o); const draw = (q = '') => { const ql = q.toLowerCase(); list.innerHTML = WORLDS.filter(w => !ql || (w[0] + w[3] + w[4]).toLowerCase().includes(ql)).map((w, i) => `<a class="pw-item" href="${/worldvrmall\.com/.test(w[1]) && !/from=/.test(w[1]) ? w[1] + (w[1].includes('?') ? '&' : '?') + 'from=allofus' : w[1]}" ${w[0] === 'allofus.one' ? '' : 'target="_blank" rel="noopener"'} data-i="${WORLDS.indexOf(w)}"><span>${w[2]}</span><div><b>${esc(w[0])}</b><small>${esc(w[3])} · ${w[4]}</small></div></a>`).join('') || '<p class="lt-empty">No world matches yet.</p>'; };
     draw(); $('#pw-q', o).oninput = (e) => draw(e.target.value); $('#pw-q', o).onkeydown = (e) => e.stopPropagation();
     const cv = $('#pw-globe', o); const g = cv.getContext('2d'); let rot = 0, tilt = 0.35, drag = null, vel = 0.004, raf = 0, hover = -1; const R = 230, C = 280; const pins = [];
     const proj = (lat, lon) => { const la = lat * Math.PI / 180, lo = lon * Math.PI / 180 + rot; let x = Math.cos(la) * Math.sin(lo), y = Math.sin(la), z = Math.cos(la) * Math.cos(lo); const y2 = y * Math.cos(tilt) - z * Math.sin(tilt), z2 = y * Math.sin(tilt) + z * Math.cos(tilt); return [C + x * R, C - y2 * R, z2]; };

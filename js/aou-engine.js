@@ -1518,11 +1518,13 @@ export class WVM {
       if (dx * dx + dz * dz < z.radius * z.radius) { z._queued = true; q.push(z); }
     }
     if (!q.length) return;
-    if (this._zoneDebt > 0) { this._zoneDebt -= 6; return; }
     q.sort((a, b) => ((a.center.x - p.x) ** 2 + (a.center.z - p.z) ** 2) - ((b.center.x - p.x) ** 2 + (b.center.z - p.z) ** 2));
-    const z = q.shift(); this._buildZone(z);
+    const z = q[0]; const dz2 = (z.center.x - p.x) ** 2 + (z.center.z - p.z) ** 2;
+    /* a zone you are already well inside builds now; the ones you are only approaching wait while the frame is paying off build debt */
+    if (this._zoneDebt > 0 && dz2 > z.radius * z.radius * 0.36) { this._zoneDebt -= 6; return; }
+    q.shift(); this._buildZone(z);
   }
-  _buildZone(z) { if (!z || z.built) return 0; z.built = true; z._queued = false; const t = performance.now(); try { z.build(this); } catch (e) { console.error('zone', z.name, e); } const ms = performance.now() - t; this._zoneDebt = Math.max(0, (this._zoneDebt || 0) + ms - 6); this._zoneMs = (this._zoneMs || 0) + ms; try { if (this.renderer.shadowMap.enabled) this.renderer.shadowMap.needsUpdate = true; } catch (e) { } return ms; }
+  _buildZone(z) { if (!z || z.built) return 0; z.built = true; z._queued = false; const t = performance.now(); try { z.build(this); } catch (e) { console.error('zone', z.name, e); } const ms = performance.now() - t; this._zoneDebt = Math.min(60, Math.max(0, (this._zoneDebt || 0) + ms - 6)); this._zoneMs = (this._zoneMs || 0) + ms; try { if (this.renderer.shadowMap.enabled) this.renderer.shadowMap.needsUpdate = true; } catch (e) { } return ms; }
   /* build every unbuilt zone, one per frame (used behind the VR arrival dome so the world is complete when it fades in) */
   prebuildZones(onDone) { const list = this.zones.filter(z => !z.built); let i = 0; const step = () => { if (i >= list.length) { this.updaters = this.updaters.filter(u => u !== step); try { this._cullPrep && this._cullPrep(); } catch (e) { } onDone && onDone(); return; } this._buildZone(list[i++]); }; this.onUpdate(step); return list.length; }
 
