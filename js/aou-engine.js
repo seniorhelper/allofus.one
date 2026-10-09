@@ -1229,7 +1229,7 @@ export class WVM {
     }
     this.closeSearch();
     if (mode === 'walk') { const path = this.findPath(pos.x, pos.z, pl.x, pl.z); if (path) { this._route = { pl, path, i: 0, chk: this.t, cx: pos.x, cz: pos.z, tries: 0 }; this.walkTarget = null; this.toast('🚶 On our way to ' + pl.name + '… tap ⚡ any time to skip the walk.', 3200); this._skipBtn(pl); return; } this.toast('No clear walking route from here, so we are transporting you. ✨', 2600); }
-    this._route = null; this.walkTarget = null;
+    this._route = null; this.walkTarget = null; if (this._golfActive && this._golfAbort && pl.id !== 'skyrange') this._golfAbort();
     if (pl.fn) { pl.fn(this); return; }
     if (pl.url) { this.go(pl.url, '✨ ' + pl.name); return; }
     this.fade.classList.add('on'); this.fade.textContent = '✨ ' + pl.name;
