@@ -391,14 +391,14 @@ function injectCSS() { if (document.getElementById('aou-css')) return; const s =
 #wvm-list,#wvm-bag,#wvm-coins{display:none!important}
 #aou-ui{position:absolute;inset:0;pointer-events:none;z-index:30;font-family:Poppins,"Segoe UI",Arial,sans-serif}
 #aou-ui>*{pointer-events:auto}
-#aou-dock{position:absolute;left:10px;bottom:12px;display:flex;flex-direction:column;gap:7px;z-index:44}
-#aou-dock button{position:relative;width:58px;height:54px;border-radius:16px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.92);color:#0f172a;font-size:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(2,6,23,.25);font-family:inherit;line-height:1}
+#aou-dock{position:absolute;left:186px;bottom:12px;display:flex;flex-direction:row;gap:6px;z-index:44}
+#aou-dock button{position:relative;width:50px;height:50px;border-radius:14px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.92);color:#0f172a;font-size:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(2,6,23,.25);font-family:inherit;line-height:1}
 #aou-dock button small{font-size:9.5px;font-weight:800;margin-top:3px;color:#334155;letter-spacing:.2px}
 #aou-dock button.ring{border:3px solid var(--rc);box-shadow:0 0 0 3px rgba(255,255,255,.7),0 0 18px var(--rc)}
 #aou-dock button.join{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff}#aou-dock button.join small{color:#fff}
 #aou-dock button.dive{background:#0e7490;color:#fff}#aou-dock button.dive small{color:#fff}
 #aou-dock i{position:absolute;top:-4px;right:-4px;background:#e11d48;color:#fff;font-style:normal;font-size:11px;font-weight:800;border-radius:12px;padding:2px 6px}
-@media (max-width:720px){#aou-dock{flex-direction:row;flex-wrap:wrap;left:6px;right:auto;bottom:auto;top:58px;max-width:64px;gap:5px}#aou-dock button{width:50px;height:46px;font-size:17px;border-radius:13px}#aou-dock button small{font-size:8.5px}}
+@media (max-width:820px){#aou-dock{left:0;right:0;bottom:0;top:auto;height:64px;box-sizing:border-box;padding:7px 6px 7px 124px;gap:5px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;background:rgba(8,20,50,.94);border-top:1px solid rgba(124,248,255,.35);scrollbar-width:none}#aou-dock::-webkit-scrollbar{display:none}#aou-dock button{flex:none;width:48px;height:48px;font-size:17px;border-radius:12px}#aou-dock button small{font-size:8.5px}}
 .aou-modal{position:absolute;inset:0;background:rgba(2,6,23,.45);display:flex;align-items:center;justify-content:center;padding:12px;z-index:40;animation:aouIn .18s ease}
 @keyframes aouIn{from{opacity:0}to{opacity:1}}
 .aou-card{background:#fff;color:#0f172a;border-radius:20px;width:min(560px,96vw);max-height:88vh;overflow:auto;box-shadow:0 24px 70px rgba(2,6,23,.45);border:1px solid #e2e8f0}
@@ -443,8 +443,8 @@ function injectCSS() { if (document.getElementById('aou-css')) return; const s =
 .moods{display:flex;gap:8px}.moods button{font-size:28px;border:2px solid #e2e8f0;background:#fff;border-radius:14px;padding:4px 8px;cursor:pointer}.moods button.on{border-color:#7c3aed;background:#f5f3ff}
 .pathgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.pathgrid button{border:2px solid var(--c);background:#fff;color:#0f172a;border-radius:14px;padding:10px;font:inherit;cursor:pointer;display:grid;text-align:left}.pathgrid button span{font-size:24px}.pathgrid button small{color:#64748b}.pathgrid button.on{background:var(--c);color:#fff}.pathgrid button.on small{color:#fff}
 .fpost{border-bottom:1px solid #f1f5f9;padding:8px 0}.fpost p{margin:4px 0}.fpost small{color:#94a3b8}
-#aou-np{position:absolute;right:12px;bottom:14px;width:280px;background:#fff;color:#0f172a;border-radius:16px;box-shadow:0 14px 40px rgba(2,6,23,.4);padding:10px;z-index:35}.np-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:14px}.np-vid{position:relative;padding-top:56.25%;border-radius:10px;overflow:hidden;background:#000}.np-vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}#aou-np small{color:#64748b;font-size:11px}
-@media(max-width:720px){#aou-np{right:auto;left:64px;bottom:auto;top:58px;width:214px;padding:8px}}
+#aou-np{position:absolute;right:100px;bottom:70px;width:280px;background:#fff;color:#0f172a;border-radius:16px;box-shadow:0 14px 40px rgba(2,6,23,.4);padding:10px;z-index:35}.np-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:14px}.np-vid{position:relative;padding-top:56.25%;border-radius:10px;overflow:hidden;background:#000}.np-vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}#aou-np small{color:#64748b;font-size:11px}
+@media(max-width:820px){#aou-np{right:8px;left:auto;bottom:300px;top:auto;width:214px;padding:8px}}
 #aou-cinema{position:absolute;inset:0;z-index:45;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(0,0,0,.35) 30%,rgba(0,0,0,.88) 100%);opacity:0;transition:opacity .8s}#aou-cinema.on{opacity:1}
 #aou-cinema .screen{width:min(82vw,1000px);aspect-ratio:16/9;position:relative;border-radius:6px;overflow:hidden;box-shadow:0 0 60px rgba(191,230,255,.55),0 0 140px rgba(191,230,255,.25);animation:flick 3.2s infinite}#aou-cinema iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 #aou-cinema .beam{position:absolute;bottom:0;left:50%;width:70vw;height:60vh;transform:translateX(-50%);background:linear-gradient(0deg,rgba(220,240,255,.10),rgba(220,240,255,0));clip-path:polygon(48% 100%,52% 100%,100% 0,0 0);pointer-events:none}
