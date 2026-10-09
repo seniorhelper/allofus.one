@@ -190,6 +190,7 @@ export async function greetingBanner(ctx, mount) {
   let ref = ''; try { ref = JSON.parse(localStorage.getItem('aou_ref') || '""') || ''; } catch (e) { ref = ''; }
   const title = isNew ? `Welcome to allofus.one${first ? ', ' + esc(first) : ''} — happy ${d}!` : me ? (friday ? `Happy Friday, ${esc(first)}` : `${tod}, ${esc(first)} — happy ${d}`) : ref ? `@${esc(ref)} invited you to allofus.one` : (friday ? 'Happy Friday — welcome to allofus.one' : `Happy ${d} — welcome to allofus.one`);
   const sub = isNew ? 'Your feed, your page, your people. Start with a hello post, then invite three friends.' : me ? '' : 'Read everything free. Join to post, react, connect and build your page.';
+  if (!me) { const jb = document.querySelector('.fl-joinbar'); if (jb) jb.remove(); }
   mount.className = 'gr-banner' + (friday ? ' fri' : '') + (isNew ? ' new' : ''); mount.setAttribute('role', 'status');
   mount.innerHTML = `<div class="gr-tx"><b>${title}</b><span data-grsub>${esc(sub)}</span></div><div class="gr-acts">${me ? `<button class="fl-btn sm p" data-invite>${I3.invite} Invite friends</button>` : `<button class="fl-btn sm p" data-join>${I3.invite} Join free</button><button class="fl-btn sm" data-signin>Sign in</button>`}<button class="gr-x" data-grx aria-label="Hide for today">${I3.x}</button></div>`;
   $('[data-grx]', mount).onclick = () => { try { localStorage.setItem('aou_greet_hide', today); } catch (e) { } mount.remove(); };
