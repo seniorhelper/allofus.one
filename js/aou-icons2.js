@@ -84,6 +84,20 @@ const SET2 = {
   '＋': P('<path d="M12 5v14M5 12h14"/>'),
   '🤿': P('<circle cx="10" cy="11" r="6"/><path d="M16 11h3v9M10 17v4"/>'),
   '🖐️': P('<path d="M7 11V6a1.5 1.5 0 0 1 3 0v5M10 10V4a1.5 1.5 0 0 1 3 0v6M13 10V5a1.5 1.5 0 0 1 3 0v7M16 12V8a1.5 1.5 0 0 1 3 0v6a6 6 0 0 1-12 0v-2a2 2 0 0 1 2-2"/>'),
+  '🚗': P('<path d="M5 16l1.5-5h11L19 16"/><rect x="3" y="11" width="18" height="7" rx="2"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/>'),
+  '🛋️': P('<path d="M4 12V9a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v3"/><path d="M3 12h18v6H3z"/><path d="M5 18v2M19 18v2"/>'),
+  '🔧': P('<path d="M14 7a4 4 0 0 0 5 5l-8 8-3-3 8-8zM3 21l3-3"/>'),
+  '🧸': P('<circle cx="12" cy="13" r="6"/><circle cx="6.5" cy="7" r="2"/><circle cx="17.5" cy="7" r="2"/><path d="M10 12h.01M14 12h.01M10.5 15.5c1 .8 2 .8 3 0"/>'),
+  '🔄': P('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 3v5h-5"/>'),
+  '📤': P('<path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/><path d="M12 3v12M7 8l5-5 5 5"/>'),
+  '🫂': P('<circle cx="8" cy="7" r="2.5"/><circle cx="16" cy="7" r="2.5"/><path d="M3 20c0-4 2-7 5-7s5 3 5 7M11 20c0-4 2-7 5-7s5 3 5 7"/>'),
+  '💛': P('<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>'),
+  '▶': P('<path d="M7 5l12 7-12 7z"/>'),
+  '✉️': P('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),
+  '✉': P('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),
+  '🚧': P('<path d="M3 17h18M6 17l2-10h8l2 10"/><path d="M7 13h10M8 9h8"/>'),
+  '😎': P('<circle cx="12" cy="12" r="9"/><path d="M5 10h5v2a2 2 0 0 1-4 0M14 10h5v2a2 2 0 0 1-4 0M10 10h4"/><path d="M8.5 15.5c1.5 2 5.5 2 7 0"/>'),
+  '↗': P('<path d="M7 17L17 7M9 7h8v8"/>'),
   '🎊': P('<path d="M4 20l4-12 8 8z"/><path d="M14 6l1-2M18 8l2-1M16 12l2 1M12 4l.5 2M20 4l1 1"/>')
 };
 export const HICON2 = Object.assign({}, HICON, SET2);
