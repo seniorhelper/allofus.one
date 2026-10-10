@@ -1,7 +1,7 @@
 /* App-like speed: the 3D engine, the VR layer, every world module, the vendored three.js, the skies and the key textures are
    precached on the first visit (versioned: bump V to ship a new set), then served instantly and refreshed in the background.
    Models, images and audio are cached on first use. Pages (navigations) always check the network first. Oct 2026. */
-const V = 'v111';
+const V = 'v112';
 const CORE = [
   '/vendor/three/three.module.min.js', '/vendor/three/jsm/webxr/VRButton.js', '/vendor/three/jsm/loaders/GLTFLoader.js', '/vendor/three/jsm/loaders/RGBELoader.js',
   '/vendor/three/jsm/postprocessing/EffectComposer.js', '/vendor/three/jsm/postprocessing/RenderPass.js', '/vendor/three/jsm/postprocessing/ShaderPass.js', '/vendor/three/jsm/postprocessing/UnrealBloomPass.js', '/vendor/three/jsm/postprocessing/OutputPass.js', '/vendor/three/jsm/postprocessing/Pass.js', '/vendor/three/jsm/postprocessing/MaskPass.js',
