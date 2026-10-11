@@ -366,6 +366,6 @@ try { if (/[?&](vr=1|xrsim=1)/.test(location.search)) for (const u of ['/js/aou-
 /* ?vr=1: a one-tap door into VR (headsets need a tap to start a session) */
 (() => { try { if (new URLSearchParams(location.search).get('vr') !== '1') return; const wait = setInterval(() => { const v = document.getElementById('wvm-vr'); if (!v) return; clearInterval(wait); const o = document.createElement('button'); o.textContent = '🕶️ Tap to enter VR'; o.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:80;border:0;border-radius:12px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;font:900 20px Poppins,Arial;padding:18px 32px;box-shadow:0 16px 40px rgba(2,8,30,.5)'; o.onclick = () => { v.click(); o.remove(); }; document.body.appendChild(o); setTimeout(() => o.remove(), 60000); }, 500); } catch (e) { } })();
 </script>
-<script type="module">import { watchEmoji, ICON_CSS } from "/js/aou-icons.js"; const st = document.createElement("style"); st.textContent = ICON_CSS; document.head.appendChild(st); watchEmoji(document.body);</script>
+<script type="module">import { watchEmoji, ICON2_CSS as ICON_CSS } from "/js/aou-icons2.js"; const st = document.createElement("style"); st.textContent = ICON_CSS; document.head.appendChild(st); watchEmoji(document.body);</script>
 </body>
 </html>

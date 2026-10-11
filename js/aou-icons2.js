@@ -32,8 +32,8 @@ const SET2 = {
   '🔎': P('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>'),
   '🔍': P('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>'),
   '🔔': P('<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>'),
-  '⚙️': P('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>'),
-  '⚙': P('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>'),
+  '⚙️': P('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'),
+  '⚙': P('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'),
   '🔒': P('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
   '🏷️': P('<path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>'),
   '📣': P('<path d="M4 10v4h3l7 4V6l-7 4z"/><path d="M18 9a4 4 0 0 1 0 6"/>'),
@@ -232,7 +232,13 @@ const SET3 = {
   '🧺': P('<path d="M3 10h18l-2 10H5zM8 10l4-6 4 6M8 14v3M12 14v3M16 14v3"/>'), '🧼': P('<rect x="4" y="10" width="16" height="10" rx="3"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="5" r="1.5"/>'), '🪜': P('<path d="M7 3v18M17 3v18M7 7h10M7 12h10M7 17h10"/>'), '🔩': P('<path d="M12 3l4 2v3l-4 2-4-2V5zM12 10v11M10 14h4M10 18h4"/>'), '⚙': P('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>'),
   '🏳': P('<path d="M5 21V4h12l-2 4 2 4H5"/>'), '🎗': P('<path d="M12 3a4 4 0 0 1 4 4c0 3-4 6-4 6s-4-3-4-6a4 4 0 0 1 4-4zM9 12l-4 9 3-1 2 2 2-5M15 12l4 9-3-1-2 2-2-5"/>'), '🕯': P('<rect x="9" y="9" width="6" height="12" rx="1"/><path d="M12 9V7M12 2c-1 2-1 3 0 4 1-1 1-2 0-4"/>'), '🙂‍↕️': F('<path d="M9 9.5h.01M15 9.5h.01M8 14.5c2 2.5 6 2.5 8 0"/>')
 };
-export const HICON2 = Object.assign({}, SET3, HICON, SET2);
+/* set 4 (Oct 11 2026): the last glyphs the 3D HUD still showed as emoji */
+const SET4 = {
+  '🛤️': P('<path d="M8 3 6 21M16 3l2 18M7 7h10M6.5 12h11M6 17h12"/>'), '🛤': P('<path d="M8 3 6 21M16 3l2 18M7 7h10M6.5 12h11M6 17h12"/>'),
+  '📨': P('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
+  '🤳': P('<rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="9" r="2"/><path d="M9 15c.8-1.3 1.8-2 3-2s2.2.7 3 2M11 19h2"/>')
+};
+export const HICON2 = Object.assign({}, SET4, SET3, HICON, SET2);
 export const ICON2_CSS = `.hic{width:1.1em;height:1.1em;vertical-align:-0.18em;display:inline-block;color:currentColor}`;
 /* icon by emoji key (for templates): ic('✏️') → svg string */
 export const ic = (k, cls) => { const s = HICON2[k] || HICON2[String(k).replace(/️/g, '')] || ''; return cls && s ? s.replace('class="hic"', `class="hic ${cls}"`) : s; };

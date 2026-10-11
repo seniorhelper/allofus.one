@@ -18,7 +18,8 @@ import { boardView, BOARD_CSS } from './aou-board.js';
 import { watchEmoji, ICON2_CSS as ICON_CSS, ic } from './aou-icons2.js';
 import { startTour, tourDue, claimModal, claimDue, ONBOARD_CSS } from './aou-onboard.js';
 import { connPanel, hugsInbox, CONNS_CSS } from './aou-conns.js';
-import { spacesView, eventsList, coursesList, inboxView, badgesHTML, SPACES_CSS } from './aou-spaces.js';
+import { spacesView, eventsList, coursesList, inboxView, badgesHTML, SPACES_CSS, EVENT_GUIDE } from './aou-spaces.js';
+import { guideHTML, wireGuide } from './aou-guide.js';
 import { dmView, vibeStripHTML, wireVibes, DM_CSS } from './aou-dm.js';
 import * as BM from './aou-brand.js';
 import { AUTOPLAY_CSS, AP_ICON, videoHTML, apInit, apFromAccount, apMenuItems, apMenuAct, apSettingHTML } from './aou-autoplay.js';
@@ -231,8 +232,8 @@ export async function mountFlat2(root, opts) {
     if (view === 'search') { await searchView(); return; }
     if (view === 'admin') { if (!me || !me.isAdmin) { body.innerHTML = '<div class="fl-empty">Admins only.</div>'; return; } await adminDash(body, { sb, me, names, fillNames, rightRail: () => rightRail(), wireRight: () => wireRight(), toast, opts }); return; }
     if (view === 'spaces' || view === 'space') { await spacesView(body, { sb, me, toast, nav, esc, opts, needMe, rightRail, wireRight, feedFor: async (pane, q) => { pane.innerHTML = `<div class="fl-card" id="sp-comp"></div><div id="sp-feed"></div>`; composer($('#sp-comp', pane), { groupSlug: q.group, after: () => feedList($('#sp-feed', pane), { group: q.group }) }); await feedList($('#sp-feed', pane), { group: q.group }); }, blocksAdd: stackBlock }); return; }
-    if (view === 'events') { body.innerHTML = '<div class="fl3"><div></div><div id="ev-host"></div>' + rightRail() + '</div>'; wireRight(body); await eventsList($('#ev-host', body), { sb, me, toast, nav, needMe }); return; }
-    if (view === 'courses') { body.innerHTML = '<div class="fl3"><div></div><div id="co-host"></div>' + rightRail() + '</div>'; wireRight(body); await coursesList($('#co-host', body), { sb, me, toast, nav, needMe, opts, blocksAdd: stackBlock }); return; }
+    if (view === 'events') { body.innerHTML = '<div class="fl3"><aside id="ev-side" class="gd-side">' + guideHTML(me ? EVENT_GUIDE : Object.assign({}, EVENT_GUIDE, { examples: [] })) + '</aside><div id="ev-host"></div>' + rightRail() + '</div>'; wireRight(body); await eventsList($('#ev-host', body), { sb, me, toast, nav, needMe }); if (me) wireGuide(body, EVENT_GUIDE); return; }
+    if (view === 'courses') { body.innerHTML = '<div class="fl3"><aside id="co-side" class="gd-side"></aside><div id="co-host"></div>' + rightRail() + '</div>'; wireRight(body); await coursesList($('#co-host', body), { sb, me, toast, nav, needMe, opts, blocksAdd: stackBlock, side: $('#co-side', body) }); return; }
     if (view === 'inbox') { await inboxView(body, { sb, me, nav, rightRail, wireRight }); return; }
     if (view === 'work') { const W = await import('./aou-work.js'); body.innerHTML = '<div class="fl-empty">Opening FLOWworks…</div>'; W.openWorkboard({ sb, me, toast, affirmation: '', seed: (new URLSearchParams(location.search)).get('tpl') || '', onClose: () => nav('board') }); return; }
     if (view === 'dm' || view === 'messages') { await dmView(body, { sb, me, toast, nav, needMe, rightRail, wireRight }); return; }
