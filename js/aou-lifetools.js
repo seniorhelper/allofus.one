@@ -225,8 +225,8 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ 
 
 import { ideaGenerator, waysToMoney, quoteBuilder, resumeBuilder, agentBriefing } from './aou-money.js';
 import { ic, toolIcon } from './aou-icons2.js';
-import { li } from './aou-guide.js';
-export const LIFETOOLS_CSS = `.lt-btn:not(.holo):not(.primary){color:#0f172a!important}
+import { li, GUIDE_CSS } from './aou-guide.js';
+export const LIFETOOLS_CSS = GUIDE_CSS + `.lt-btn:not(.holo):not(.primary){color:#0f172a!important}
 .lb nav .lbg{display:block;font-style:normal;font-size:10.5px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#64748b;padding:10px 12px 2px}
 .lt-hero{display:flex;gap:16px;align-items:stretch;background:radial-gradient(120% 140% at 0% 0%,#e0f2fe 0,#ede9fe 45%,#fff7ed 100%);border:1px solid #c7d2fe;border-radius:20px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden}
 .lt-hero:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(56,189,248,.06) 0 2px,transparent 2px 5px);pointer-events:none}
@@ -285,7 +285,7 @@ export const LIFETOOLS_CSS = `.lt-btn:not(.holo):not(.primary){color:#0f172a!imp
 .lt-wb .lt-tile.max{position:fixed;inset:16px;z-index:250;grid-column:auto;grid-row:auto;box-shadow:0 30px 80px rgba(2,8,30,.45);border-radius:20px;max-width:1100px;margin:0 auto}.lt-wb .lt-tile.max .lt-tb{font-size:14.5px;padding:16px 18px;-webkit-mask-image:none;mask-image:none}.lt-wb .lt-tile.max .lt-open,.lt-wb .lt-tile.max .lt-grip{display:none}.lt-wb .lt-tile.max .lt-th{cursor:default}
 body.lt-tile-open::before{content:"";position:fixed;inset:0;background:rgba(6,16,31,.5);z-index:249}
 .lt-opt{position:fixed;z-index:260;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 16px 40px rgba(2,8,30,.2);padding:10px;min-width:240px;font:700 12px Poppins,Arial;color:#0f172a;animation:fmIn .15s ease-out}.lt-opt .r{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}.lt-opt .r>span{width:52px;color:#64748b;font-size:11px}.lt-opt button{display:inline-flex;align-items:center;gap:4px;min-height:36px;border:1.5px solid #e2e8f0;background:#fff;border-radius:10px;padding:4px 10px;cursor:pointer;font:800 12px Poppins,Arial;color:#0f172a}.lt-opt button .li{width:15px;height:15px}.lt-opt button:hover{border-color:#0ea5e9}.lt-opt button.on{background:#14183a;color:#fff;border-color:#14183a}.lt-opt .sw{width:28px;height:28px;min-height:28px;border-radius:8px;padding:0;border:2px solid #fff;box-shadow:0 0 0 1px #e2e8f0}.lt-opt .sw.on{box-shadow:0 0 0 2px #14183a}
-@media(min-width:701px){.lt-wb .lt-tile.sS .lt-grip,.lt-wb .lt-tile.sS [data-size]{display:none}.lt-wb .lt-tile.sS .lt-th{gap:6px;padding-left:10px}}
+@media(min-width:701px){.lt-wb .lt-tile.sS .lt-grip,.lt-wb .lt-tile.sS [data-size]{display:none}.lt-wb .lt-tile.sS .lt-th{gap:6px;padding-left:10px}.lt-wb .lt-tile.sS .lt-tbtns button{width:30px}.lt-wb .lt-tile.sS .lt-th b{font-size:13px}.lt-wb .lt-tile.sS .lt-th .ic{width:28px;height:28px}}
 @media(max-width:1200px){.lt-wb{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.lt-wb{grid-template-columns:1fr;grid-auto-rows:250px}.lt-wb .lt-tile.sM,.lt-wb .lt-tile.sL{grid-column:span 1}.lt-grip{display:none}.lt-wb .lt-tile.max{inset:8px;border-radius:16px}.lt-dbar .gbtn{flex:1}.lt-fullbtn{display:none!important}}
 @media (prefers-reduced-motion:reduce){.lt-btn.holo:before,.lt-holo:before{animation:none}}
