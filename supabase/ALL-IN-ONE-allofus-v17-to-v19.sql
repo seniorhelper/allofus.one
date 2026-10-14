@@ -8,7 +8,7 @@
 --
 -- What it adds
 --   1. pages.admin_emails  — pre-claim a business page for people who have not signed up yet
---      (e.g. meredith@elevationhealth.co + lindsay@elevationhealth.co for Elevation Health).
+--      (e.g. a client's own email for their Brand page).
 --      The moment that email creates an account, the account is added to pages.admins automatically.
 --   2. Every new member starts connected to the founder (Zach). They can remove the connection
 --      (new delete policy) — it is a default, not a lock.
@@ -138,7 +138,6 @@ begin
     ('search-converts','Search Converts','Conversion-first marketing: CRO, paid search, funnels, websites.','1-800-481-8638','https://searchconverts.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('aging-safely-baths','Aging Safely Baths','Walk-in tubs and accessible showers since 2012.','888-779-2284','https://www.agingsafelybaths.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('showers4less','Showers4Less','Roll-in and ADA showers, made in the USA, shipped nationwide.','888-779-2284','https://showers4less.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
-    ('elevation-health','Elevation Health','GLP-1 weight loss with real dietitian support. The 90-Day Transformation.','','https://loseweightonglp1.com/','Telehealth · United States','falls',array['meredith@elevationhealth.co','lindsay@elevationhealth.co','zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('bighorn-painting','Bighorn Painting','Interior and exterior painting across the Denver metro.','','https://denverpaintcontractors.com/','Arvada, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('painting-brighton','Painting Brighton','House painting in Brighton and the north metro.','','https://paintingbrighton.com/','Brighton, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('raised-in-a-barn','Raised In a Barn Furniture','Handcrafted barnwood furniture, free shipping.','(970) 518-2883','https://rusticbarnwoodfurniture.com/','Colorado','plaza',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
@@ -242,7 +241,7 @@ end $$;
 --   2. Raised In a Barn Furniture (slug raised-in-a-barn): Ritchie's email is pre-linked as a manager,
 --      Zach's two emails stay, VR home = 'art' (the Art Garden: handcrafted work). If an older row was saved
 --      under the built-in slug raised-in-a-barn-furniture and no raised-in-a-barn row exists, it is renamed.
---   3. Elevation Health: Meredith + Lindsay stay pre-linked (owner stays Zach).
+--   3. (Elevation Health removed Oct 14 2026: the client cancelled. allofus-v20.sql deletes its page.)
 --   4. Anyone on any page's admin_emails who ALREADY has an account is linked into pages.admins right now.
 --   5. Pre-linked emails may edit (and post as) their page even before the account is linked
 --      (policy on the signed-in email claim). Keep "Confirm email" ON in Supabase Auth so nobody can
@@ -306,20 +305,6 @@ begin
          extra    = coalesce(extra, '{}'::jsonb) || jsonb_build_object('mall', 'https://worldvrmall.com/mall/?to=raised-in-a-barn')
    where slug in ('raised-in-a-barn', 'raised-in-a-barn-furniture');
 
-  if v_founder is not null then
-    insert into public.pages (owner_id, slug, name, tagline, about, phone, website, location, hours, vr_home, admin_emails, extra)
-    values (v_founder, 'elevation-health', 'Elevation Health',
-            'GLP-1 weight loss with real dietitian support. Telehealth, 503A pharmacies, a 90-day transformation.',
-            'Elevation Health was founded by registered dietitians Lindsay Gayman and Meredith Cross. The 90-Day Transformation pairs GLP-1 medication from 503A pharmacies with the GLP-1 360 Plan: nutrition, habits and 1-on-1 support so the weight stays off.',
-            '', 'https://loseweightonglp1.com/', 'Telehealth · United States', 'By appointment', 'falls',
-            array['meredith@elevationhealth.co','lindsay@elevationhealth.co','zach@eyetoad.com','zachwennstedt@gmail.com'],
-            jsonb_build_object('color', '#f43f5e', 'cat', 'Health and wellness'))
-    on conflict (slug) do nothing;
-  end if;
-  update public.pages
-     set admin_emails = (select array(select distinct e from unnest(coalesce(admin_emails, '{}') || array['meredith@elevationhealth.co','lindsay@elevationhealth.co','zach@eyetoad.com','zachwennstedt@gmail.com']) e)),
-         vr_home = coalesce(nullif(vr_home, ''), 'falls')
-   where slug = 'elevation-health';
 end $$;
 
 -- ---------- 4. link everyone who already has an account (idempotent) ----------

@@ -5,7 +5,7 @@
 --
 -- What it adds
 --   1. pages.admin_emails  — pre-claim a business page for people who have not signed up yet
---      (e.g. meredith@elevationhealth.co + lindsay@elevationhealth.co for Elevation Health).
+--      (e.g. a client's own email for their Brand page).
 --      The moment that email creates an account, the account is added to pages.admins automatically.
 --   2. Every new member starts connected to the founder (Zach). They can remove the connection
 --      (new delete policy) — it is a default, not a lock.
@@ -135,7 +135,6 @@ begin
     ('search-converts','Search Converts','Conversion-first marketing: CRO, paid search, funnels, websites.','1-800-481-8638','https://searchconverts.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('aging-safely-baths','Aging Safely Baths','Walk-in tubs and accessible showers since 2012.','888-779-2284','https://www.agingsafelybaths.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('showers4less','Showers4Less','Roll-in and ADA showers, made in the USA, shipped nationwide.','888-779-2284','https://showers4less.com/','Denver, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
-    ('elevation-health','Elevation Health','GLP-1 weight loss with real dietitian support. The 90-Day Transformation.','','https://loseweightonglp1.com/','Telehealth · United States','falls',array['meredith@elevationhealth.co','lindsay@elevationhealth.co','zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('bighorn-painting','Bighorn Painting','Interior and exterior painting across the Denver metro.','','https://denverpaintcontractors.com/','Arvada, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('painting-brighton','Painting Brighton','House painting in Brighton and the north metro.','','https://paintingbrighton.com/','Brighton, CO','city',array['zach@eyetoad.com','zachwennstedt@gmail.com']),
     ('raised-in-a-barn','Raised In a Barn Furniture','Handcrafted barnwood furniture, free shipping.','(970) 518-2883','https://rusticbarnwoodfurniture.com/','Colorado','plaza',array['zach@eyetoad.com','zachwennstedt@gmail.com']),

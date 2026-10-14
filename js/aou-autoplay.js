@@ -37,7 +37,7 @@ export const apGet = () => { const v = LS.get(KEY); return valid(v) ? v : apDefa
 export const onWifi = () => { const c = conn(); if (!c) return true; if (c.saveData) return false; if (c.type === 'cellular') return false; if (/(^|-)(2g|3g)$/.test(String(c.effectiveType || ''))) return false; return true; };
 export const apAllowed = () => { const v = apGet(); return v === 'on' || (v === 'wifi' && onWifi()); };
 let saveRemote = null, toastFn = null;
-export const apSet = (v, o = {}) => { if (!valid(v)) return; LS.set(KEY, v); if (o.remote !== false && saveRemote) { try { saveRemote(v); } catch (e) { } } document.querySelectorAll('[data-ap]').forEach(b => { const on = b.dataset.ap === v; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.classList.toggle('p', on); }); pick(); };
+export const apSet = (v, o = {}) => { if (!valid(v)) return; LS.set(KEY, v); if (o.remote !== false && saveRemote) { try { saveRemote(v); } catch (e) { } } document.querySelectorAll('[data-ap]').forEach(b => { const on = b.dataset.ap === v; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.classList.toggle('p', on); }); pick(); try { ytPick(); } catch (e) { } };
 /* the account copy wins on load (same choice on every device the member signs in on) */
 export const apFromAccount = (home) => { const v = home && home.autoplay; if (valid(v) && v !== LS.get(KEY)) LS.set(KEY, v); };
 export const apLabel = (v = apGet()) => (AP_OPTS.find(o => o[0] === v) || [, 'On'])[1];
@@ -56,7 +56,7 @@ const vidOf = (vp) => vp.querySelector('video');
 const fmt = (s) => { if (!isFinite(s) || s < 0) return ''; s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 const paint = (vp) => { const v = vidOf(vp); if (!v) return; const playing = !v.paused && !v.ended; vp.classList.toggle('playing', playing); const tap = vp.querySelector('.vp-tap'); tap.setAttribute('aria-label', playing ? 'Pause video' : 'Play video'); tap.querySelector('.vp-big').innerHTML = playing ? AP_ICON.pause : AP_ICON.play; const sb = vp.querySelector('[data-vsnd]'); sb.innerHTML = v.muted ? AP_ICON.mute : AP_ICON.sound; sb.setAttribute('aria-label', v.muted ? 'Turn sound on' : 'Turn sound off'); sb.setAttribute('aria-pressed', v.muted ? 'false' : 'true'); };
 const tick = (vp) => { const v = vidOf(vp); if (!v) return; const d = v.duration; const bar = vp.querySelector('.vp-bar i'); if (bar) bar.style.width = (isFinite(d) && d ? (v.currentTime / d) * 100 : 0) + '%'; const t = vp.querySelector('.vp-time'); if (t) t.textContent = isFinite(d) && d ? fmt(d - v.currentTime) : ''; };
-const pauseOthers = (keep) => { live.forEach(vp => { if (vp === keep) return; const v = vidOf(vp); if (v && !v.paused) v.pause(); }); };
+const pauseOthers = (keep) => { live.forEach(vp => { if (vp === keep) return; const v = vidOf(vp); if (v && !v.paused) v.pause(); }); ytLive.forEach(yp => { if (yp !== keep) ytCmd(yp, 'pauseVideo'); }); };
 const play = async (vp, how) => { const v = vidOf(vp); if (!v) return; pauseOthers(vp); if (how === 'auto') v.muted = SS.get(MUTE_KEY) !== '0'; try { await v.play(); } catch (e) { if (!v.muted) { v.muted = true; try { await v.play(); } catch (e2) { } } } paint(vp); };
 /* choose the most visible feed video (>= 60%); everything else pauses */
 function pick() { if (!started) return; const allowed = apAllowed() && document.visibilityState !== 'hidden'; let best = null, bestR = 0; live.forEach(vp => { if (!vp.isConnected) { live.delete(vp); return; } const r = ratio.get(vp) || 0; const v = vidOf(vp); if (!v) return; const isMan = manual.has(vp); if (!v.paused && ((isMan && r < 0.3) || (!isMan && r < 0.6) || document.visibilityState === 'hidden' || (!isMan && !apAllowed()))) v.pause(); if (allowed && r >= 0.6 && !userPaused.has(vp) && r > bestR) { best = vp; bestR = r; } }); if (!best) return; const playingManual = [...live].find(vp => manual.has(vp) && !vidOf(vp).paused && vp !== best && (ratio.get(vp) || 0) >= 0.3); if (playingManual) return; const v = vidOf(best); if (v.paused && !v.ended) { manual.delete(best); play(best, 'auto'); } }
@@ -67,9 +67,34 @@ const wire = (vp) => { if (vp.dataset.vpOn) return; vp.dataset.vpOn = '1'; const
   ['play', 'pause', 'ended', 'volumechange'].forEach(ev => v.addEventListener(ev, () => { if (ev === 'play') pauseOthers(vp); paint(vp); }));
   v.addEventListener('timeupdate', () => tick(vp)); v.addEventListener('loadedmetadata', () => tick(vp)); paint(vp); };
 const scan = (root) => { if (!root || root.nodeType !== 1) return; if (root.matches && root.matches('[data-vp]')) wire(root); root.querySelectorAll && root.querySelectorAll('[data-vp]').forEach(wire); };
+/* ---------- YouTube in the feed (v20): muted autoplay in view, edge to edge, Shorts fill the width like a reel ----------
+   The poster (YouTube thumbnail) paints first; the iframe loads when the post comes near the screen, plays muted when
+   at least 60% is visible, pauses when it scrolls away, and only one video (YouTube or mp4) plays at a time.
+   "Tap for sound" unmutes through the YouTube iframe API (postMessage, no extra script). With autoplay Off a tap starts it with sound. */
+const ytLive = new Set(); const ytRatio = new WeakMap(); const ytUserPaused = new WeakSet(); let ytIo = null, ytNear = null, ytMsg = false;
+export const ytHTML = (id, short) => `<div class="yp${short ? ' short' : ''}" data-yp="${esc(id)}"><img class="yp-th" src="https://i.ytimg.com/vi/${esc(id)}/${short ? 'hq720' : 'hqdefault'}.jpg" alt="" loading="lazy" decoding="async"><button type="button" class="yp-tap" aria-label="Play video"><span class="vp-big">${AP_ICON.play}</span></button><button type="button" class="yp-snd" aria-label="Turn sound on" hidden>${AP_ICON.mute}<span>Tap for sound</span></button></div>`;
+const ytFrame = (yp) => yp.querySelector('iframe');
+function ytCmd(yp, func, args) { const f = ytFrame(yp); if (!f || !f.contentWindow) return; try { f.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: args || [] }), '*'); } catch (e) { } }
+const ytLoad = (yp, o = {}) => { if (ytFrame(yp)) return; const id = yp.dataset.yp; const sound = !!o.sound; const q = new URLSearchParams({ autoplay: o.play ? '1' : '0', mute: sound ? '0' : '1', playsinline: '1', rel: '0', modestbranding: '1', enablejsapi: '1', controls: '1', loop: '1', playlist: id, origin: location.origin }); const f = document.createElement('iframe'); f.src = 'https://www.youtube.com/embed/' + encodeURIComponent(id) + '?' + q; f.title = 'Video'; f.referrerPolicy = 'strict-origin-when-cross-origin'; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true; f.setAttribute('frameborder', '0'); f.addEventListener('load', () => { const hi = () => { try { f.contentWindow.postMessage(JSON.stringify({ event: 'listening', id }), '*'); } catch (e) { } }; hi(); setTimeout(hi, 600); yp.classList.add('ready'); if (yp.classList.contains('playing')) { setTimeout(() => ytCmd(yp, 'playVideo'), 350); setTimeout(() => ytCmd(yp, 'playVideo'), 1200); } }); yp.appendChild(f); yp.dataset.muted = sound ? '0' : '1'; const sb = yp.querySelector('.yp-snd'); if (sb) sb.hidden = sound; if (o.play) yp.classList.add('playing'); };
+const ytPlay = (yp, how) => { pauseVidsFor(yp); ytLive.forEach(o => { if (o !== yp) ytCmd(o, 'pauseVideo'); }); if (!ytFrame(yp)) { ytLoad(yp, { play: true, sound: how === 'tap' }); return; } if (how === 'tap') { ytCmd(yp, 'unMute'); ytCmd(yp, 'setVolume', [100]); yp.dataset.muted = '0'; const sb = yp.querySelector('.yp-snd'); if (sb) sb.hidden = true; } ytCmd(yp, 'playVideo'); yp.classList.add('playing'); };
+const pauseVidsFor = () => { live.forEach(vp => { const v = vidOf(vp); if (v && !v.paused) v.pause(); }); };
+function ytPick() { const allowed = apAllowed() && document.visibilityState !== 'hidden'; let best = null, bestR = 0; ytLive.forEach(yp => { if (!yp.isConnected) { ytLive.delete(yp); return; } const r = ytRatio.get(yp) || 0; if (yp.classList.contains('playing') && (r < 0.3 || document.visibilityState === 'hidden')) { ytCmd(yp, 'pauseVideo'); yp.classList.remove('playing'); } if (allowed && r >= 0.6 && !ytUserPaused.has(yp) && r > bestR) { best = yp; bestR = r; } }); if (!best || best.classList.contains('playing')) return; const mp4Busy = [...live].some(vp => { const v = vidOf(vp); return v && !v.paused && (ratio.get(vp) || 0) >= 0.6; }); if (mp4Busy) return; ytPlay(best, 'auto'); }
+const ytWire = (yp) => { if (yp.dataset.ypOn) return; yp.dataset.ypOn = '1'; ytLive.add(yp); if (ytIo) ytIo.observe(yp); if (ytNear) ytNear.observe(yp);
+  yp.querySelector('.yp-tap').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); ytUserPaused.delete(yp); ytPlay(yp, 'tap'); yp.classList.add('engaged'); });
+  yp.querySelector('.yp-snd').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); ytUserPaused.delete(yp); ytPlay(yp, 'tap'); yp.classList.add('engaged'); }); };
+export function ytInit() { if (ytIo) return; if (!('IntersectionObserver' in window)) { document.querySelectorAll('[data-yp]').forEach(yp => ytLoad(yp, {})); return; }
+  ytIo = new IntersectionObserver((ents) => { ents.forEach(e => ytRatio.set(e.target, e.isIntersecting ? e.intersectionRatio : 0)); ytPick(); }, { threshold: [0, 0.3, 0.6, 0.8, 1] });
+  ytNear = new IntersectionObserver((ents) => { ents.forEach(e => { if (e.isIntersecting && apAllowed()) { ytLoad(e.target, {}); ytNear.unobserve(e.target); } }); }, { rootMargin: '400px 0px' });
+  const scanY = (root) => { if (!root || root.nodeType !== 1) return; if (root.matches && root.matches('[data-yp]')) ytWire(root); root.querySelectorAll && root.querySelectorAll('[data-yp]').forEach(ytWire); };
+  scanY(document.body); new MutationObserver((ms) => ms.forEach(m => m.addedNodes.forEach(scanY))).observe(document.body, { childList: true, subtree: true });
+  document.addEventListener('visibilitychange', ytPick);
+  /* the player reports its state: 1 playing, 2 paused (a pause the member made stays paused until they press play) */
+  if (!ytMsg) { ytMsg = true; addEventListener('message', (ev) => { if (!/youtube(-nocookie)?\.com$/.test(String(ev.origin || '').replace(/^https?:\/\/(www\.)?/, ''))) return; let d = null; try { d = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data; } catch (e) { return; } if (!d || !d.info) return; const yp = [...ytLive].find(x => { const f = ytFrame(x); return f && f.contentWindow === ev.source; }); if (!yp) return; const st = d.info.playerState; if (st === 1) { yp.classList.add('playing'); pauseVidsFor(yp); ytLive.forEach(o => { if (o !== yp && o.classList.contains('playing')) { ytCmd(o, 'pauseVideo'); o.classList.remove('playing'); } }); } else if (st === 2) { if ((ytRatio.get(yp) || 0) >= 0.6 && document.visibilityState !== 'hidden' && yp.classList.contains('engaged')) ytUserPaused.add(yp); yp.classList.remove('playing'); } if (typeof d.info.muted === 'boolean') { yp.dataset.muted = d.info.muted ? '1' : '0'; const sb = yp.querySelector('.yp-snd'); if (sb) sb.hidden = !d.info.muted; } }); }
+}
 /* start once per page. save(v) stores the choice on the account (optional); toast(m) shows a message (optional). */
 export function apInit(o = {}) { if (o.save) saveRemote = o.save; if (o.toast) toastFn = o.toast; if (started) { pick(); return; } started = true;
   if ('IntersectionObserver' in window) io = new IntersectionObserver((ents) => { ents.forEach(e => { ratio.set(e.target, e.isIntersecting ? e.intersectionRatio : 0); if (!e.isIntersecting) userPaused.delete(e.target); }); pick(); }, { threshold: [0, 0.3, 0.6, 0.8, 1] });
+  try { ytInit(); } catch (e) { }
   scan(document.body); new MutationObserver((ms) => { ms.forEach(m => m.addedNodes.forEach(scan)); }).observe(document.body, { childList: true, subtree: true });
   document.addEventListener('visibilitychange', pick);
   const c = conn(); if (c && c.addEventListener) c.addEventListener('change', pick);
@@ -122,5 +147,21 @@ export const AUTOPLAY_CSS = `
 .fl .fl-post .acts4{margin:0 -4px}.fl .fl-post .cmts{margin:0 -12px;padding:8px 12px 10px}
 .fl .phid-card{margin:0 -8px 8px;border-radius:0;border-left:0;border-right:0}
 }
+/* YouTube player (v20): no frame, no rounded box, full card width; Shorts fill the width at 4:5 like a reel */
+.yp{position:relative;margin:10px -16px 0;background:#000;overflow:hidden;aspect-ratio:16/9;line-height:0}
+.yp.short{aspect-ratio:auto;height:min(78vh,720px)}
+.yp .yp-th{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity .3s}
+.yp iframe{position:absolute;left:0;top:0;width:100%;height:100%;border:0;display:block}
+.yp.short iframe{left:50%;top:0;height:100%;width:auto;aspect-ratio:9/16;transform:translateX(-50%)}
+.yp.short .yp-th{filter:blur(22px) brightness(.55);transform:scale(1.15)}.yp.short.ready .yp-th{opacity:1}
+.yp.ready .yp-th{opacity:0}
+.yp .yp-tap{position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;border-radius:0}
+.yp .yp-tap .vp-big{width:64px;height:64px;border-radius:50%;background:rgba(6,16,31,.55);color:#fff;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.yp.playing .yp-tap .vp-big{opacity:0}
+.yp.engaged .yp-tap{display:none}
+.yp .yp-snd{position:absolute;right:10px;bottom:12px;z-index:3;display:flex;align-items:center;gap:6px;border:0;border-radius:999px;background:rgba(6,16,31,.72);color:#fff;padding:7px 12px;font:700 12.5px var(--ff,Poppins,Arial);cursor:pointer}
+.yp .yp-snd[hidden]{display:none}
+.fl .fl-post .yp{border-radius:0}
+@media(max-width:760px){.fl .fl-post .yp{margin-left:-12px;margin-right:-12px}.yp.short{height:auto;aspect-ratio:4/5}.yp.short iframe{top:50%;width:100%;height:auto;min-height:100%;transform:translate(-50%,-50%)}}
 @media(prefers-reduced-motion:reduce){.vp .vp-big{transition:none}}
 `;

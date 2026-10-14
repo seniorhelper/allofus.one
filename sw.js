@@ -1,7 +1,7 @@
 /* App-like speed: the 3D engine, the VR layer, every world module, the vendored three.js, the skies and the key textures are
    precached on the first visit (versioned: bump V to ship a new set), then served instantly and refreshed in the background.
    Models, images and audio are cached on first use. Pages (navigations) always check the network first. Oct 2026. */
-const V = 'v113';
+const V = 'v114';
 const CORE = [
   '/vendor/three/three.module.min.js', '/vendor/three/jsm/webxr/VRButton.js', '/vendor/three/jsm/loaders/GLTFLoader.js', '/vendor/three/jsm/loaders/RGBELoader.js',
   '/vendor/three/jsm/postprocessing/EffectComposer.js', '/vendor/three/jsm/postprocessing/RenderPass.js', '/vendor/three/jsm/postprocessing/ShaderPass.js', '/vendor/three/jsm/postprocessing/UnrealBloomPass.js', '/vendor/three/jsm/postprocessing/OutputPass.js', '/vendor/three/jsm/postprocessing/Pass.js', '/vendor/three/jsm/postprocessing/MaskPass.js',
@@ -25,3 +25,5 @@ self.addEventListener('fetch', (e) => { const r = e.request; if (r.method !== 'G
   if (u.hostname === 'cdn.jsdelivr.net' && /@supabase\/supabase-js/.test(u.pathname)) { e.respondWith(swr(r, V + '-cdn')); return; }
   if (u.origin === location.origin && (/\.(js|json|css)$/i.test(u.pathname) || r.mode === 'navigate')) { e.respondWith(networkFirst(r, V + '-code')); return; }
 });
+/* v20: tapping an allofus.one notification (a tag, comment, reaction or connection request) opens it */
+self.addEventListener('notificationclick', (e) => { e.notification.close(); const url = (e.notification.data && e.notification.data.url) || '/?v=notif'; e.waitUntil((async () => { const all = await clients.matchAll({ type: 'window', includeUncontrolled: true }); const w = all.find(c => c.url.startsWith(self.location.origin)); if (w) { await w.focus(); try { await w.navigate(url); } catch (err) { } return; } await clients.openWindow(url); })()); });

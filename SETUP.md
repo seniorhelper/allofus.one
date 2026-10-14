@@ -56,7 +56,7 @@ Supabase does not email you about new accounts by default. The 🛡️ Admin con
 1. Upload this folder to the repo root (or merge the branch). Nothing in it removes or rewrites data.
 2. Supabase → SQL Editor → run `supabase/allofus-v17.sql`. It is additive only (new columns with defaults, new policies, one trigger, one new table) and safe to re-run. Members who are online keep working through it.
 3. Sign out and back in once. **Pages I manage** on your profile now lists the 11 network pages (owned by whichever of your two emails signed up first; both emails are admins).
-4. Elevation Health is pre-claimed for **meredith@elevationhealth.co** and **lindsay@elevationhealth.co**. The second either of them creates an account with that email, the page is theirs (trigger), the guided tour walks them through profile setup → claiming the page → their VR home spot. To pre-claim any other page: open the page → ⚙ Manage → "Pre-link managers by email".
+4. To pre-claim a page for a client: open the page → ⚙ Manage → "Pre-link managers by email". The second they create an account with that email, the page is theirs (trigger) and the guided tour walks them through it. (Elevation Health was removed on Oct 14 2026.)
 5. Every new member starts connected to you (they can remove it from Connections). Members who joined before v17 are connected by the migration too.
 
 ## v18 upgrade (Oct 9 2026) — faster Feed, guided tour, connections panel, editable posts, widget dash
@@ -91,10 +91,25 @@ Supabase does not email you about new accounts by default. The 🛡️ Admin con
 | Person | Sign-in email | Page | What they see on first sign-in | Re-open the guide |
 |---|---|---|---|---|
 | Ritchie (Raised In a Barn Furniture) | wasraisedinabarn@gmail.com | `/?page=raised-in-a-barn` | The **simple guide**: big type and buttons, one thing per screen, "Step N of 6", Back / Next, "I'll do this later", auto-save, and "Call Zach for help: 1-800-481-8638" + "Email Zach" on every screen. 1 Welcome ("Zach set this up for you") → 2 Add your photo → 3 A sentence about you (pre-written, he can keep it) → 4 His business page preview (cover, tagline, phone, website) with **Looks good** / **Change the picture** → 5 "Your store in the 3D mall": **Walk into my store** (worldvrmall.com/mall/?to=raised-in-a-barn) and **Explore allofus in 3D** → 6 "You're all set": Post a photo of my furniture · Invite a friend · Go to my page. Until he finishes, a **Help me get set up** button stays on screen. | allofus.one/?guide=1, the Help me get set up button, or the button on his page |
-| Meredith Cross (Elevation Health) | meredith@elevationhealth.co | `/?page=elevation-health` (admin; owner Zach) | The 4-step claim flow, personalised ("Welcome, Meredith · You manage Elevation Health"), a thank-you note that Zach is giving Elevation Health free advertising for helping test, then profile → page review → VR home, and an optional **Take the 2-minute tour** at the end. | allofus.one/?guide=1, or Help me get set up on the page |
-| Lindsay Gayman (Elevation Health) | lindsay@elevationhealth.co | `/?page=elevation-health` (admin; owner Zach) | Same as Meredith, with her name. | allofus.one/?guide=1, or Help me get set up on the page |
 
 On any page they manage they see **You manage this page · Switch to my profile · Help me get set up** above the ⚙ Manage bar.
 
 ### 3D mailbox
 Zach's giant mailbox (and the Classic style in the home builder) were missing the back quarter of the round lid; both are closed from every angle now. No action needed.
+
+## v20 (Oct 14 2026) — every page reachable, real tags + alerts, photo editor, autoplay YouTube, admin delete, welcome posts
+**Run once in Supabase → SQL Editor:** `supabase/allofus-v20.sql` (additive, safe to re-run). It:
+- adds comments and reactions to realtime, so tags, comments and reactions pop up live;
+- adds `admin_delete_user()` for the 🛡️ Admin → Signups → **Delete** button (pages the account owned move to you; you cannot delete the account you are signed in with);
+- deletes the Elevation Health page (client cancelled) and its follows;
+- publishes the welcome posts as real rows (labeled **allofus AI**, **allofus System** or **Orbit** with a badge) so people can react, comment and vote. Until it runs, the same posts show from `js/aou-seed.js` (read-only).
+
+What changed for members (no action needed):
+- **Nothing is hidden:** desktop header has a **More** tile, the phone More sheet lists every page (Courses, Comm Hub, Global Room, Unity Call, Moments, Games, Match, Hearts…), and **Control panel → Everything on allofus.one** lists every page grouped, with 3D ones marked. Home quick-rail tiles added since a member saved their rail (Courses, Inbox…) now appear once.
+- **Mission page** uses the exact home-page header (and the phone bottom bar).
+- **Tags:** type @ anywhere (posts, comments, edits) for a list of real members; a post with an @name that is not a member is stopped with a clear message; only real members turn into links; tagged people get an Alert, a live toast and (if they allow it in Control panel → Notifications) a desktop / phone notification while allofus.one is open.
+- **Photo editor:** filters, brightness / contrast / color / warmth, crop (square, 4:5, 16:9, cover), rotate, flip. Opens on a single photo, ✎ Edit on every thumbnail; profile and cover photos open it pre-cropped.
+- **Video:** YouTube posts autoplay muted when on screen (one at a time), run edge to edge with no frame, Shorts fill the width like a reel; **Tap for sound**. Members can switch autoplay off in Control panel → Preferences.
+- **Admins:** a **Post as** picker in the composer (me / allofus AI / allofus System / Orbit); the dashboard shows a Live dot and the last update time.
+- **Eye To Ad Media** Brand page has an ad-style cover and the real logo (`/images/brands/`). Uploading a cover in ⚙ Manage replaces it.
+- **SEO:** every Brand page, profile and post now has its own title, description and canonical URL (they all pointed at the list page before); one h1 per view; Brand pages added to the sitemap.

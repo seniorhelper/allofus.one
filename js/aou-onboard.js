@@ -47,7 +47,7 @@ export function startTour(ctx) {
     { icon: '🙂', k: 'Step 1 · Your page', h: `Your page and your photo, ${esc(first)}`, p: 'Everything you post lives on your page. Add a photo and a line about you so people know who they are meeting. Tap <b>My page</b> any time to edit it.', sel: () => mobile() ? '.fl-bottom [data-v="u"]' : '.fl-id, .fl-top [data-v="u"]' },
     { icon: '🤝', k: 'Step 2 · Connections', h: 'You start connected with Zach', p: 'Zach is the founder of allofus.one and your first connection — so your feed is never empty on day one. One tap (⋯ → Disconnect) removes it. Connections are people you choose, not “friends” or “followers”.', sel: () => mobile() ? '.fl-bottom [data-v="conn"]' : '#conn-panel, .fl-top [data-v="conn"]' },
     { icon: '✍️', k: 'Step 3 · Post something', h: 'Say the first thing', p: 'Text, photos, a video, a poll, something for sale, an event, a need. No algorithm decides who sees it — your connections and the groups you pick do.', sel: () => '.fl-pill, .fl-comp, [data-open-comp], #fl-fab', before: () => { const b = $('[data-open-comp]'); if (b && !$('.fl-comp')) b.click(); } },
-    { icon: '🧩', k: 'Step 4 · LIFEboard', h: 'Your LIFEboard', p: 'Goals, habits, the life wheel, trackers, journal, money tools, a widget dash you lay out yourself. Private to you, and the same board shows in 3D and VR.', sel: () => '.rail a[href="/?v=board"], .fl-foot a[href="/?board=1"]' },
+    { icon: '🧩', k: 'Step 4 · LIFEboard', h: 'Your LIFEboard', p: 'Goals, habits, the life wheel, trackers, journal, money tools, a widget dash you lay out yourself. Private to you, and the same board shows in 3D and VR.', sel: () => '.rail a[href="/?v=board"], .fl-foot a[href="/?v=board"]' },
     { icon: '🧊', k: 'Step 5 · Go 3D / VR', h: 'Feed · 3D · VR, one account', p: 'The rail at the top switches modes. <b>Feed</b> is this page. <b>3D</b> opens the world in your browser (walk, build, meet). <b>VR</b> is the same world in a headset. Your page, posts and people are the same in all three.', sel: () => '.ms' }
   ];
   let i = 0; const ov = document.createElement('div'); ov.className = 'tour-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Welcome tour'); ov.innerHTML = '<div class="tour-hole"></div><div class="tour-card" tabindex="-1"></div>'; document.body.appendChild(ov);
@@ -123,13 +123,7 @@ export const canonSlug = (s) => SLUG_ALIAS[s] || s;
 export const VIP = {
   'wasraisedinabarn@gmail.com': { name: 'Ritchie', full: 'Ritchie', slugs: ['raised-in-a-barn'], style: 'simple', vrHome: 'art', mallStore: 'https://worldvrmall.com/mall/?to=raised-in-a-barn',
     welcome: 'We will go one small step at a time. Nothing here can break, and you can change anything later.',
-    bio: 'I build furniture by hand from reclaimed Colorado barnwood. Every piece is made to order.' },
-  'meredith@elevationhealth.co': { name: 'Meredith', full: 'Meredith Cross', slugs: ['elevation-health'], style: 'standard', vrHome: 'falls',
-    welcome: 'Zach set up the Elevation Health page for you and Lindsay.', note: 'Thank you for helping test allofus.one. While you do, Zach is giving Elevation Health free advertising here.',
-    bio: 'Registered dietitian and co-founder of Elevation Health. I help people lose weight on GLP-1s and keep it off.' },
-  'lindsay@elevationhealth.co': { name: 'Lindsay', full: 'Lindsay Gayman', slugs: ['elevation-health'], style: 'standard', vrHome: 'falls',
-    welcome: 'Zach set up the Elevation Health page for you and Meredith.', note: 'Thank you for helping test allofus.one. While you do, Zach is giving Elevation Health free advertising here.',
-    bio: 'Registered dietitian and co-founder of Elevation Health. Real nutrition support for people on GLP-1 medication.' }
+    bio: 'I build furniture by hand from reclaimed Colorado barnwood. Every piece is made to order.' }
 };
 export const vipFor = (me) => { try { return (me && me.email && VIP[String(me.email).toLowerCase().trim()]) || null; } catch (e) { return null; } };
 export const vipCanEdit = (me, slug) => { const v = vipFor(me); return !!(v && slug && v.slugs.includes(canonSlug(slug))); };
