@@ -116,7 +116,7 @@ export const AUTOPLAY_CSS = `
 .fl .fl-post .pics{margin:10px -16px 0}
 .fl .fl-post .vid{display:block;margin:10px -16px 0;width:calc(100% + 32px);max-width:none;border-radius:0}
 .fl .fl-post .lpv{display:flex;align-items:center;gap:12px;margin:10px -16px 0;padding:12px 16px;background:#f0f2f5;color:#0f172a;text-decoration:none;border-top:1px solid #e4e7ec;border-bottom:1px solid #e4e7ec}.fl .fl-post .lpv:hover{background:#e9edf2}
-.fl .fl-post .lpv .lpv-t{flex:1;min-width:0}.fl .fl-post .lpv small{display:block;font:600 11.5px var(--ff,Poppins,Arial);letter-spacing:.04em;text-transform:uppercase;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fl .fl-post .lpv b{display:block;font:700 14.5px/1.3 var(--ff,Poppins,Arial);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl .fl-post .lpv .lpv-t{flex:1;min-width:0}.fl .fl-post .lpv small{display:block;font:600 11.5px var(--ff,Poppins,Arial);letter-spacing:.04em;text-transform:uppercase;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fl .fl-post .lpv b{display:block;font:700 14.5px/1.3 var(--ff,Poppins,Arial);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fl .fl-post .lpv .lpv-btn{flex:none;background:#e2e6ec;border-radius:8px;padding:9px 14px;font:700 13.5px var(--ff,Poppins,Arial);color:#0f172a}
 .fl .fl-post .pics+.vp,.fl .fl-post .vp+.vp{margin-top:2px}
 .fl .fl-post .pstats{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0;padding:10px 0 8px;min-height:0;font:500 13.5px var(--ff,Poppins,Arial);color:#64748b}
