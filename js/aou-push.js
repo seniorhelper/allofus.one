@@ -5,8 +5,8 @@
    2. This module subscribes the browser (Web Push + VAPID) and stores the subscription in `push_subscriptions`.
    3. The database writes a row into `notifications` for every tag, comment, reaction, request, hug and DM
       (triggers in supabase/allofus-ALL-v20-v21.sql, honoring the member's switches in profiles.home.notif).
-   4. A sender delivers unsent rows to every subscription of that member: _push/push-notifications.workflow.yml (copy it to .github/workflows/)
-      runs _push/send.mjs every 10 minutes (needs the two repo secrets named in SETUP.md). Swap it for a Supabase
+   4. A sender delivers unsent rows to every subscription of that member: the GitHub Action in _push/push-notifications.workflow.yml
+      (copy it to .github/workflows/) runs _push/send.mjs every 10 minutes (needs the three repo secrets named in SETUP.md). Swap it for a Supabase
       Edge Function + database webhook when you want delivery within seconds.
    Works on Android (Chrome, Samsung, Firefox), Windows and Mac browsers. iPhone and iPad: iOS 16.4 or newer,
    only after the site is added to the Home Screen (Share → Add to Home Screen), then turn it on from the app.
