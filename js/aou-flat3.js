@@ -294,10 +294,10 @@ a.lt-btn,.lt-btn{display:inline-flex;align-items:center;justify-content:center;g
 /* ===== floating things never cover content ===== */
 #fl-bug{display:none!important}#fl-fab{display:none!important}
 #fl-top{display:none!important}@media(min-width:1560px){#fl-top{display:block!important;right:20px;bottom:24px}}
-#orbit-tab.glove{animation:none!important;transform:none!important;right:0!important;left:auto!important;top:auto!important;bottom:calc(120px + env(safe-area-inset-bottom))!important;width:22px!important;height:92px!important;border-radius:10px 0 0 10px!important;background:#06101f!important;filter:none!important;box-shadow:-4px 6px 18px rgba(2,8,30,.25)!important;overflow:hidden!important;display:flex;align-items:center;justify-content:center;transition:width .18s ease!important}
-#orbit-tab.glove>svg,#orbit-tab.glove .say{display:none!important}#orbit-tab.glove .htab{position:static!important;opacity:1!important;pointer-events:none;writing-mode:vertical-rl;transform:rotate(180deg);background:transparent!important;color:#b6ff2e!important;padding:0!important;font:900 11px/1 var(--ff)!important;letter-spacing:.06em;border-radius:0!important;white-space:nowrap}
+#orbit-tab.glove{animation:none!important;transform:none!important;right:0!important;left:auto!important;top:auto!important;bottom:calc(120px + env(safe-area-inset-bottom))!important;width:26px!important;height:110px!important;border-radius:10px 0 0 10px!important;background:#06101f!important;filter:none!important;box-shadow:-4px 6px 18px rgba(2,8,30,.25)!important;overflow:hidden!important;display:flex;align-items:center;justify-content:center;transition:width .18s ease!important}
+#orbit-tab.glove>svg,#orbit-tab.glove .say{display:none!important}#orbit-tab.glove .htab{position:static!important;opacity:1!important;pointer-events:none;writing-mode:vertical-rl;transform:rotate(180deg);background:transparent!important;color:#b6ff2e!important;padding:0!important;font:900 13px/1 var(--ff)!important;letter-spacing:.06em;border-radius:0!important;white-space:nowrap}
 #orbit-tab.glove:hover,#orbit-tab.glove:focus-visible{width:30px!important}
-@media(max-width:1000px){#orbit-tab.glove{width:14px!important;height:72px!important;bottom:calc(150px + env(safe-area-inset-bottom))!important}#orbit-tab.glove .htab{font-size:9.5px!important}}
+@media(max-width:1000px){#orbit-tab.glove{width:30px!important;height:150px!important;bottom:calc(140px + env(safe-area-inset-bottom))!important}#orbit-tab.glove .htab{font-size:17px!important;letter-spacing:.08em}}
 body.sh-open #orbit-tab{display:none!important}
 /* bottom bar (phones): Home · People · Post · Alerts · Me · More */
 .fl-bottom{display:none}
