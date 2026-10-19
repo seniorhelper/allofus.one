@@ -60,7 +60,14 @@ const isTouch = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0
 export const isMobile = () => isTouch() && Math.min(innerWidth, innerHeight) < 900;
 export const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 /* Phones get half-size generated textures (a quarter of the GPU memory). iPhones are the strictest: Safari kills a tab that uses too much. */
-export const TEX_SCALE = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) ? 1.75 : (isMobile() ? 1.0 : (window.devicePixelRatio > 1.3 ? 1.6 : 1.25)); /* headsets get the sharpest text: blurry storefront words and sign shimmer come from low-res canvases */
+/* headsets: 1.0 (Oct 19 2026). 1.75 tripled the pixels of every one of the ~1,300 canvas signs (about 2 GB of texture memory on a Quest 3, which is the
+   'black screen / freeze / hard reset' under memory pressure). Sharpness in the headset now comes from mipmaps + anisotropic filtering, not from huge canvases. */
+export const TEX_SCALE = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent) ? 1.0 : (isMobile() ? 1.0 : (window.devicePixelRatio > 1.3 ? 1.6 : 1.25));
+/* layer used to hide far sprites from every camera. It was layer 1, which WebXR gives to the LEFT eye only (cameraL.layers = 0b011): far signs
+   showed in one eye and not the other — the 'flickering, eye-straining' signs in the headset. Layer 7 is seen by no camera. */
+export const HIDE_LAYER = 7;
+/* a vibrate before the first tap is refused by the browser with a console error: every caller in the world goes through this guard */
+try { if (navigator.vibrate && navigator.userActivation) { const nv = navigator.vibrate.bind(navigator); navigator.vibrate = (p) => navigator.userActivation.hasBeenActive ? nv(p) : false; } } catch (e) { }
 export function canvasTex(c) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = isMobile() ? 4 : 8; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; return t; }
 
 /* ---- Sky presets (files live in /images/) ---- */
@@ -840,7 +847,7 @@ export class WVM {
   /* real image-based lighting + mirror reflections from a Poly Haven HDR (CC0). Cached per URL, built once with PMREM. */
   setEnvHDR(url) { this._envHDRs = this._envHDRs || new Map(); const have = this._envHDRs.get(url); if (have) { if (have.texture) { this.scene.environment = have.texture; this._envHDR = url; } return; } const rec = { texture: null }; this._envHDRs.set(url, rec); import('three/addons/loaders/RGBELoader.js').then(({ RGBELoader }) => { new RGBELoader().load(url, (t) => { t.mapping = THREE.EquirectangularReflectionMapping; const pm = this._pmrem || (this._pmrem = new THREE.PMREMGenerator(this.renderer)); rec.texture = pm.fromEquirectangular(t).texture; t.dispose(); const cur = /\/textures\/sky-(day|sunset|citrus)-2k\.jpg$/.exec(this.skyUrl || ''); if (cur && url.includes('sky-' + cur[1] + '-')) { this.scene.environment = rec.texture; this._envHDR = url; this.scene.traverse(o => { const m = o.material; if (m && m.isMeshStandardMaterial && m.envMapIntensity === undefined) m.envMapIntensity = 1; }); } }, undefined, () => { this._envHDRs.delete(url); }); }).catch(() => { this._envHDRs.delete(url); }); }
   preloadSky(url) { this._skyCache = this._skyCache || new Map(); if (this._skyCache.has(url)) return; const hasExt = /\.(avif|jpe?g|png|webp)$/i.test(url); const u = hasExt ? url : url + '.avif'; this.texLoader.load(u, (t) => { if (!this._skyCache.has(url)) this._skyCache.set(url, t); }, undefined, () => { if (!hasExt) this.texLoader.load(url + '.jpg', (t) => { if (!this._skyCache.has(url)) this._skyCache.set(url, t); }); }); }
-  buzz(ms = 60) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { } }
+  buzz(ms = 60) { try { /* browsers log an error for a vibrate before the first tap; skip it until then */ if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(ms); } catch (e) { } }
   _applySky(tex, opts = {}) {
     tex.mapping = THREE.EquirectangularReflectionMapping; tex.colorSpace = THREE.SRGBColorSpace; if (isMobile()) { tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter; }
     this.scene.background = tex;
@@ -1397,7 +1404,7 @@ export class WVM {
     this._updateCamera(dt);
     this._updateNPCs(dt);
     this._updateZones(); this._updateInteractables(); this._updateBalls(dt); if (this.boosts.length && (this.level || 0) < 3) this._updateBoosts(dt);
-    if (this.t - (this._cullT || 0) > 0.3) { this._cullT = this.t; const far = this.opts.spriteFar || 90, P = this.player.position, v = this._cv || (this._cv = new THREE.Vector3()); const wide = this.dist > 30 || !!this._intro || !!this._air; const high = wide && (this._air || this.rig.position.y - P.y > 80); for (const sp of SPRITES) { if (!sp.parent) continue; v.setFromMatrixPosition(sp.matrixWorld); const f = sp.userData.far || far; const dx = v.x - P.x, dz = v.z - P.z; sp.layers.set((high && f < 1e8) || (!wide && dx * dx + dz * dz > f * f) ? 1 : 0); } }
+    if (this.t - (this._cullT || 0) > 0.3) { this._cullT = this.t; const far = this.opts.spriteFar || 90, P = this.player.position, v = this._cv || (this._cv = new THREE.Vector3()); const wide = this.dist > 30 || !!this._intro || !!this._air; const high = wide && (this._air || this.rig.position.y - P.y > 80); for (const sp of SPRITES) { if (!sp.parent) continue; v.setFromMatrixPosition(sp.matrixWorld); const f = sp.userData.far || far; const dx = v.x - P.x, dz = v.z - P.z; sp.layers.set((high && f < 1e8) || (!wide && dx * dx + dz * dz > f * f) ? HIDE_LAYER : 0); } }
     if (this.triggers && !this.paused && !this.ride && !this._air && (this.level || 0) < 3) { const p = (this.renderer.xr.isPresenting && this._xrFeet) || this.player.position; for (const tr of this.triggers) { const dx = p.x - tr.x, dz = p.z - tr.z; const inside = dx * dx + dz * dz < tr.r * tr.r; if (inside && !tr.fired) { tr.fired = true; tr.fn(this); } else if (!inside) tr.fired = false; } }
     for (const u of this.updaters) u(dt, this.t);
     this._perf(dt);
@@ -1409,7 +1416,7 @@ export class WVM {
     this._rideFit();
     if (this.ride) { p.position.copy(this.ride.pos(this.t)); if (this.ride.yaw !== undefined) this.avatar.rotation.y = this.ride.yaw; animatePerson(this.avatar, this.t, 0); if (this.ride.until !== undefined && this.t > this.ride.until) { const r = this.ride; this.ride = null; if (r.done) r.done(this); } return; }
     if (this.locked) { animatePerson(this.avatar, this.t, this.walkTarget ? 1 : 0); }
-    const mv = new THREE.Vector2(0, 0);
+    const mv = (this._mv || (this._mv = new THREE.Vector2())).set(0, 0); /* reused: this ran up to three times a frame and allocated every time */
     if (this.keys.KeyW || this.keys.ArrowUp) mv.y += 1;
     if (this.keys.KeyS || this.keys.ArrowDown) mv.y -= 1;
     if (this.keys.KeyA || this.keys.ArrowLeft) mv.x -= 1;
