@@ -1,0 +1,31 @@
+name: Push notifications
+# Delivers queued allofus.one notifications to phones and desktops (Web Push). See SETUP.md → v21.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: push-notifications
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: _push
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i --no-audit --no-fund --silent web-push@3
+        working-directory: _push
+      - run: node send.mjs
+        working-directory: _push
+        env:
+          SUPABASE_URL: https://izfccjaznlcffvjxawya.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
