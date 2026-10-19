@@ -241,7 +241,7 @@ end $$;
 --   2. Raised In a Barn Furniture (slug raised-in-a-barn): Ritchie's email is pre-linked as a manager,
 --      Zach's two emails stay, VR home = 'art' (the Art Garden: handcrafted work). If an older row was saved
 --      under the built-in slug raised-in-a-barn-furniture and no raised-in-a-barn row exists, it is renamed.
---   3. (Elevation Health removed Oct 14 2026: the client cancelled. allofus-v20.sql deletes its page.)
+--   3. (A second client page was removed Oct 14 2026 after that client cancelled; allofus-v20.sql deletes its page.)
 --   4. Anyone on any page's admin_emails who ALREADY has an account is linked into pages.admins right now.
 --   5. Pre-linked emails may edit (and post as) their page even before the account is linked
 --      (policy on the signed-in email claim). Keep "Confirm email" ON in Supabase Auth so nobody can

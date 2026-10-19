@@ -1,7 +1,7 @@
 -- allofus.one v20 (Oct 14 2026) · additive and safe to re-run. Run in Supabase → SQL Editor after v19.
 -- 1. Live alerts: comments and reactions join the realtime stream (tags, comments and reactions pop up live).
 -- 2. Admin: delete an account from the dashboard (Signups → Delete). Pages the account owns move to you first.
--- 3. Elevation Health cancelled: its Brand page, follows and pre-linked emails are removed.
+-- 3. A cancelled client page: its Brand page, follows and pre-linked emails are removed.
 -- 4. The welcome posts: labeled allofus AI / allofus System posts so the feed is not empty (real rows, so people can
 --    react, comment and vote). Posted from the founder account and marked in extra.voice; delete any of them like a normal post.
 
@@ -37,7 +37,7 @@ end $$;
 revoke all on function public.admin_delete_user(uuid) from public, anon;
 grant execute on function public.admin_delete_user(uuid) to authenticated;
 
--- 3 ── Elevation Health (cancelled Oct 13 2026)
+-- 3 ── cancelled client page (Oct 13 2026)
 do $$ begin
   begin delete from public.page_follows where page_slug = 'elevation-health'; exception when others then null; end;
   begin delete from public.page_edit_requests where page_slug = 'elevation-health'; exception when others then null; end;

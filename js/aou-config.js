@@ -13,4 +13,6 @@ export const CONFIG = {
   // Optional voice relay for strict networks (a TURN server). Example:
   // TURN: { urls: 'turn:YOUR-TURN-HOST:3478', username: 'user', credential: 'pass' },
   TURN: null,
+  // Web Push (phone + desktop notifications). Public key only; the private key lives in the GitHub repo secret VAPID_PRIVATE_KEY.
+  VAPID_PUBLIC_KEY: 'BKrf2PLwUBb2bnPY5VkyinxC8SWUhkAPeU2B1-o5Itt0YYM-5uCBELZQ_MB14hR2fXd1yOuo-pkLZyCegQ2tit0',
 };

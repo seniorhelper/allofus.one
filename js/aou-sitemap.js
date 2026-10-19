@@ -19,7 +19,7 @@ export const SITE_GROUPS = [
 /* [key, label, href, emoji, group, flat, short description] */
 export const SITE_PAGES = [
   ['feed', 'Home feed', '/', '🏠', 'social', true, 'Everyone, newest first'],
-  ['u', 'My page', '/?v=u', '👤', 'social', true, 'Your profile and posts'],
+  ['u', 'Profile', '/?v=u', '👤', 'social', true, 'Your page, your posts, the ⋯ menu'],
   ['conn', 'Connections', '/?v=conn', '🤝', 'social', true, 'Requests and your people'],
   ['notif', 'Alerts', '/?v=notif', '🔔', 'social', true, 'Tags, reactions, comments'],
   ['groups', 'Groups', '/?v=groups', '🛍️', 'social', true, 'Buy, sell, trade, free'],
@@ -32,7 +32,7 @@ export const SITE_PAGES = [
   ['rooms', 'Global Room', '/rooms/', '🌍', 'talk', true, 'Your team in one space'],
   ['meet', 'Unity Call', '/meet/', '📞', 'talk', true, 'Free video calls'],
   ['board', 'LIFEboard', '/?v=board', '🧭', 'grow', true, 'Goals, habits, money'],
-  ['work', 'FLOWworks', '/?v=work', '⬡', 'grow', true, 'Plan projects visually'],
+  ['work', 'FLOWworks pads', '/?v=work', '⬡', 'grow', true, 'Resizable pads: notes, sketch, CRM, docs'],
   ['courses', 'Courses', '/?v=courses', '📚', 'grow', true, 'Learn and teach'],
   ['events', 'Events', '/?v=events', '📅', 'grow', true, 'What is happening'],
   ['spaces', 'Spaces', '/?v=spaces', '🌐', 'grow', true, 'A home for any group'],

@@ -56,7 +56,7 @@ Supabase does not email you about new accounts by default. The 🛡️ Admin con
 1. Upload this folder to the repo root (or merge the branch). Nothing in it removes or rewrites data.
 2. Supabase → SQL Editor → run `supabase/allofus-v17.sql`. It is additive only (new columns with defaults, new policies, one trigger, one new table) and safe to re-run. Members who are online keep working through it.
 3. Sign out and back in once. **Pages I manage** on your profile now lists the 11 network pages (owned by whichever of your two emails signed up first; both emails are admins).
-4. To pre-claim a page for a client: open the page → ⚙ Manage → "Pre-link managers by email". The second they create an account with that email, the page is theirs (trigger) and the guided tour walks them through it. (Elevation Health was removed on Oct 14 2026.)
+4. To pre-claim a page for a client: open the page → ⚙ Manage → "Pre-link managers by email". The second they create an account with that email, the page is theirs (trigger) and the guided tour walks them through it.
 5. Every new member starts connected to you (they can remove it from Connections). Members who joined before v17 are connected by the migration too.
 
 ## v18 upgrade (Oct 9 2026) — faster Feed, guided tour, connections panel, editable posts, widget dash
@@ -72,13 +72,12 @@ Supabase does not email you about new accounts by default. The 🛡️ Admin con
    - Life Dash on the LIFEboard is a widget board: every tool is a tile (S / M / L), with ⚙ options (size, colour, order, hide), drag to reorder, expand to full screen. The layout saves in `lifeboards.data.dash`.
 4. Brand pages: the header is the ad now (full-bleed cover with the brand colour, logo badge, headline, proof chips, Call / Website / Message + Follow / Share / Visit in 3D). Managers get the **⚙ Manage** bar: cover, logo, tagline, main button, **Pre-link managers by email** (writes `admin_emails`), **VR home spot** (writes `vr_home`). **Pages I manage** (profile + Control panel) lists every page you own or manage; network admins also see the built-in brands with a one-tap **Set up network pages** that inserts the missing rows with the v17 columns.
 
-## v19 (Oct 9 2026) — client accounts (Ritchie, Elevation Health), founder connection fixes, 3D mailbox
+## v19 (Oct 9 2026) — client accounts (Ritchie), founder connection fixes, 3D mailbox
 **Run order in Supabase → SQL Editor** (each is additive and safe to re-run; run every one even if you ran an earlier one before):
 1. `supabase/allofus-v17.sql` — `pages.admin_emails` / `vr_home` / `claimed_at`, the welcome trigger (new member → connected to Zach, pre-linked pages attached), `claim_my_pages()`, hugs, the network page seed.
 2. `supabase/allofus-v18.sql` — `page_follows`, defensive columns, Feed indexes, realtime.
 3. `supabase/allofus-v19-clients.sql` — the client accounts:
    - Raised In a Barn Furniture (`raised-in-a-barn`): pre-links **wasraisedinabarn@gmail.com** (both Zach emails stay), VR home **Art Garden** (`art`), phone, website and the World VR Mall store link. If Ritchie already has an account he is linked into `pages.admins` immediately. An older row saved under `raised-in-a-barn-furniture` is renamed if the short slug is free.
-   - Elevation Health: Meredith + Lindsay stay pre-linked, owner stays Zach (the row is created for Zach if it is missing).
    - Anyone on any page's `admin_emails` who already has an account is linked now.
    - Pre-linked emails may edit and post as their page even before the account is linked (policy on the signed-in email). **Keep Authentication → Email → Confirm email ON** so nobody can sign up with an address they do not own.
    - Re-creates the welcome trigger and `claim_my_pages()` with fixes: `on conflict do nothing` (v11's unordered-pair index made v17's version fail with a unique violation for anyone who had already asked Zach to connect, so their pages never attached), NULL-safe `admins`, and a pending member → Zach request is accepted.
@@ -101,7 +100,7 @@ Zach's giant mailbox (and the Classic style in the home builder) were missing th
 **Run once in Supabase → SQL Editor:** `supabase/allofus-v20.sql` (additive, safe to re-run). It:
 - adds comments and reactions to realtime, so tags, comments and reactions pop up live;
 - adds `admin_delete_user()` for the 🛡️ Admin → Signups → **Delete** button (pages the account owned move to you; you cannot delete the account you are signed in with);
-- deletes the Elevation Health page (client cancelled) and its follows;
+- removes a cancelled client page and its follows;
 - publishes the welcome posts as real rows (labeled **allofus AI**, **allofus System** or **Orbit** with a badge) so people can react, comment and vote. Until it runs, the same posts show from `js/aou-seed.js` (read-only).
 
 What changed for members (no action needed):
@@ -113,3 +112,34 @@ What changed for members (no action needed):
 - **Admins:** a **Post as** picker in the composer (me / allofus AI / allofus System / Orbit); the dashboard shows a Live dot and the last update time.
 - **Eye To Ad Media** Brand page has an ad-style cover and the real logo (`/images/brands/`). Uploading a cover in ⚙ Manage replaces it.
 - **SEO:** every Brand page, profile and post now has its own title, description and canonical URL (they all pointed at the list page before); one h1 per view; Brand pages added to the sitemap.
+
+## v21 (Oct 19 2026) — phone notifications, real groups, the Profile menu, polls, FLOWworks pads, Gnomad Promotions
+**Run once in Supabase → SQL Editor:** `supabase/allofus-ALL-v20-v21.sql`. It is ONE cumulative file (v20 never ran on the live project: the welcome posts and the admin Delete button were missing) and it is additive and safe to re-run. It never touches member data. It:
+- re-creates `vote_poll()` (votes failed when it was missing), publishes the welcome posts, adds `admin_delete_user()`, the realtime tables;
+- hides a scheduled post from everyone but its author until `publish_at`; private posts are visible to the author's accepted connections;
+- re-creates the welcome trigger and `claim_my_pages()` so every member starts connected to you, and backfills anyone who was missed (the Oct 19 sign-ups). A member who removes you on purpose stays removed (`profiles.home.noFounder`);
+- creates `push_subscriptions` and `notifications` and the triggers that queue a notification for comments, reactions, tags, connection requests, hugs and DMs, honoring each member's switches (Control panel → Notifications, saved to `profiles.home.notif`);
+- creates the Gnomad Promotions page row (owner: you) and inserts your posts for the next two weeks: two now (an update and a poll) and nine scheduled between Oct 20 and Nov 2 (Zach, Zach + AI, allofus AI, System, polls). Scheduled posts show in your own feed with a ⏰ Scheduled badge until their time; edit or delete them like any post.
+
+### Phone + desktop push notifications: what this stack can do
+- **No native app is needed.** Android (Chrome, Samsung Internet, Firefox), Windows and Mac browsers receive Web Push with the site closed. iPhone and iPad receive it too (iOS 16.4+) **after the member adds allofus.one to the Home Screen** (Share → Add to Home Screen) and turns the switch on from there; Apple does not allow push for a plain Safari tab. A native app would only add: push without the Home-Screen step on iPhone, an App Store listing, and a badge count on the icon.
+- The site side is done: `sw.js` shows the notification and opens the right page on tap; `js/aou-push.js` is the opt-in card on the feed and the switch in Control panel → Notifications; the database queues a `notifications` row for every event.
+- **Delivery needs a sender with a secret key.** The GitHub Action in `_push/push-notifications.workflow.yml` runs `_push/send.mjs` every 10 minutes (and on demand from the Actions tab). Two one-time steps on GitHub → allofus.one:
+  - **Install the workflow:** copy `_push/push-notifications.workflow.yml` to `.github/workflows/push-notifications.yml` (Add file → Create new file on github.com works; a token with the  scope is needed to push it from a computer, which is why it sits here).
+  - **Add three repository secrets** (Settings → Secrets and variables → Actions):
+  1. `SUPABASE_SERVICE_ROLE_KEY`: Supabase → Project Settings → API → service_role (never put it in the site).
+  2. `VAPID_PUBLIC_KEY`: the value of `VAPID_PUBLIC_KEY` in `js/aou-config.js`.
+  3. `VAPID_PRIVATE_KEY`: the private half of the same pair (kept outside the repo; ask for the file `allofus-vapid-keys.txt`). Or run `npx web-push generate-vapid-keys` and put the new public key in `js/aou-config.js`.
+  Until the secrets exist the job exits quietly and nothing is sent; members still get live pop-ups while allofus.one is open, as before. For delivery within seconds instead of minutes, move `_push/send.mjs` into a Supabase Edge Function and call it from a Database Webhook on `notifications` insert.
+
+### What changed for members
+- **Groups** behave like groups: open one and the right column lists its members (search, online dots, 💬 Message, 🤝 Connect on every row), the header shows "✓ You are a member · Leave group" or "＋ Join this group", and a 👥 Members button jumps to the list on phones. One member is still a group ("just you so far. Invite someone.").
+- **Profile:** the Profile tab (was "My page") lands on your own page with your feed. The ⋯ menu holds Edit page, name/@username, photo, cover, All tools, Invite, Copy link, Control panel, Admin, Sign out. Control panel stays a visible button.
+- **Tools gateway** in three places: the ··· More tile, the new Tools card on the right of every page (and on your profile), and Control panel → Everything on allofus.one.
+- **Polls** show your vote (✓, percentages, "N votes · you voted") and remember it on the device too.
+- **Feed order** is a visible choice above the feed: New (default, no ranking) · Top · Hot, with the formula printed on the switch.
+- **Public switch** on the composer follows Control panel → Privacy "My posts are public by default". Off = only you and your connections.
+- **FLOWworks pads:** every pad has labeled buttons (Color · − · ＋ · Full · ⋯ More), resizes from the corner or either edge, a color palette with any custom color, Lock, and a **Tracing pad** mode (bright white light box, high contrast, mirror) on Sketch, Edits, Note and Camera pads.
+- **Fake people are gone:** the fictional demo-resident posts were removed from the feed. Only real members, the labeled allofus AI / System / Orbit / Zach + AI voices, and real businesses post.
+- **Brand pages** have ad-style covers (`/images/brands/*.svg`), and Gnomad Promotions has a page: `/?page=gnomad-promotions`.
+- **Admin dashboard** reconnects its live channel by itself and refreshes when the tab comes back to the front.
