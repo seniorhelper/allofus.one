@@ -1,11 +1,11 @@
 /* App-like speed: the 3D engine, the VR layer, every world module, the vendored three.js, the skies and the key textures are
    precached on the first visit (versioned: bump V to ship a new set), then served instantly and refreshed in the background.
    Models, images and audio are cached on first use. Pages (navigations) always check the network first. Oct 2026. */
-const V = 'v121';
+const V = 'v122';
 const CORE = [
   '/vendor/three/three.module.min.js', '/vendor/three/jsm/webxr/VRButton.js', '/vendor/three/jsm/loaders/GLTFLoader.js', '/vendor/three/jsm/loaders/RGBELoader.js',
   '/vendor/three/jsm/postprocessing/EffectComposer.js', '/vendor/three/jsm/postprocessing/RenderPass.js', '/vendor/three/jsm/postprocessing/ShaderPass.js', '/vendor/three/jsm/postprocessing/UnrealBloomPass.js', '/vendor/three/jsm/postprocessing/OutputPass.js', '/vendor/three/jsm/postprocessing/Pass.js', '/vendor/three/jsm/postprocessing/MaskPass.js',
-  '/js/aou-engine.js', '/js/aou-xr.js', '/js/aou-go.js', '/js/aou-icons.js', '/js/aou-icons2.js', '/js/aou-guide.js', '/js/aou-lifevr.js', '/js/aou-terrain.js', '/js/aou-world.js', '/js/aou-life.js', '/js/aou-lumi.js', '/js/aou-social.js', '/js/aou-estate.js', '/js/aou-plus.js', '/js/aou-build.js', '/js/aou-conf.js', '/js/aou-sso.js', '/js/aou-config.js', '/js/aou-push.js',
+  '/js/aou-engine.js', '/js/aou-xr.js', '/js/aou-sawcut.js', '/js/aou-landings.js', '/js/aou-go.js', '/js/aou-icons.js', '/js/aou-icons2.js', '/js/aou-guide.js', '/js/aou-lifevr.js', '/js/aou-terrain.js', '/js/aou-world.js', '/js/aou-life.js', '/js/aou-lumi.js', '/js/aou-social.js', '/js/aou-estate.js', '/js/aou-plus.js', '/js/aou-build.js', '/js/aou-conf.js', '/js/aou-sso.js', '/js/aou-config.js', '/js/aou-push.js',
   '/js/aou-balloons.js', '/js/aou-blocks.js', '/js/aou-coaster.js', '/js/aou-family.js', '/js/aou-fire.js', '/js/aou-garden.js', '/js/aou-house.js', '/js/aou-hub.js', '/js/aou-jamoke.js', '/js/aou-kit.js', '/js/aou-lakes.js', '/js/aou-lifetools.js', '/js/aou-plants.js', '/js/aou-ski2.js', '/js/aou-sky.js', '/js/aou-streets.js', '/js/aou-studio.js', '/js/aou-truck.js', '/js/aou-unity.js', '/js/aou-voice.js', '/js/aou-work.js', '/js/aou-orbit3d.js', '/js/aou-party.js',
   '/textures/sky-day-2k.jpg', '/textures/sky-day-1k.hdr', '/textures/sky-sunset-2k.jpg', '/textures/sky-citrus-2k.jpg', '/images/realistic-night-sky-moon-stars-360.avif',
   '/textures/grass.jpg', '/textures/grass-n.jpg', '/textures/asphalt.jpg', '/textures/asphalt-n.jpg', '/textures/concrete.jpg', '/textures/stone.jpg', '/textures/wood.jpg', '/textures/sand.jpg', '/textures/snow.jpg', '/textures/dirt.jpg',
