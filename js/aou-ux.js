@@ -303,4 +303,21 @@ export const UX_CSS = `
 .moments .ux-q .av .ux-ic{width:24px;height:24px;stroke-width:2}
 .moments .ux-q.hot .ring,.moments .ux-q.hot .av{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
 .moments .ux-q:hover .av{transform:translateY(-1px)}
+
+/* v27b: profile page header. Actions = solid 44px buttons (primary gradient, the rest white with a colored icon), one tidy row that wraps on phones. */
+.fl .fl-act{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-bottom:4px}
+.fl .fl-act .fl-btn{min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;color:#14183a;font:700 13px var(--ff);display:inline-flex;align-items:center;gap:7px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.fl .fl-act .fl-btn svg{width:18px;height:18px}
+.fl .fl-act .fl-btn:not(.p):hover{border-color:#0369a1;background:#f0f9ff;color:#0369a1}
+.fl .fl-act .fl-btn.p{background:linear-gradient(135deg,#2563eb,#7c3aed);border:0;color:#fff;box-shadow:0 8px 18px -8px rgba(99,102,241,.7)}
+.fl .fl-act .fl-btn.u-more{width:44px;padding:0;justify-content:center}
+.fl .u-url{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border-radius:10px;padding:4px 6px 4px 10px;font:700 12px var(--ff)}
+.fl .u-url button{border:0;background:#fff;border-radius:8px;padding:4px 8px;font:700 11px var(--ff);display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+@media(max-width:700px){.fl .fl-act{width:100%}.fl .fl-act .fl-btn{flex:1 1 auto;justify-content:center}.fl .fl-act .fl-btn.u-more{flex:0 0 44px}}
+/* the row of actions sits on the same line as the name on desktop; the gap under the avatar is the cover overlap, not empty space */
+.fl .fl-head>.fl-act{margin-left:auto}
+@media(max-width:1000px){.fl .fl-head>.fl-act{margin-left:0;width:100%;margin-top:4px}}
+/* video page: nothing wider than its column */
+.fl .vfeed{overflow-x:hidden}.fl .vfeed .fl-post,.fl .vfeed .yp,.fl .vfeed iframe,.fl .vfeed video{max-width:100%}
+.fl .u-recent a.t{color:#334155;line-height:1.35}
 `;

@@ -134,7 +134,7 @@ export function tourBoot(ctx = {}) {
   window.AOU_TOUR = { start: () => startTour2(ctx) };
   if (q.get('tour') === '1') { setTimeout(() => startTour2(ctx), 400); return; }
   if (ls.get(DONE) || ls.get(OFFERED)) return;
-  const onFeed = !q.get('v') || q.get('v') === 'feed'; if (!onFeed) return;
+  /* auto-offer only on the home feed itself (never on a profile, page, group or post), and only once per device: OFFERED is set the moment the bar appears */ const onFeed = (!q.get('v') || q.get('v') === 'feed') && !q.get('u') && !q.get('page') && !q.get('post') && !q.get('g') && !q.get('room'); if (!onFeed) return;
   if (ctx.me) { /* a new member: after the short onboarding finished (it sets aou_tour_done) */ if (ls.get('aou_tour_done') && !ls.get('aou_tour_pending')) setTimeout(() => offer(ctx), 1500); return; }
   const n = (+ls.get(VISITS) || 0) + 1; ls.set(VISITS, String(n)); if (n === 2) setTimeout(() => offer(ctx), 2500);
 }
