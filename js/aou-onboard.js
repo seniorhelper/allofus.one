@@ -168,7 +168,7 @@ let SBP = null;
 async function getSB() {
   if (CL.last.sb && CL.last.sb.from && CL.last.sb.auth) return CL.last.sb;
   if (window.__aouLateSB) return window.__aouLateSB;
-  if (!SBP) SBP = (async () => { const [{ createClient }, { CONFIG }] = await Promise.all([import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'), import('./aou-config.js')]); if (!CONFIG.SUPABASE_URL) return null; return createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { detectSessionInUrl: false } }); })().catch(() => null);
+  if (!SBP) SBP = (async () => { const [{ createClient }, { CONFIG }] = await Promise.all([import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'), import('./aou-config.js')]); if (!CONFIG.SUPABASE_URL) return null; const c0 = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { detectSessionInUrl: false } }); try { (await import('./aou-safety.js')).guardClient(c0); } catch (e) { } return c0; })().catch(() => null);
   return SBP;
 }
 export async function founderConnect(me) {

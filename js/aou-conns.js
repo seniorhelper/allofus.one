@@ -1,7 +1,7 @@
 /* allofus.one · Connections panel + hugs inbox (Oct 9 2026)
    - connPanel(mount, ctx): a scrollable list of your connections — avatar, name, online dot (presence < 3 min,
      live through the `presence` realtime channel), online first. Right-click / long-press / the ⋯ button opens
-     a context menu: Hug, Crush, High five, Wave, Cheer, Message, View page, Disconnect.
+     a context menu: Hug, High five, Wave, Cheer, Message, View page, Disconnect.
    - Hugs land in the `hugs` table (v17) and animate with the existing vibe burst; the receiver gets a toast + badge
      on load and live. Disconnect deletes the connections row (v17 delete policy). Demo mode: everything renders
      empty-safe, nothing throws. */
@@ -9,7 +9,7 @@ import { burst, sendVibe } from './aou-dm.js';
 import { ic } from './aou-icons2.js';
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const FOUNDER_ID = '320bf5d4-2d2d-482e-8633-87ced55e4155';
-export const HUG_KINDS = [['hug', '🤗', 'Hug', 'sent you a hug'], ['crush', '💘', 'Crush', 'has a crush on you'], ['highfive', '🙌', 'High five', 'high-fived you'], ['wave', '👋', 'Wave', 'waved at you'], ['cheer', '🎉', 'Cheer', 'cheered for you']];
+export const HUG_KINDS = [['hug', '🤗', 'Hug', 'sent you a hug'], ['highfive', '🙌', 'High five', 'high-fived you'], ['wave', '👋', 'Wave', 'waved at you'], ['cheer', '🎉', 'Cheer', 'cheered for you']];
 export const CONNS_CSS = `
 #conn-panel .cp-list{max-height:340px;overflow:auto;scrollbar-width:thin;margin:0 -6px;padding:0 6px}#conn-panel .cp-row{display:flex;align-items:center;gap:9px;padding:6px 6px;border-radius:12px;position:relative;user-select:none;-webkit-user-select:none}#conn-panel .cp-row:hover,#conn-panel .cp-row.on{background:#f1f5f9}#conn-panel .cp-row .av{width:36px;height:36px;border-radius:50%;background:#e0f2fe center/cover;display:grid;place-items:center;font:900 14px var(--ff);color:#0b1a3a;flex:none;position:relative}#conn-panel .cp-row .av i{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:#cbd5e1;border:2px solid #fff}#conn-panel .cp-row.online .av i{background:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.25)}#conn-panel .cp-row b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#conn-panel .cp-row small{color:#64748b;font-size:11px;display:block}#conn-panel .cp-row .nm{flex:1;min-width:0}#conn-panel .cp-row .more{border:0;background:transparent;border-radius:10px;width:30px;height:30px;cursor:pointer;color:#64748b;font:900 16px var(--ff);display:grid;place-items:center}#conn-panel .cp-row .more:hover{background:#e2e8f0;color:#0f172a}#conn-panel .cp-sum{display:flex;align-items:center;gap:6px;font:700 12px var(--ff);color:#64748b;margin:0 0 6px}#conn-panel .cp-sum .on-dot{margin:0}#conn-panel .cp-sum .badge{margin-left:auto;background:#ff3b5c;color:#fff;border-radius:12px;font:900 10px var(--ff);padding:2px 7px}
 .cp-menu{position:fixed;z-index:160;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 16px 40px rgba(2,8,30,.2);padding:6px;min-width:200px;animation:fmIn .15s ease-out}.cp-menu button,.cp-menu a{display:flex;gap:9px;align-items:center;width:100%;border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:10px;font:700 13px var(--ff);color:#14183a;cursor:pointer;text-decoration:none}.cp-menu button:hover,.cp-menu a:hover,.cp-menu button:focus-visible{background:#f1f5f9}.cp-menu .hic{width:18px;height:18px;color:var(--tc,#0ea5e9)}.cp-menu hr{border:0;border-top:1px solid #eef2f7;margin:4px 0}.cp-menu .hd{font:800 11px var(--ff);letter-spacing:.06em;text-transform:uppercase;color:#64748b;padding:6px 10px 2px}
@@ -32,7 +32,7 @@ export async function connPanel(mount, ctx) {
   /* live dots */
   try { if (ctx.live && sb.channel) { const ch = sb.channel('presence-panel-' + me.id).on('postgres_changes', { event: '*', schema: 'public', table: 'presence' }, (p) => { const r = p.new; if (!r || !ids.includes(r.user_id)) return; ctx.presence[r.user_id] = r; draw(); }).subscribe(); const iv = setInterval(() => { if (!mount.isConnected) { clearInterval(iv); try { sb.removeChannel(ch); } catch (e) { } } else draw(); }, 60000); } } catch (e) { }
 }
-/* send a hug / crush / high five / wave / cheer — lands in `hugs`; falls back to the messages vibe if v17 is not installed */
+/* send a hug / high five / wave / cheer — lands in `hugs`; falls back to the messages vibe if v17 is not installed */
 export async function sendHug(ctx, toId, kind, username) {
   const { sb, me, toast } = ctx; const K = HUG_KINDS.find(k => k[0] === kind) || HUG_KINDS[0]; if (!me) { ctx.needMe && ctx.needMe(); return; }
   if (toId === me.id) { burst(K[1]); toast(K[1] + ' Sent to yourself. Self-care counts.'); return; }

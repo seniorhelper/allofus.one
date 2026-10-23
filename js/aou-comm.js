@@ -270,7 +270,7 @@ export function createStore({ sb, me, toast = commToast }) {
       const { error } = await sb.from('profiles').update({ blocked: [...cur] }).eq('id', me.id).then(r => r, e => ({ error: e })); if (error) { toast('Could not update the block list.'); return false; }
       S.blocked = cur; me.blocked = [...cur]; emit('block'); toast(on ? 'Blocked. They can no longer message you.' : 'Unblocked.'); return true;
     },
-    async report(it, why) { const peer = peerOf(it); if (!sb) return; const reason = (why || 'Message report') + ' · ' + String(parseBody(it.body).text || it.kind || '').slice(0, 300) + ' · ' + it.id; const r = await safe(sb.from('reports').insert({ reporter: me.id, reported: peer, reason: reason.slice(0, 500) })); toast(r.error ? 'Report noted. If it is urgent, call 1-800-481-8638.' : 'Thank you. The report is with our team.'); },
+    async report(it, why) { const peer = peerOf(it); if (!sb) return; try { const SF = await import('./aou-safety.js'); await SF.report({ sb, kind: it.src === 'hub' ? 'hub' : 'dm', id: it.rid != null ? it.rid : it.id, owner: peer, preview: String(parseBody(it.body).text || it.kind || '').slice(0, 1000), media: it.media ? [it.media] : [] }); return; } catch (e) { } const reason = (why || 'Message report') + ' · ' + String(parseBody(it.body).text || it.kind || '').slice(0, 300) + ' · ' + it.id; const r = await safe(sb.from('reports').insert({ reporter: me.id, reported: peer, reason: reason.slice(0, 500) })); toast(r.error ? 'Report noted. If it is urgent, call 1-800-481-8638.' : 'Thank you. The report is with our team.'); },
     async upload(file) {
       if (!sb || !sb.storage) throw new Error('Pictures need the live server.'); if (!/^image\//.test(file.type || '')) throw new Error('Pictures only (JPG, PNG, GIF, WebP).'); if (file.size > 8 * 1024 * 1024) throw new Error('That picture is over 8 MB.');
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'jpg'; const path = `${me.id}/comm-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
@@ -461,7 +461,7 @@ export function mountThread(main, { store, peer, mode, single, toast, onBack, on
       if (k === 'copy') { const t = p.text || (p.card && p.card.code ? callUrl(p.card.code) : it.body); try { await navigator.clipboard.writeText(t); toast('Copied.'); } catch (e) { toast('Could not copy on this device.'); } }
       if (k === 'del') { if (confirmIn(th, 'Delete this message for both of you?', () => store.remove(it))) return; }
       if (k === 'hide') store.remove(it);
-      if (k === 'report') { const why = prompt('What is wrong with this message? (optional)', ''); if (why !== null) store.report(it, why); }
+      if (k === 'report') store.report(it, '');
     } });
   }
   function threadMenu(btn) {

@@ -42,7 +42,6 @@ export const SITE_PAGES = [
   ['moments', 'Moments', '/moments/', '📷', 'fun', true, '10-second camera clips'],
   ['games', 'Games', '/games/', '🎮', 'fun', true, 'Quick browser games'],
   ['match', 'Global Match', '/match/', '🎯', 'fun', true, 'Needs meet offers'],
-  ['hearts', 'Hearts 18+', '/hearts/', '❤️', 'fun', true, 'Mind-first matching'],
   ['world', '3D world', '/world/', '🧊', 'xr', false, 'Opens 3D'],
   ['house', 'My 3D house', '/world/?home=1', '🏡', 'xr', false, 'Opens 3D'],
   ['avatar', 'My character', '/world/?customize=1', '🧍', 'xr', false, 'Opens 3D'],

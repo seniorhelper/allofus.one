@@ -1,0 +1,8 @@
+# allofus.one security contact (RFC 9116)
+# Found a security problem? Please tell us privately first. We answer every report.
+# Child safety: report apparent child sexual exploitation to NCMEC at https://report.cybertip.org/ and use the Report button on the content.
+Contact: mailto:info@eyetoad.com
+Contact: tel:+1-800-481-8638
+Expires: 2027-10-23T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://allofus.one/.well-known/security.txt

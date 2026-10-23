@@ -7,13 +7,14 @@
 import { FLAT_CSS } from './aou-flat.js';
 import { headerHTML, FLAT2_CSS, ICON } from './aou-flat2.js';
 import { moreSheet, I3 } from './aou-flat3.js';
+import { bootMe } from './aou-ux.js';
 
 /* a stored Supabase session → a minimal "me" so the header shows Acting as instead of Sign in */
 const storedMe = () => { try { const k = Object.keys(localStorage).find(x => /^sb-.*-auth-token$/.test(x)); if (!k) return null; const v = JSON.parse(localStorage.getItem(k) || 'null'); const u = v && (v.user || (v.currentSession && v.currentSession.user)); if (!u || !u.id) return null; if (v.expires_at && v.expires_at * 1000 < Date.now() - 7 * 864e5) return null; const md = u.user_metadata || {}; return { id: u.id, email: u.email, name: md.display_name || md.name || String(u.email || 'Me').split('@')[0], home: {} }; } catch (e) { return null; } };
 
 export function mountPageHeader(opts = {}) {
   if (!document.getElementById('fl-css')) { const st = document.createElement('style'); st.id = 'fl-css'; st.textContent = FLAT_CSS + FLAT2_CSS; document.head.appendChild(st); }
-  const me = storedMe(); const wrap = document.createElement('div'); wrap.className = 'fl pagehead'; wrap.innerHTML = headerHTML(me);
+  const me = bootMe() || storedMe(); const wrap = document.createElement('div'); wrap.className = 'fl pagehead'; wrap.innerHTML = headerHTML(me);
   const old = document.querySelector(opts.replace || 'body > header'); if (old) old.replaceWith(wrap); else document.body.prepend(wrap);
   /* phone bottom bar, same as the Feed */
   const bar = document.createElement('nav'); bar.className = 'fl-bottom'; bar.setAttribute('aria-label', 'Main');

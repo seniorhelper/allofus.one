@@ -14,7 +14,7 @@ export const MAX_PEERS = 8;
 export function supabaseTransport(sb, myId) {
   let ch = null; const subs = [];
   return {
-    async join(room) { ch = sb.channel('voice-' + room, { config: { broadcast: { self: false }, presence: { key: myId } } }); ch.on('broadcast', { event: 'sig' }, ({ payload }) => subs.forEach(f => f(payload))); ch.on('presence', { event: 'leave' }, ({ key }) => subs.forEach(f => f({ t: 'bye', from: key }))); await new Promise((res) => ch.subscribe(async (st) => { if (st === 'SUBSCRIBED') { await ch.track({ at: Date.now() }); res(); } })); },
+    async check() { const SF = await import('./aou-safety.js'); const r = await SF.canTalk(sb); if (!r.ok) throw new Error(r.msg || 'Voice chat is for members 18+.'); }, async join(room) { ch = sb.channel('voice-' + room, { config: { broadcast: { self: false }, presence: { key: myId } } }); ch.on('broadcast', { event: 'sig' }, ({ payload }) => subs.forEach(f => f(payload))); ch.on('presence', { event: 'leave' }, ({ key }) => subs.forEach(f => f({ t: 'bye', from: key }))); await new Promise((res) => ch.subscribe(async (st) => { if (st === 'SUBSCRIBED') { await ch.track({ at: Date.now() }); res(); } })); },
     send(msg) { if (ch) ch.send({ type: 'broadcast', event: 'sig', payload: msg }); },
     onMessage(f) { subs.push(f); },
     async leave() { if (ch) { try { await ch.untrack(); await sb.removeChannel(ch); } catch (e) { } ch = null; } },
@@ -48,7 +48,7 @@ export function createVoice({ transport, myId, myName = 'Someone', iceServers = 
     } catch (e) { console.warn('voice', e); } });
   let volT = 0;
   const api = {
-    async join(r, constraints) { if (room) await api.leave(); room = r; local = await navigator.mediaDevices.getUserMedia(constraints || { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); meter(local, 'me'); await transport.join(r); send({ t: 'hello' }); clearInterval(volT); volT = setInterval(async () => { for (const p of peers.values()) { try { const st = await api.stats(p.id); if (st) p.lvl = st.level; } catch (e) { } } if (!getVolume) return; for (const p of peers.values()) { const v = getVolume(p.id); if (typeof v === 'number') p.audio.volume = Math.max(0, Math.min(1, v)); } }, 250); onChange(api.status()); return api.status(); },
+    async join(r, constraints) { if (transport.check) await transport.check(); if (room) await api.leave(); room = r; local = await navigator.mediaDevices.getUserMedia(constraints || { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); meter(local, 'me'); await transport.join(r); send({ t: 'hello' }); clearInterval(volT); volT = setInterval(async () => { for (const p of peers.values()) { try { const st = await api.stats(p.id); if (st) p.lvl = st.level; } catch (e) { } } if (!getVolume) return; for (const p of peers.values()) { const v = getVolume(p.id); if (typeof v === 'number') p.audio.volume = Math.max(0, Math.min(1, v)); } }, 250); onChange(api.status()); return api.status(); },
     async leave() { if (!room) return; send({ t: 'bye' }); for (const id of [...peers.keys()]) drop(id); if (local) local.getTracks().forEach(t => t.stop()); local = null; clearInterval(volT); await transport.leave(); room = null; onChange(api.status()); },
     mute(on = !muted) { muted = on; if (local) local.getAudioTracks().forEach(t => t.enabled = !muted); onChange(api.status()); return muted; },
     level(id = 'me') { if (id !== 'me') { const p = peers.get(id); return p ? (p.lvl || 0) : 0; } const f = levels.get(id); return f ? f() : 0; },

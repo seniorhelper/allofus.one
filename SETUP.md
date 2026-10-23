@@ -66,7 +66,7 @@ Supabase does not email you about new accounts by default. The 🛡️ Admin con
    - The Feed paints its shell (header, rail, skeleton cards) before any network call; if the Supabase CDN does not answer within 2.5 s the page opens in demo mode and upgrades itself when it arrives.
    - Every signup gets the 5-step tour (page & photo → connections → post → LIFEboard → 3D / VR). Existing accounts see it once; **Control panel → Preferences → Replay the tour** runs it again.
    - Anyone whose email was pre-linked to a Brand page (v17 `admin_emails`) gets the 4-step claim flow on their first sign-in: welcome → finish profile → review the page → their VR home spot. `?debugclaim=<slug>` previews it.
-   - Home and Connections show a live Connections panel (online dot from `presence`, right-click / long-press / ⋯ for Hug, Crush, High five, Wave, Cheer, Message, View page, Disconnect). Hugs land in the `hugs` table and show as a toast + badge, live.
+   - Home and Connections show a live Connections panel (online dot from `presence`, right-click / long-press / ⋯ for Hug, High five, Wave, Cheer, Message, View page, Disconnect). Hugs land in the `hugs` table and show as a toast + badge, live.
    - Posts have a visible ✎ edit button (text, link, price, location); edits set `edited_at` and show an "edited" marker.
    - "Happening now" shows real posts only — feed posts with photo / video thumbnails first, 3D-world posts merged in; filler only when there is not a single real post.
    - Life Dash on the LIFEboard is a widget board: every tool is a tile (S / M / L), with ⚙ options (size, colour, order, hide), drag to reorder, expand to full screen. The layout saves in `lifeboards.data.dash`.
