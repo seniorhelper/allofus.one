@@ -155,6 +155,12 @@ Today adds `circles`, `circle_members`, `aou_guide_hits` and `aou_kpi_daily`. Th
    - Self-serve delete. The sign-in itself is removed by the team within 7 days.
    - Utah's Digital Choice Act (HB 418, effective July 1, 2026) requires social-graph portability. Our export is the start of compliance. [Bloomberg Law](https://news.bloomberglaw.com/privacy-and-data-security/utah-data-sharing-law-creates-path-to-upend-social-media-model)
 7. **Age assurance for the UK.** The Online Safety Act has required age checks since July 25, 2025. Either geo-limit the UK or add an age-assurance vendor before marketing there. [The Register](https://www.theregister.com/2025/07/28/uk_vpn_demand_soars/)
+8. **v27 SECURITY round (2026-10-23, red team, not yet run in production).** `supabase/_parts/v27-security.sql` adds: a hash-chained, append-only `audit_log` (every report, moderation action, hold/ban, DOB change, media status change, deletion, admin dashboard open; `audit_verify()` walks the chain); `safety_incidents` + `media_hashes` (sha256 / dHash now, PDQ / PhotoDNA columns reserved); `media_scan_result()` for the server-side scanner; a storage trigger that logs every object so uploads that bypass the app are never shown; read policies that hide any post / comment / Comm Hub item whose media is pending, removed, quarantined or unlogged; `delete_my_account()` (deletes the auth user, queues under legal hold); Realtime Authorization policies (world / positions / voice / Unity Call for confirmed adults, `dm:a:b` for the two people); username regex + tag neutralising on profiles; `mod_evidence_bundle()` signed exports. Flag `server_scan_required` is OFF by default so UX is unchanged until the scanner is deployed.
+   - Edge Function `supabase/functions/media-scan/index.ts`: Hive (recommended: CSAM-class + NSFW) or AWS Rekognition (NSFW only) behind `SCAN_PROVIDER`; quarantines, snapshots, holds, alerts. Deploy steps, vendor choice and cost: **SAFETY-RUNBOOK.md §3**.
+   - Client: private Realtime channels with one-time public fallback, Turnstile behind `CONFIG.TURNSTILE_SITE_KEY` (off), self-serve delete through the RPC with the old flow as fallback, Incidents + Evidence export + audit-chain status in Admin → Moderation, CSP allows `challenges.cloudflare.com`.
+   - Migration proof (PGlite, full chain v4→v22→v26→v27, v27 run three times): a pre-v26 member with `adult=true` and no DOB keeps reading posts, lifeboard and pages, can delete own content, sees the DOB modal, regains posting after `set_my_dob()`; the founder stays admin and can post without a DOB; the sign-in profile upsert never renames or fails on legacy usernames.
+   - Run order: v26-features → v26-safety → v27-security. Dashboard steps, the NCMEC procedure (18 U.S.C. 2258A), and the Cloudflare-in-front-of-GitHub-Pages header plan are in **SAFETY-RUNBOOK.md**.
+   - Still open after v27: `profiles.blocked` / `profiles.home` are world-readable (needs a `set_block()` RPC + a small `aou-flat2.js` change), public rooms readable anonymously (by design, reconsider), no `frame-ancestors` without Cloudflare, age is self-declared, video has no server-side frame sampling, and the hash lists need NCMEC / Microsoft access.
 
 ---
 
@@ -220,7 +226,7 @@ Today adds `circles`, `circle_members`, `aou_guide_hits` and `aou_kpi_daily`. Th
 |---|---|---|---|
 | **0. MVP** | Identity, a feed, no trackers | Feed, profiles, connections, DMs, groups, Brand pages, 3D/VR, LIFEboard | **DONE.** Next: polish the onboarding numbers (§10) |
 | **1. Circles** | Contextual micro-spheres | Circles, the audience picker, the circle feed filter, why-am-I-seeing-this, mute words | **NEW-v26.** Next items are listed below the table. |
-| **2. Open graph + portability** | Sovereign identity, one-click export | JSON export exists. | Next items are listed below the table. |
+| **2. Open graph + portability** | Sovereign identity, one-click export | JSON export exists. **v27:** did:key identity + signed, verifiable exports. | Next items are listed below the table. |
 | **2b. Creator economy** | Tipping and revenue share instead of ads | Spaces, Courses and Events exist, but no payments | Next items are listed below the table. |
 | **3. Ambient AI + spatial** | On-device agents that summarize and schedule | Ask allofus (server AI, today); 3D world and WebXR are already shipped | Next items are listed below the table. |
 | **4. Federation** | Open protocol | None | Next items are listed below the table. |
@@ -235,6 +241,7 @@ Today adds `circles`, `circle_members`, `aou_guide_hits` and `aou_kpi_daily`. Th
 - An import tool, starting with Facebook's "Export Your Information" JSON for friends and photos.
 - An ActivityPub or AT Protocol read-only bridge for public posts.
 - A `did:web` handle per member (`@name.allofus.one`).
+- **Done in v27:** a browser-made Ed25519 key, `did:key` on the profile, signed exports and `/?v=verify` (see §14e).
 - This matches Utah HB 418 and the EU DMA Art. 6(9) direction. [EU DMA portal](https://digital-markets-act.ec.europa.eu/developer-portal/end-user-data-portability_en)
 
 **Phase 2b next steps (creator economy):**
@@ -592,7 +599,7 @@ Outbound visits are tracked in each destination's analytics (GSC and GA on those
   - `/?v=mydata` in You
 - [ ] Add titles and descriptions for `grow`, `circles` and `mydata` to the `TITLES` / `DESCS` maps in `aou-flat2.js`.
 - [ ] Bump `sw.js` and push, in one push with the SAFETY and DESIGN rounds.
-- [ ] Remove `/hearts/` from `sitemap.xml`, `llms.txt`, `index.html` JSON-LD and the meta description after the SAFETY push. The home description still says "Hearts 18+ mind-first matching".
+- [x] Remove `/hearts/` from `sitemap.xml`, `llms.txt`, `index.html` JSON-LD and the meta description after the SAFETY push. The home description still says "Hearts 18+ mind-first matching".
 - [ ] Fix the duplicate entries in `sitemap.xml`.
 - [ ] Remove the Bighorn Painting mention from `js/aou-brand.js`.
 - [ ] Source or soften the "200,000+ member local groups" claim (Orbit, searchBOOST).
@@ -605,3 +612,78 @@ Outbound visits are tracked in each destination's analytics (GSC and GA on those
 - Circle create, add and remove member, posting to a circle, and the circle feed filter.
 - That a non-member cannot read a circle post (RLS test with two accounts).
 - The live AI answer path. The fallback path *was* tested: with the function not deployed, Orbit gives the scripted answer.
+
+
+---
+
+## 14. GROWTH round (v27, 2026-10-23): tour, LIFEspark, Discover, member email, your graph is yours
+
+*Not pushed. Needs `supabase/_parts/v27-growth.sql` (run after the v26 files) and, for email, two Edge Functions plus a Resend account. Everything below feature-detects: the site works before the SQL and before any function is deployed.*
+
+### 14a. What shipped
+
+| # | Feature | Where | Files | Needs |
+|---|---|---|---|---|
+| 1 | **Take the tour**: 12-step spotlight tour (feed, Circles, LIFEboard, FLOWworks, Brand + Grow, Groups, Unity Call, Spaces + Global Room, 3D/VR + World VR Mall, Moments, Your data, Ask allofus). Keyboard, swipe, progress dots, a preview card with "Open it" when the element is off-screen. Offered once to a new member after the short onboarding and once to an anonymous visitor on their 2nd visit. | Header link (desktop), "Tour" quick-start bubble, More → Help, `/?tour=1` | `js/aou-tour.js` (new); 3 one-line hooks in `aou-flat2.js`; `aou-ux.js` menu | Nothing |
+| 2 | **LIFEspark** ("your daily spark"): a daily spark from 125 original prompts (post it, or save it to the LIFEboard journal), three tiny wins per day, a 2-minute breathing timer, "Ask allofus" (the guide in `mode:'spark'`, scripted fallback when not deployed), and "Ideas for your business" from the Brand page category. | `/?v=spark` (`muse` is a silent alias), "Spark" bubble, Create & Grow menu | `js/aou-lifespark.js` (new), `aou-board.js` `lbAdd()` export, `aou-ai-guide.js` mode param | SQL for `spark_days` (else device storage); guide redeploy for the AI tab |
+| 3 | **"Today on allofus" cards** in the home feed: daily spark, LIFEboard tip, feature spotlight (12 rotating, incl. World VR Mall), "Posting lately" (real counts only), Discover teaser. Labeled "allofus", at most 1 per 6 posts and 4 per load, with Dismiss and "Fewer like this" (device prefs; a `less` word of allofus / tips / cards in `aou_feedprefs` turns them off). | Home feed | `js/aou-content.js` (new); 1 hook after the circles hook in `feedList` | Nothing |
+| 4 | **Discover**: NASA (APOD with `CONFIG.NASA_KEY` or `DEMO_KEY`; the keyless NASA Image Library as fallback), Wikipedia featured feed (featured article, picture of the day, most read, on this day), Action Global News, and Pixabay once `CONFIG.PIXABAY_KEY` exists. Allow-listed HTTPS hosts only; source + credit on every card; "Share to feed" opens the real composer with the link and credit prefilled. | `/?v=discover`, Explore menu | `js/aou-content.js` | Optional keys (14d) |
+| 5 | **Email opt-in** at sign-up ("Email me the occasional allofus update"), stored to `profiles.email_optin`; a welcome email on join; a Sunday digest for opted-in members; one-click unsubscribe (`/?unsub=<token>` → `unsubscribe(token)` RPC); Admin → **Members + email** (counts, "Send test digest to me", "Send test welcome to me"). | Sign-up sheet, email, admin | `aou-feedplus.js` (checkbox + 2 lines), `aou-admin.js` (nav + section), `aou-content.js`, `supabase/functions/welcome-mail`, `supabase/functions/weekly-digest` | SQL + Resend (14c) |
+| 6 | **What's new**: the last 5 release notes. | More → Help | `aou-content.js` `WHATS_NEW`, 1 line in `aou-flat3.js` moreSheet | Nothing |
+| 7 | **Your graph is yours**: an Ed25519 key made in the browser (WebCrypto), the public half stored as a `did:key` in `profiles.pubkey`, the private key downloaded as a file, a **signed export** (export JSON + detached `.sig.json`), and **/?v=verify**, which checks a pair locally. Explained on `/mission/#yours`. | Your data page, mission page | `js/aou-identity.js` (new), 1 line in `aou-circles.js` myDataView, `mission/index.html` | SQL for `pubkey` (the key still works on-device without it) |
+| 8 | **Content plan**: 30 original posts and a weekly rhythm for the founder account. | `content/seed-posts.md`, `content/weekly-rhythm.md` | | Zach posts them by hand; nothing was posted to production |
+
+New view keys: `spark` (alias `muse`), `discover`, `verify`. `TITLES` / `DESCS` and the dispatch line sit in `aou-flat2.js` next to the v26 block.
+
+### 14b. SQL and deploy order
+
+1. `v26-safety.sql` → 2. `v26-features.sql` → 3. **`v27-growth.sql`** (also safe alone; it needs only `public.is_admin()`).
+   - Adds `profiles.email_optin`, `email_optin_at`, `pubkey`, `pubkey_at`; `public.email_tokens` (RLS on, no policies: service role only); `public.spark_days` (RLS, own rows); `unsubscribe(uuid)` (anon may call it, by token only); `aou_email_stats()` (admin); `aou_digest_data()`, `aou_digest_recipients()`, `aou_member_mail()` (service role).
+4. Redeploy **`aou-guide`** (it now reads `mode`; `knowledge.ts` has `SPARK_KNOWLEDGE` and the new features). Same steps as §11, two files.
+5. Deploy **`welcome-mail`** and **`weekly-digest`** (14c).
+
+### 14c. Comms: member email, step by step (Zach, about 30 minutes)
+
+**Policy.** One welcome email to every new account (transactional). The weekly digest goes only to members with `email_optin = true`. Every email carries a one-click unsubscribe. No tracking pixels, no open tracking, no third-party lists. Account notices (password reset, confirmation) stay with Supabase Auth.
+
+1. **Resend account.** resend.com → sign up with zach@eyetoad.com → **Domains → Add domain** `allofus.one`. Resend shows the DNS records to add where allofus.one's DNS lives (the registrar or Cloudflare):
+   - an MX record on the `send` subdomain (exact host and value shown by Resend)
+   - a TXT SPF record on that subdomain (`v=spf1 include:amazonses.com ~all`, as shown)
+   - a TXT DKIM record (`resend._domainkey`, value shown)
+   - optional DMARC: `_dmarc.allofus.one` TXT `v=DMARC1; p=none; rua=mailto:info@eyetoad.com`
+   Click **Verify**. Then **API Keys → Create** ("allofus mail", sending access, domain allofus.one). Copy the key once.
+   The free tier is 3,000 emails a month and 100 a day; the digest sends 50 per request. Make `hello@allofus.one` a real mailbox or a forward to info@eyetoad.com so replies land somewhere.
+2. **Secrets.** Supabase → Edge Functions → Secrets:
+   - `RESEND_API_KEY` = the key
+   - `WEBHOOK_SECRET` = any long random string (welcome webhook)
+   - `CRON_SECRET` = another long random string (digest schedule)
+   - optional `MAIL_FROM` = `allofus <hello@allofus.one>`
+3. **Deploy the functions** (CLI from the repo root; the editor route works too, one file each):
+   - `npx supabase functions deploy welcome-mail --project-ref izfccjaznlcffvjxawya --no-verify-jwt`
+   - `npx supabase functions deploy weekly-digest --project-ref izfccjaznlcffvjxawya --no-verify-jwt`
+   - `npx supabase functions deploy aou-guide --project-ref izfccjaznlcffvjxawya` (JWT verification stays on for this one)
+   `--no-verify-jwt` is needed because the webhook and pg_cron carry no user token; the shared secrets and the founder check are the auth. The admin buttons still send the admin's JWT, which is checked against the founder id.
+4. **Welcome webhook.** Supabase → Database → Webhooks → **Create**: name `welcome-mail`, table `public.profiles`, event **Insert**, type **HTTP Request**, method POST, URL `https://izfccjaznlcffvjxawya.supabase.co/functions/v1/welcome-mail`, HTTP header `x-webhook-secret` = the `WEBHOOK_SECRET` value. Save.
+5. **Digest schedule.** Database → Extensions → enable **pg_cron** and **pg_net**. Then run the commented `cron.schedule` block at the end of `v27-growth.sql` with `<CRON_SECRET>` filled in (Sundays 15:00 UTC = 8 am Denver in winter).
+6. **Test.** Sign in as the founder → Admin → **Members + email** → "Send test welcome to me", then "Send test digest to me". Both land in the founder's email. The counts card shows members / opted in / new in 7 days.
+7. **Unsubscribe check.** Open the unsubscribe link from the test email: the site shows "Done. You are unsubscribed" and `profiles.email_optin` flips to false. Re-opt-in is by the member only (a Control panel toggle is a TODO; until then a member emails info@eyetoad.com).
+
+### 14d. Free API keys for Discover (optional)
+
+- **NASA:** api.nasa.gov → "Generate API Key" form (name, email) → the key arrives by email at once. Put it in `js/aou-config.js` as `NASA_KEY: '...'`. Without it the site uses `DEMO_KEY` (30 requests an hour per IP, 50 a day; cached 6 hours in the visitor's session) and falls back to the keyless NASA Image Library, which is what ran during QA because APOD returned HTTP 500 on 2026-10-23.
+- **Wikipedia:** no key. The featured feed is public (`api.wikimedia.org/feed/v1/wikipedia/en/featured/…`); the site sends `Api-User-Agent: allofus.one Discover (info@eyetoad.com)` as their policy asks. Text is CC BY-SA 4.0 and is credited on the card; images link to their Commons file page for the license.
+- **Pixabay:** pixabay.com → create a free account → pixabay.com/api/docs/ shows your key at the top of the page while signed in. Put it in `aou-config.js` as `PIXABAY_KEY: '...'` and the Pixabay tab appears. Compliance is built in: results are shown only as temporary search results (cached 24 h as their terms require), never hot-linked into posts ("Share to feed" shares the Pixabay page URL plus "Photo: <user> via Pixabay"), a source line sits on every card, and the 100-requests-per-60-seconds limit is far above what the page can generate.
+- **Own sites:** checked 2026-10-23, there is no RSS or JSON feed on eyetoad.com or aispeedtoleads.com (404/403), so they are not in Discover. Add a `feed.json` (JSON Feed 1.1, like actionglobalnews.com) to either site and it can be added to the allow-list in `aou-content.js` in one line.
+
+### 14e. Nexus phase 2, "sovereign identity": what v27 did and what comes next
+
+v27 ships the practical first step: a member can hold a key pair whose private half allofus never sees, publish the public half as a `did:key` (W3C did-core, Ed25519, multicodec `0xed01`, base58btc), and sign their one-click export so anyone can verify it with no allofus server in the loop (`/?v=verify`, or any Ed25519 library over the file bytes). This is deliberately **not** a blockchain, token, wallet or ICO, and it will not become one: the goal is portability and proof of authorship, which need a key, not a ledger. Next steps, in order: (1) `did:web` handles (`did:web:allofus.one:u:<name>`) that resolve to the same public key, so the identifier is readable; (2) signed posts (each post carries a signature over its canonical form, verifiable by third parties even from a screenshot); (3) an **import tool** for the exports other networks must now provide (Utah HB 418, EU DMA Art. 6(9)); (4) an AT Protocol or ActivityPub read-only bridge for public Brand pages and posts, so a member's public graph can be followed from Bluesky or Mastodon; (5) key rotation and recovery (a new key signed by the old one). Never a token, never a fee to hold your own identity.
+
+### 14f. Untested today
+
+- Anything that needs a signed-in member: posting a spark, "Save to LIFEboard" (`lbAdd`), `spark_days` saves, the email opt-in write at sign-up, storing `pubkey`, the signed export download, and the admin Members + email section with real counts.
+- The live `mode:'spark'` AI path (the scripted fallback was tested; the function is not deployed).
+- Welcome and digest emails end to end (no Resend account yet). Both functions were written against the Resend REST API (`/emails`, `/emails/batch`) and the SQL helpers; they are not type-checked by Deno here.
+- NASA APOD itself (HTTP 500 all evening; the Image Library fallback was verified in the browser).
+- Pixabay (off until a key exists).
+- Verified in the browser: the tour end to end at 1280 px and 375 px, the second-visit offer, LIFEspark (Today, breathing timer, Ask allofus fallback), Discover with NASA + Wikipedia + World news, 4 system cards in the feed, the What's new sheet, the identity block and verify page, mission `#yours`, and no horizontal scroll on any of these.

@@ -32,7 +32,7 @@ export async function aiAnswer(q, ctx = {}) {
   let res;
   try {
     res = await Promise.race([
-      sb.functions.invoke('aou-guide', { body: { q: String(q).slice(0, 600), history: history.slice(-6), page } }),
+      sb.functions.invoke('aou-guide', { body: { q: String(q).slice(0, 600), history: history.slice(-6), page, mode: ctx.mode || 'guide' } }),
       new Promise((r) => setTimeout(() => r({ error: { message: 'timeout' } }), 15000)),
     ]);
   } catch (e) { markDown(); return null; }

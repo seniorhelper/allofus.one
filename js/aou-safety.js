@@ -292,10 +292,60 @@ function installUploadGuard(sb) {
 }
 
 /* ---------- the one call every page makes right after createClient() ---------- */
+/* ---------- v27: private Realtime channels (Realtime Authorization) ----------
+   world / pos-* / voice-* / meet:* / dm:* channels are joined as PRIVATE channels, so the realtime.messages policies in
+   supabase/_parts/v27-security.sql decide who may listen or send (confirmed adults; DMs only the two people). If the
+   policies are not deployed yet (or the visitor is not allowed), the join fails and the client falls back ONCE to the
+   public channel, so nothing breaks today. Each channel keeps all its .on() handlers across the fallback. */
+const PRIVATE_TOPICS = /^(world$|pos-|voice-|meet:|dm:|room:)/;
+function installRealtimeGuard(sb) {
+  const rt = sb && sb.realtime; if (!rt || typeof rt.channel !== 'function' || rt.__aouPrivate) return; rt.__aouPrivate = true;
+  const origChannel = rt.channel;
+  rt.channel = function (topic, opts) {
+    const want = PRIVATE_TOPICS.test(String(topic || ''));
+    if (want) { opts = opts || {}; opts.config = Object.assign({}, opts.config, { private: opts.config && opts.config.private === false ? false : true }); }
+    const ch = origChannel.call(this, topic, opts);
+    if (!want || !ch || ch.__aouSub) return ch;
+    ch.__aouSub = true; const origSub = ch.subscribe;
+    ch.subscribe = function (cb, timeout) {
+      const self = this;
+      return origSub.call(self, async (status, err) => {
+        if ((status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') && self.private && !self.__aouFell) {
+          self.__aouFell = true; self.private = false; try { self.params.config.private = false; } catch (e) { }
+          try { await self.unsubscribe(); } catch (e) { }
+          try { origSub.call(self, cb, timeout); } catch (e) { cb && cb(status, err); }
+          return;
+        }
+        cb && cb(status, err);
+      }, timeout);
+    };
+    return ch;
+  };
+}
+
+/* ---------- v27: Cloudflare Turnstile (bot protection), OFF until CONFIG.TURNSTILE_SITE_KEY is set ----------
+   When Zach sets the key AND turns on Supabase Auth → Attack Protection → Bot and Abuse Protection → Turnstile (same site
+   key / secret), sign-up and sign-in send the token as options.captchaToken. Without the key this resolves to undefined
+   and the auth calls behave exactly as before. */
+let TS_LOAD = null;
+export async function captchaToken() {
+  let key = ''; try { key = (await import('./aou-config.js')).CONFIG.TURNSTILE_SITE_KEY || ''; } catch (e) { } if (!key) return undefined;
+  try {
+    if (!window.turnstile) { TS_LOAD = TS_LOAD || new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.async = true; s.onload = () => res(); s.onerror = () => rej(new Error('turnstile load')); document.head.appendChild(s); setTimeout(() => rej(new Error('turnstile timeout')), 15000); }); await TS_LOAD; }
+    let host = document.getElementById('aous-ts'); if (!host) { host = document.createElement('div'); host.id = 'aous-ts'; host.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483002'; document.body.appendChild(host); }
+    host.innerHTML = '';
+    return await new Promise((res, rej) => {
+      const t = setTimeout(() => rej(new Error('Verification timed out. Please try again.')), 60000);
+      window.turnstile.render(host, { sitekey: key, appearance: 'interaction-only', callback: (tok) => { clearTimeout(t); setTimeout(() => { host.innerHTML = ''; }, 500); res(tok); }, 'error-callback': () => { clearTimeout(t); rej(new Error('Verification failed. Please reload and try again.')); } });
+    });
+  } catch (e) { throw new Error((e && e.message) || 'Verification failed.'); }
+}
+
 const GUARDED_CLIENTS = new WeakSet();
 export function guardClient(sb) {
   if (!sb || GUARDED_CLIENTS.has(sb)) return sb; GUARDED_CLIENTS.add(sb); if (!CLIENT) CLIENT = sb;
   try { installUploadGuard(sb); } catch (e) { console.warn('safety upload guard', e); }
+  try { installRealtimeGuard(sb); } catch (e) { console.warn('safety realtime guard', e); }
   linkGuard();
   try {
     sb.auth.onAuthStateChange((ev, session) => { if (ev === 'SIGNED_OUT') { ST = null; document.querySelectorAll('.aous-banner').forEach(b => b.remove()); return; } if (!session) return; if (ev === 'SIGNED_IN' || ev === 'INITIAL_SESSION' || ev === 'USER_UPDATED') { CLIENT = CLIENT || sb; setTimeout(() => runGate(sb), 400); } });
@@ -370,6 +420,13 @@ export async function modQueue(main, { sb, me, toast: tst } = {}) {
     q(sb.from('feed_posts').select('id,user_id,text,media,link,created_at,mod_status').neq('mod_status', 'ok').order('created_at', { ascending: false }).limit(100)),
     q(sb.from('feed_comments').select('id,post_id,user_id,body,media,created_at,mod_status').neq('mod_status', 'ok').order('created_at', { ascending: false }).limit(100)),
   ]);
+  /* v27: incidents + audit chain status (both empty before v27-security.sql is run) */
+  const [inc, av, scanFlag] = await Promise.all([
+    q(sb.from('safety_incidents').select('*').order('created_at', { ascending: false }).limit(100)),
+    q(sb.rpc('audit_verify')),
+    q(sb.rpc('safety_flag', { k: 'server_scan_required' })),
+  ]);
+  try { sb.rpc('audit_admin_open', { p_page: location.pathname + location.search }).then(() => { }, () => { }); } catch (e) { }
   const sqlMissing = /member_safety|media_items|target_kind|mod_status|does not exist|schema cache/i.test([rep.err, med.err, acc.err, hp.err].join(' '));
   const open = rep.data.filter(r => (r.status || (r.resolved ? 'actioned' : 'open')) === 'open');
   const groups = {}; open.forEach(r => { const k = (r.target_kind || 'legacy') + ':' + (r.target_id || r.id); (groups[k] = groups[k] || { kind: r.target_kind || 'legacy', id: r.target_id, rows: [] }).rows.push(r); });
@@ -389,10 +446,15 @@ export async function modQueue(main, { sb, me, toast: tst } = {}) {
   const signed = {}; await Promise.all(pend.filter(x => x.bucket === 'quarantine').slice(0, 30).map(async (x) => { try { const r = await sb.storage.from('quarantine').createSignedUrl(x.path, 900); if (r.data) signed[x.id] = r.data.signedUrl; } catch (e) { } }));
   const scoreTxt = (s) => s ? Object.entries(s).filter(([k]) => k !== 'Neutral' && k !== 'Drawing').map(([k, v]) => k + ' ' + Math.round(v * 100) + '%').join(' · ') : '';
   const pendHTML = (x) => { const u = signed[x.id] || x.url; return `<div class="it" data-m="${x.id}"><h4><span class="tag r">${esc(x.status)}</span>${esc(x.kind || '')} · ${ago(x.created_at)}</h4><div>By ${who(x.user_id)} · <span class="m">${esc(scoreTxt(x.scores))}</span></div>${u ? (x.kind === 'video' ? `<video src="${esc(u)}" controls muted preload="metadata"></video>` : `<img src="${esc(u)}" alt="held picture" referrerpolicy="no-referrer">`) : '<p class="m">(file not readable)</p>'}<div class="act"><button data-a="approve">Approve (publish)</button><button class="x" data-a="reject">Reject (keep as evidence)</button><button class="x" data-a="ban" data-u="${esc(x.user_id || '')}">Ban user</button><button class="n" data-a="ncmec" data-u="${esc(x.user_id || '')}">Preserve evidence + NCMEC</button></div></div>`; };
-  const accHTML = (a) => `<div class="it" data-acc="${esc(a.user_id)}"><h4>${a.banned ? '<span class="tag r">banned</span>' : ''}${a.held ? '<span class="tag r">on hold</span>' : ''}${a.restricted ? '<span class="tag r">restricted · under 18</span>' : ''}${a.flagged ? '<span class="tag">flagged</span>' : ''}</h4><div>${who(a.user_id)} · ${a.dob ? 'age ' + (ageOf(String(a.dob).slice(0, 10)) ?? '?') : 'no DOB'} · ${ago(a.updated_at)}</div><div class="m" style="font-size:12px">${esc([a.held_reason, a.restricted_reason, a.banned_reason].filter(Boolean).join(' · '))}</div><div class="act">${a.held ? '<button data-a="release">Release hold</button>' : '<button class="x" data-a="hold">Hold</button>'}${a.restricted ? '<button data-a="unrestrict">Lift restriction (verified 18+)</button>' : '<button class="x" data-a="restrict">Restrict (minor)</button>'}${a.banned ? '<button data-a="unban">Unban</button>' : '<button class="x" data-a="ban">Ban</button>'}<button data-a="clear_flag">Clear flag</button><button class="n" data-a="ncmec">Preserve evidence + NCMEC</button></div></div>`;
+  const accHTML = (a) => `<div class="it" data-acc="${esc(a.user_id)}"><h4>${a.banned ? '<span class="tag r">banned</span>' : ''}${a.held ? '<span class="tag r">on hold</span>' : ''}${a.restricted ? '<span class="tag r">restricted · under 18</span>' : ''}${a.flagged ? '<span class="tag">flagged</span>' : ''}</h4><div>${who(a.user_id)} · ${a.dob ? 'age ' + (ageOf(String(a.dob).slice(0, 10)) ?? '?') : 'no DOB'} · ${ago(a.updated_at)}</div><div class="m" style="font-size:12px">${esc([a.held_reason, a.restricted_reason, a.banned_reason].filter(Boolean).join(' · '))}</div><div class="act">${a.held ? '<button data-a="release">Release hold</button>' : '<button class="x" data-a="hold">Hold</button>'}${a.restricted ? '<button data-a="unrestrict">Lift restriction (verified 18+)</button>' : '<button class="x" data-a="restrict">Restrict (minor)</button>'}${a.banned ? '<button data-a="unban">Unban</button>' : '<button class="x" data-a="ban">Ban</button>'}<button data-a="clear_flag">Clear flag</button><button class="n" data-a="ncmec">Preserve evidence + NCMEC</button><button data-a="export">Export evidence (JSON + sha256)</button></div></div>`;
+  /* v27: incidents (automatic CSAM-class / hash-match / NSFW events from the server-side scanner) */
+  const incData = Array.isArray(inc.data) ? inc.data : [];
+  const incHTML = (i) => `<div class="it ${/csam|hash/.test(i.kind) ? 'cs' : ''}" data-inc="${i.id}" data-u="${esc(i.user_id || '')}"><h4><span class="tag r">${esc(i.kind)}</span><span class="tag">${esc(i.status)}</span>#${i.id} · ${ago(i.created_at)}${i.ncmec_report_id ? ' · NCMEC ' + esc(i.ncmec_report_id) : ''}</h4><div>By ${who(i.user_id)} · media #${esc(String(i.media_id || ''))} · evidence #${esc(String(i.evidence_id || ''))}</div><div class="m" style="font-size:12px">${esc(scoreTxt(i.details && i.details.scores) || (i.details && (i.details.note || i.details.hash_match)) || '')}</div><div class="act">${i.status === 'open' ? `<a class="n" href="${NCMEC_URL}" target="_blank" rel="noopener">Open CyberTipline</a><button data-a="ncmec-id">Record NCMEC report #</button>` : ''}<button data-a="export">Export evidence (JSON + sha256)</button>${i.status !== 'closed' ? '<button data-a="close">Close incident</button>' : ''}</div></div>`;
+  const chain = av.data && typeof av.data === 'object' ? av.data : null;
+  const chainHTML = chain ? `<p class="m" style="font-size:12px">Audit chain: <b style="color:${chain.ok ? '#15803d' : '#b91c1c'}">${chain.ok ? 'intact' : 'BROKEN at #' + esc(String(chain.first_bad_id))}</b> · ${esc(String(chain.checked))} rows · last hash <code>${esc(String(chain.last_hash || '').slice(0, 16))}…</code> · server scan ${scanFlag.data === true ? '<b style="color:#15803d">required (uploads hidden until scanned)</b>' : 'optional (client screening only — see SAFETY-RUNBOOK.md to deploy media-scan)'}</p>` : '<p class="m" style="font-size:12px">Run <code>supabase/_parts/v27-security.sql</code> for the hash-chained audit log, incidents and the server-side media scanner hooks.</p>';
   const hiddenHTML = [...hp.data.map(p => ({ k: 'post', id: p.id, u: p.user_id, t: p.text, m: p.media, s: p.mod_status, at: p.created_at })), ...hc.data.map(c => ({ k: 'comment', id: c.id, u: c.user_id, t: c.body, m: c.media, s: c.mod_status, at: c.created_at }))].map(h => `<div class="it" data-g="${h.k}:${h.id}"><h4><span class="tag r">${esc(h.s)}</span><span class="tag">${h.k}</span>#${h.id} · ${ago(h.at)}</h4><div>By ${who(h.u)}</div><div class="pv">${esc(String(h.t || '').slice(0, 600))}${mediaHTML(h.m)}</div><div class="act"><button data-a="keep">Restore</button><button class="x" data-a="remove">Remove for good</button></div></div>`).join('');
   main.innerHTML = `<div class="fl-card aous-mq-card"><h3>🛡️ Moderation</h3><p class="muted" style="font-size:12px">Child-safety reports are on top. Nothing here is ever hard-deleted: "Remove" hides the item and moves its files to the private quarantine bucket. For anything involving a minor: <b>Preserve evidence + NCMEC</b> freezes the account data and opens the CyberTipline (US law requires reporting apparent child sexual abuse material to NCMEC). Do not download or forward the material itself.</p>${sqlMissing ? '<p class="fl-err">Run <code>supabase/_parts/v26-safety.sql</code> in Supabase to turn on the full queue (some tables are missing).</p>' : ''}<div class="act" style="margin:6px 0"><button class="fl-btn sm" data-a="refresh">↻ Refresh</button><a class="fl-btn sm" href="${NCMEC_URL}" target="_blank" rel="noopener">Open NCMEC CyberTipline</a></div></div>
-    <div class="aous-mq"><h3 style="margin:8px 0 0">Open reports · ${G.length}</h3>${G.map(grpHTML).join('') || '<p class="muted">No open reports. 🎉</p>'}
+    ${chainHTML}<div class="aous-mq">${incData.length ? `<h3 style="margin:8px 0 0">Incidents · ${incData.length}</h3>${incData.map(incHTML).join('')}` : ''}<h3 style="margin:8px 0 0">Open reports · ${G.length}</h3>${G.map(grpHTML).join('') || '<p class="muted">No open reports. 🎉</p>'}
     <h3 style="margin:8px 0 0">Pictures waiting for review · ${pend.length}</h3>${pend.map(pendHTML).join('') || '<p class="muted">Nothing held.</p>'}
     <h3 style="margin:8px 0 0">Accounts to review · ${acc.data.length}</h3>${acc.data.map(accHTML).join('') || '<p class="muted">No flagged accounts.</p>'}
     <h3 style="margin:8px 0 0">Hidden posts and comments · ${hp.data.length + hc.data.length}</h3>${hiddenHTML || '<p class="muted">Nothing hidden.</p>'}
@@ -402,7 +464,29 @@ export async function modQueue(main, { sb, me, toast: tst } = {}) {
   main.onclick = async (e) => {
     const b = e.target.closest('button[data-a]'); if (!b) return; const a = b.dataset.a;
     if (a === 'refresh') { modQueue(main, { sb, me, toast: say }); return; }
-    const gEl = b.closest('[data-g]'), mEl = b.closest('[data-m]'), accEl = b.closest('[data-acc]'), muEl = b.closest('[data-mu]');
+    const gEl = b.closest('[data-g]'), mEl = b.closest('[data-m]'), accEl = b.closest('[data-acc]'), muEl = b.closest('[data-mu]'), incEl = b.closest('[data-inc]');
+    /* v27: signed evidence bundle for NCMEC / law enforcement. The server returns the exact JSON text + its sha256 and writes
+       an audit row; the browser re-hashes the text so the printed hash is independently verified before download. */
+    const exportBundle = async (uid, incId) => {
+      if (!uid) { say('No account on this item.'); return; }
+      const bundle = await rpc('mod_evidence_bundle', { p_user: uid, p_incident: incId ? +incId : null });
+      const text = bundle && bundle.text; if (!text) throw new Error('empty bundle');
+      let local = ''; try { const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)); local = [...new Uint8Array(d)].map(x => x.toString(16).padStart(2, '0')).join(''); } catch (e) { }
+      const match = !local || local === bundle.sha256;
+      const blob = new Blob([text], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'allofus-evidence-' + String(uid).slice(0, 8) + (incId ? '-incident' + incId : '') + '-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 30000);
+      say((match ? 'Evidence exported. sha256 verified: ' : 'Evidence exported. HASH MISMATCH, server says: ') + bundle.sha256 + ' (audit #' + bundle.audit_id + '). Keep this hash with your NCMEC / police report.', 15000);
+      try { await navigator.clipboard.writeText(bundle.sha256); } catch (e) { }
+    };
+    if (incEl) {
+      b.disabled = true;
+      try {
+        const id = incEl.dataset.inc, uid = incEl.dataset.u;
+        if (a === 'export') await exportBundle(uid, id);
+        else if (a === 'ncmec-id') { const n = prompt('NCMEC CyberTipline report number (from the confirmation page / email):'); if (n && n.trim()) { await rpc('mod_incident', { p_id: +id, p_status: 'reported_ncmec', p_ncmec: n.trim().slice(0, 60), p_note: null }); say('Recorded. The evidence row and the audit log carry the report number.'); modQueue(main, { sb, me, toast: say }); return; } }
+        else if (a === 'close') { const note = prompt('Why is this incident closed? (kept in the audit trail)'); if (note === null) { b.disabled = false; return; } await rpc('mod_incident', { p_id: +id, p_status: 'closed', p_ncmec: null, p_note: note.slice(0, 500) || 'closed' }); say('Incident closed.'); modQueue(main, { sb, me, toast: say }); return; }
+      } catch (err) { say('Failed: ' + (err.message || err), 7000); }
+      b.disabled = false; return;
+    }
     b.disabled = true;
     try {
       if (gEl) {
@@ -421,6 +505,7 @@ export async function modQueue(main, { sb, me, toast: tst } = {}) {
       } else if (accEl) {
         const uid = accEl.dataset.acc;
         if (a === 'ncmec') await ncmec(uid);
+        else if (a === 'export') await exportBundle(uid, null);
         else { if (['ban', 'restrict', 'hold'].includes(a) && !confirm(a[0].toUpperCase() + a.slice(1) + ' this account?')) { b.disabled = false; return; } await rpc('mod_set_user', { p_user: uid, p_action: a, p_reason: 'admin queue' }); say('Done: ' + a.replace('_', ' ') + '.'); modQueue(main, { sb, me, toast: say }); return; }
       } else if (muEl) {
         const x = med.data.find(m => String(m.id) === muEl.dataset.mu); if (!x) return; if (!confirm('Take this upload down? It moves to the private quarantine bucket.')) { b.disabled = false; return; } const ok = await quarantineUrl(sb, x.url); if (ok) { await rpc('mod_set_content', { p_kind: 'media', p_id: String(x.id), p_status: 'removed', p_note: null }).catch(() => { }); say('Taken down and kept as evidence. Also remove the post it was in, if any.'); muEl.remove(); } else say('Could not move the file (is the v26 SQL run?).');

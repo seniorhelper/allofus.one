@@ -209,6 +209,7 @@ export function moreSheet(ctx) {
   const wa = $('[data-mo-actas]', m.el); if (wa) wa.onclick = () => { const host = document.createElement('div'); wa.after(host); openActas(wa, ctx); };
   const bb = $('[data-mo-bug]', m.el); if (bb) bb.onclick = () => { m.close(); ctx.reportBug(); };
   const hb = $('[data-mo-help]', m.el); if (hb) hb.onclick = () => { m.close(); try { window.ORBIT && window.ORBIT.open(); } catch (e) { } };
+  const nb = $('[data-mo-new]', m.el); if (nb) nb.onclick = async () => { m.close(); try { const CT = await import('./aou-content.js'); sheet("What's new", CT.whatsNewHTML(), { icon: I3.more }); } catch (e) { } };
   const ob = $('[data-mo-out]', m.el); if (ob) ob.onclick = async () => { try { await ctx.sb.auth.signOut(); } catch (e) { } try { localStorage.removeItem('aou_actas'); } catch (e) { } location.href = '/'; };
   $$('.mo-grid [data-invite]', m.el).forEach(b => b.onclick = () => { m.close(); inviteSheet(ctx); });
   return m;
@@ -232,6 +233,23 @@ export function deleteAccountSheet(ctx) {
   go.onclick = async () => {
     if (inp.value.trim().toUpperCase() !== word) return; go.disabled = true; inp.disabled = true; const lines = []; const say = (t, ok) => { lines.push(`<li class="${ok ? 'ok' : 'no'}">${ok ? I3.check : I3.x}<span>${esc(t)}</span></li>`); log.innerHTML = `<ul>${lines.join('')}</ul>`; };
     if (!ctx.live) { say('Demo mode: nothing is stored on a server from this page, so there is nothing to delete.', true); return; }
+    /* v27: one server-side call deletes content, storage rows, push subscriptions, the profile AND the sign-in (auth user), and writes
+       a hash-chained audit row. Files are removed through the Storage API first (own folder only). If evidence is on legal hold the
+       server queues the deletion and says so. Falls back to the older client-side flow when the RPC is not deployed yet. */
+    let rpcDone = false;
+    try {
+      for (const bucket of ['posts', 'conference']) { try { const { data: files } = await ctx.sb.storage.from(bucket).list(me.id, { limit: 1000 }); const names = (files || []).filter(f => f.name && f.id).map(f => me.id + '/' + f.name); if (names.length) { await ctx.sb.storage.from(bucket).remove(names); say('Files removed (' + names.length + ')', true); } } catch (e) { } }
+      const { data, error } = await ctx.sb.rpc('delete_my_account', { p_reason: 'control panel' });
+      if (error) { if (!/PGRST202|Could not find the function|404/i.test((error.code || '') + ' ' + (error.message || ''))) throw error; }
+      else if (data && data.queued) { say(data.message || 'Your request is recorded; deletion completes when the review closes.', true); rpcDone = true; }
+      else if (data && data.deleted) { say('Posts, comments, reactions, saves, connections, hugs, LIFEboard, notifications and profile deleted', true); say('Sign-in (email + password) deleted. Nothing is left to request.', true); rpcDone = true; }
+    } catch (e) { say('Server delete failed (' + String(e.message || e).slice(0, 80) + '); using the step-by-step delete instead.', false); }
+    if (rpcDone) {
+      try { localStorage.removeItem('aou_actas'); Object.keys(localStorage).filter(k => /^aou_draft_|^aou_feedprefs$|^aou_workboard$/.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) { }
+      log.insertAdjacentHTML('beforeend', `<p><b>Done.</b> You are being signed out. Questions: <a href="mailto:info@eyetoad.com">info@eyetoad.com</a> or 1-800-481-8638.</p>`);
+      setTimeout(async () => { try { await ctx.sb.auth.signOut(); } catch (e) { } location.href = '/'; }, 4500);
+      return;
+    }
     let filed = false; try { const { error } = await ctx.sb.from('bugs').insert({ user_id: me.id, kind: 'delete-account', note: `Delete account request: ${me.email || ''} @${me.username || ''} (${me.id}). Content rows were removed by the member from the Control panel; please delete the auth user.`, page: '/?v=panel#p-account', ua: navigator.userAgent.slice(0, 160) }); filed = !error; } catch (e) { }
     say(filed ? 'Sign-in removal requested from our team (we finish it within 7 days).' : 'Could not file the sign-in removal automatically. Email info@eyetoad.com and we will do it.', filed);
     const steps = [['feed_reactions', 'Reactions', 'user_id'], ['feed_saves', 'Saves', 'user_id'], ['feed_comments', 'Comments', 'user_id'], ['feed_posts', 'Posts', 'user_id'], ['hugs', 'Hugs sent', 'from_id'], ['lifeboards', 'LIFEboard', 'id'], ['hub_messages', 'Room messages', 'user_id'], ['event_rsvps', 'Event RSVPs', 'user_id'], ['circle_members', 'Circle members', 'owner_id'], ['circles', 'Circles', 'owner_id']];

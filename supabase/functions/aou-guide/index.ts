@@ -1,12 +1,14 @@
 // allofus.one · "Ask allofus" AI guide · Supabase Edge Function (Deno) · Oct 23 2026
-// POST { q: string, history?: [{role:'user'|'assistant', content:string}], page?: string }
+// POST { q: string, history?: [{role:'user'|'assistant', content:string}], page?: string, mode?: 'guide' | 'spark' }
+// mode 'spark' (v27; 'muse' is accepted as a silent alias) = LIFEspark's "Ask allofus": a warm, non-clinical thinking partner
+// for ideas, plans and creative blocks. Same limits, same safety rules, max 500 tokens, no memory between visits.
 // -> 200 { answer: string, chips?: string[] }    429 { error:'rate' }    4xx/5xx { error }
 // Secrets: ANTHROPIC_API_KEY (set by Zach in Supabase -> Edge Functions -> Secrets). Optional GUIDE_SALT.
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected by Supabase automatically.
 // Never logs question text or raw IPs. Rate limits: 20/hour per visitor, 60/day per visitor, 2000/day site-wide.
-import Anthropic from "npm:@anthropic-ai/sdk";
+import Anthropic from "npm:@anthropic-ai/sdk@1.2.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { KNOWLEDGE } from "./knowledge.ts";
+import { KNOWLEDGE, SPARK_KNOWLEDGE } from "./knowledge.ts";
 
 const MODEL = "claude-haiku-5-5";
 const MAX_TOKENS = 500;
@@ -76,7 +78,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method" }, 405, origin);
   if (!Deno.env.get("ANTHROPIC_API_KEY")) return json({ error: "not_configured" }, 503, origin);
 
-  let body: { q?: string; history?: { role: string; content: string }[]; page?: string } = {};
+  let body: { q?: string; history?: { role: string; content: string }[]; page?: string; mode?: string } = {};
   try { body = await req.json(); } catch (_) { return json({ error: "bad_json" }, 400, origin); }
   const q = scrub(String(body.q ?? "").trim());
   if (!q) return json({ error: "empty" }, 400, origin);
@@ -93,6 +95,7 @@ Deno.serve(async (req) => {
   for (const m of history) { if (messages.length && messages[messages.length - 1].role === m.role) messages[messages.length - 1].content += "\n" + m.content; else messages.push({ ...m }); }
   if (messages.length && messages[messages.length - 1].role === "user") messages.pop();
   const page = String(body.page ?? "").replace(/[^\w/?=&.-]/g, "").slice(0, 80);
+  const mode = body.mode === "spark" || body.mode === "muse" ? "spark" : "guide";
   messages.push({ role: "user", content: (page ? `(I am on ${page})\n` : "") + q });
 
   try {
@@ -101,12 +104,14 @@ Deno.serve(async (req) => {
       max_tokens: MAX_TOKENS,
       thinking: { type: "disabled" },
       output_config: { effort: "low" },
-      system: [{ type: "text", text: KNOWLEDGE, cache_control: { type: "ephemeral" } }],
+      system: [{ type: "text", text: mode === "spark" ? SPARK_KNOWLEDGE : KNOWLEDGE, cache_control: { type: "ephemeral" } }],
       messages,
     } as any);
     if (res.stop_reason === "refusal") {
       await record(who, res.usage?.input_tokens ?? 0, res.usage?.output_tokens ?? 0, false);
-      return json({ answer: "I only help with allofus.one. Try asking how to post, use Circles, or grow your business here.", chips: ["How do Circles work?", "Grow my business", "Human"] }, 200, origin);
+      return json(mode === "spark"
+        ? { answer: "That one is outside what I can help with here. I am good for plans, ideas, creative blocks and small next steps. If this is about your safety, call or text 988 (US) or 911 in an emergency.", chips: ["Help me plan tomorrow", "A creative warm-up", "An idea for my business"] }
+        : { answer: "I only help with allofus.one. Try asking how to post, use Circles, or grow your business here.", chips: ["How do Circles work?", "Grow my business", "Human"] }, 200, origin);
     }
     const text = res.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n").trim();
     await record(who, res.usage?.input_tokens ?? 0, res.usage?.output_tokens ?? 0, true);

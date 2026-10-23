@@ -202,7 +202,7 @@ export function initPlus(app, W, UI, lumi, opts = {}) { globalThis.AOU_SB = UI.D
   if (DB.room) { const r0 = DB.room.bind(DB); DB.room = (id) => r0(id).filter(m => !m.sender || !blocked.has(m.sender)); }
 
   /* ---------- age + rules checkbox on Join ---------- */
-  new MutationObserver(() => { const go = document.getElementById('j-go'); if (!go || go.dataset.age) return; go.dataset.age = '1'; const box = document.createElement('label'); box.className = 'pl-age'; box.innerHTML = `<input type="checkbox" id="j-age"><span>I am 13 or older and I agree to the <a href="/terms/" target="_blank">Terms</a> and <a href="/community-rules/" target="_blank">Community Rules</a> (kind, family friendly, no exceptions).</span>`; go.parentElement.parentElement.insertBefore(box, go.parentElement);
+  new MutationObserver(() => { const go = document.getElementById('j-go'); if (!go || go.dataset.age) return; go.dataset.age = '1'; const box = document.createElement('label'); box.className = 'pl-age'; box.innerHTML = `<input type="checkbox" id="j-age"><span>I am 13 or older and I agree to the <a href="/terms/" target="_blank" rel="noopener">Terms</a> and <a href="/community-rules/" target="_blank" rel="noopener">Community Rules</a> (kind, family friendly, no exceptions).</span>`; go.parentElement.parentElement.insertBefore(box, go.parentElement);
     go.addEventListener('click', (e) => { if (!document.getElementById('j-age').checked) { e.stopImmediatePropagation(); e.preventDefault(); const er = document.getElementById('j-err'); if (er) er.textContent = 'Please check the box to agree first.'; } }, true); }).observe(document.body, { childList: true, subtree: true });
 
   /* ---------- 🛡️ admin console (admin emails live only in the private SQL file) ---------- */

@@ -153,6 +153,7 @@ export async function myDataView(body, F3) {
   <div class="ci-card"><h3>Download my data</h3><p>A JSON file with your profile, posts, comments, reactions, saves, connections, circles, LIFEboard and this device's feed settings.</p>${me ? '<button class="fl-btn p" type="button" data-dl>Download my data</button>' : '<a class="fl-btn p" href="/?auth=in">Sign in to download</a>'}</div>
   <div class="ci-card"><h3>Delete my account</h3><p>Removes your posts, comments, reactions, saves, connections, circles and profile. Your sign-in is removed by our team within 7 days.</p>${me ? '<button class="fl-btn" type="button" data-del style="color:#b91c1c;border-color:#fecaca">Delete my account…</button>' : ''}</div>
   <div class="ci-card"><p class="muted">Questions about your data: info@eyetoad.com · 1-800-481-8638 · <a href="/privacy/">Privacy policy</a> · <a href="/mission/#promise">Our promise</a></p></div></div>`;
+  try { const card = document.createElement('div'); card.className = 'ci-card'; card.id = 'ci-identity'; const last = $('.ci-wrap > .ci-card:last-child', body); last.before(card); const ID = await import('./aou-identity.js'); await ID.identityBlock(card, F3); } catch (e) { } /* v27 */
   if (!me) return;
   const F = await import('./aou-flat3.js');
   $('[data-dl]', body).onclick = () => F.exportMyData(F3);

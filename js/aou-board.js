@@ -19,6 +19,17 @@ const PAL = ['#7c3aed', '#2563eb', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '
 const dayKey = (d = new Date()) => d.toISOString().slice(0, 10);
 const last14 = () => { const o = []; for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); o.push(dayKey(d)); } return o; };
 const streak = (days) => { const set = new Set(days || []); let n = 0; const d = new Date(); if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1); while (set.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); } return n; };
+/* v27: add one item to a member's LIFEboard from another module (LIFEspark). kind: 'goal' | 'gratitude' | 'habit'. Returns true on success. */
+export async function lbAdd(sb, me, kind, text) {
+  if (!sb || !me || !text) return false; text = String(text).trim().slice(0, 140);
+  try {
+    const { data } = await sb.from('lifeboards').select('data').eq('id', me.id).maybeSingle(); const L = (data && data.data) || {};
+    if (kind === 'goal') { L.goals = L.goals || []; L.goals.push({ id: uid(), t: text.slice(0, 120), col: 'dream', tag: '' }); }
+    else if (kind === 'habit') { L.habits = L.habits || []; L.habits.push({ id: uid(), t: text.slice(0, 60), days: [] }); }
+    else { L.gratitude = L.gratitude || []; L.gratitude.push({ d: dayKey(), t: text }); L.gratitude = L.gratitude.slice(-100); }
+    const { error } = await sb.from('lifeboards').upsert({ id: me.id, data: L, updated_at: new Date().toISOString() }); return !error;
+  } catch (e) { return false; }
+}
 export async function boardView(body, { sb, me, toast, rightRail, wireRight, opts, defaultLB, post }) {
   if (!me) { body.innerHTML = '<div class="fl3"><div></div><div class="fl-card"><h3>allofus LIFEboard</h3><p>Your goals, habits, life wheel, vision board, projects, money and generators — one board, saved to your account, the same board you see in 3D.</p><div class="fl-chips"><button class="fl-btn p" data-join>Create my account</button><button class="fl-btn" data-signin>Sign in</button></div></div></div>'; return; }
   let L = null; try { const { data } = await sb.from('lifeboards').select('data').eq('id', me.id).maybeSingle(); L = Object.assign(defaultLB(), (data && data.data) || {}); } catch (e) { L = defaultLB(); }

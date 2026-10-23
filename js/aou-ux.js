@@ -81,14 +81,17 @@ export const UX_GROUPS = [
   { k: 'grow', n: 'Create & Grow', c: '#f59e0b', items: [
     ['/?v=brand', 'My brand', 'brand', '#6366f1', 'Free Brand pages with real SEO'],
     ['/?v=grow', 'Grow your business', 'rocket', '#0ea5e9', 'Listings, press releases, 60-second lead follow-up'],
+    ['/?v=marketing', 'Marketing dash', 'chart', '#16a34a', 'Page views, followers, reach and your ads'],
     ['/boost/', 'searchBOOST', 'rocket', '#f97316', 'Get found, get leads'],
     ['/moments/', 'Moments', 'cam', '#ec4899', 'Faces, backdrops and quick clips'],
     ['/?v=courses', 'Courses', 'book', '#0284c7', 'Learn and teach'],
     ['/?v=board', 'LIFEboard', 'board', '#f59e0b', 'Goals, habits, vision and money'],
+    ['/?v=spark', 'LIFEspark', 'smile', '#f59e0b', 'Your daily spark, three tiny wins, two minutes of breath'],
     ['/?v=work', 'FLOWworks', 'hex', '#14b8a6', 'Your pads, sketches and boards'],
     ['/?v=video', 'Video', 'video', '#dc2626', 'Every video, newest first']] },
   { k: 'explore', n: 'Explore', c: '#8b5cf6', items: [
     ['/?v=spaces', 'Spaces', 'layers', '#0d9488', 'A home for any group or team'],
+    ['/?v=discover', 'Discover', 'news', '#0369a1', 'NASA, Wikipedia and world news, with sources'],
     ['/rooms/', 'Global Room', 'globe', '#22c55e', 'Your whole group in one room'],
     ['/world/', '3D world', 'cube', '#06b6d4', 'Walk the world in your browser'],
     ['/world/?vr=1', 'VR', 'vr', '#7c3aed', 'Put on a Quest and step in'],
@@ -125,7 +128,7 @@ export function uxMoreHTML(me) {
   const tile = (h, n, i, c, gc, attr = '') => `<a class="mo-t" href="${h}" ${attr} style="--c:${c};--g:${gc}">${emb(i, c, gc)}<span>${esc(n)}</span></a>`;
   const btn = (data, n, i, c) => `<button class="mo-t" ${data} style="--c:${c};--g:#64748b">${emb(i, c, '#64748b')}<span>${esc(n)}</span></button>`;
   const groups = UX_GROUPS.map(g => `<section class="mo-sec" style="--g:${g.c}"><h4>${esc(g.n)}</h4><div class="mo-grid">${g.items.map(([h, n, i, c]) => tile(h, n, i, c, g.c)).join('')}</div></section>`).join('');
-  const acct = `<section class="mo-sec" style="--g:#64748b"><h4>Help &amp; account</h4><div class="mo-grid">${tile('/?v=search', 'Search', 'search', '#0369a1', '#64748b')}${btn('data-invite', 'Invite friends', 'invite', '#16a34a')}${me && me.isAdmin ? tile('/?v=admin', 'Admin', 'shield', '#16a34a', '#16a34a', 'data-adm') : ''}${tile('/mission/', 'Mission', 'flag', '#e11d48', '#64748b')}${btn('data-mo-bug', 'Report a bug', 'bug', '#ef4444')}${btn('data-mo-help', 'Help · Orbit', 'help', '#0ea5e9')}${me ? btn('data-mo-out', 'Sign out', 'out', '#64748b') : ''}</div></section>`;
+  const acct = `<section class="mo-sec" style="--g:#64748b"><h4>Help &amp; account</h4><div class="mo-grid">${tile('/?v=search', 'Search', 'search', '#0369a1', '#64748b')}${tile('/?tour=1', 'Take the tour', 'star', '#0ea5e9', '#64748b')}${btn('data-mo-new', "What's new", 'flag', '#7c3aed')}${btn('data-invite', 'Invite friends', 'invite', '#16a34a')}${me && me.isAdmin ? tile('/?v=admin', 'Admin', 'shield', '#16a34a', '#16a34a', 'data-adm') : ''}${tile('/mission/', 'Mission', 'flag', '#e11d48', '#64748b')}${btn('data-mo-bug', 'Report a bug', 'bug', '#ef4444')}${btn('data-mo-help', 'Help · Orbit', 'help', '#0ea5e9')}${me ? btn('data-mo-out', 'Sign out', 'out', '#64748b') : ''}</div></section>`;
   return groups + acct;
 }
 
@@ -148,7 +151,7 @@ export const skel = (n = 3, kind = 'rows') => kind === 'posts' ? `<div class="ux
 /* ---------- bottom-bar style pieces: a bare icon in its own color (filters, order, quick bubbles) ---------- */
 export const uxChip = (icon, c, label) => `<span class="ux-ci" style="--c:${c}">${uxIcon(icon)}</span>${esc(label)}`;
 /* quick bubbles after the "who posted lately" faces, so the row is never half empty */
-const QUICK = [['/moments/', 'Moment', 'cam', '#ec4899'], ['/?v=grow', 'Grow', 'rocket', '', 'hot'], ['/?v=circles', 'Circles', 'users', '#7c3aed'], ['/?v=events', 'Events', 'cal', '#e11d48'], ['/?v=courses', 'Courses', 'book', '#0284c7'], ['/?v=board', 'LIFEboard', 'board', '#65a30d'], ['/games/', 'Games', 'game', '#0891b2'], ['/meet/', 'Call', 'phone', '#f97316']];
+const QUICK = [['/moments/', 'Moment', 'cam', '#ec4899'], ['/?v=grow', 'Grow', 'rocket', '', 'hot'], ['/?v=circles', 'Circles', 'users', '#7c3aed'], ['/?v=events', 'Events', 'cal', '#e11d48'], ['/?v=courses', 'Courses', 'book', '#0284c7'], ['/?v=board', 'LIFEboard', 'board', '#65a30d'], ['/?v=spark', 'Spark', 'smile', '#f59e0b'], ['/?tour=1', 'Tour', 'star', '#0ea5e9']];
 export function uxQuickHTML() { return `<span class="ux-sep" aria-hidden="true"></span><b class="ux-rowlab q">Quick start</b>${QUICK.map(([h, n, i, c, x]) => `<a class="mo ux-q${x ? ' ' + x : ''}" href="${h}" style="--c:${c || '#4f46e5'}"><span class="ring"><span class="av">${uxIcon(i)}</span></span><small>${esc(n)}</small></a>`).join('')}`; }
 
 export const UX_CSS = `
