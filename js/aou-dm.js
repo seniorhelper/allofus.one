@@ -9,9 +9,7 @@ const I = (k, fb) => ic(k) || P(fb);
 /* e = the emoji that bursts on screen (content), icon = the SVG used on buttons (UI) */
 export const VIBES = [
   { k: 'hug', e: '🤗', n: 'Hug', msg: 'sent you a hug', icon: I('🫂', '<circle cx="12" cy="12" r="9"/>') },
-  { k: 'kiss', e: '💋', n: 'Kiss', msg: 'blew you a kiss', icon: P('<path d="M3 12c3-4 6-4 9-2 3-2 6-2 9 2-3 4-6 6-9 6s-6-2-9-6z"/><path d="M3 12h18"/>') },
   { k: 'wave', e: '👋', n: 'Wave', msg: 'waved at you', icon: I('👋', '<path d="M7 11V5a2 2 0 0 1 4 0v5"/>') },
-  { k: 'wink', e: '😉', n: 'Wink', msg: 'winked at you', icon: P('<circle cx="12" cy="12" r="9"/><path d="M8 10h2M14.5 9.5h.01M8.5 14.5a4.5 4.5 0 0 0 7 0"/>') },
   { k: 'vibes', e: '✨', n: 'Good vibes', msg: 'sent good vibes', icon: I('✨', '<path d="M12 3v18M3 12h18"/>') },
   { k: 'five', e: '🙌', n: 'High five', msg: 'high-fived you', icon: I('🙌', '<path d="M7 11V5a2 2 0 0 1 4 0v5"/>') },
   { k: 'heart', e: '❤️', n: 'Love', msg: 'sent love', icon: I('❤', '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>') },

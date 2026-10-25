@@ -38,15 +38,17 @@ What v27 changes for members: nothing visible. Existing accounts keep every read
 9. **Authentication → Bot and Abuse Protection** (only when you have a Turnstile key, §7).
 10. **Database → Webhooks** (alternative to pg_net, §3 step 4b).
 
-## 3. media-scan: deploy the server-side image screen
+## 3. media-scan: deploy the server-side picture + video screen
 
-The function is `supabase/functions/media-scan/index.ts`. Until it runs, uploads are screened only in the browser and `server_scan_required` stays **off**, so nothing is hidden and UX is unchanged.
+The function is `supabase/functions/media-scan/index.ts` (v28, Oct 25: videos too). Until it runs, uploads are screened only in the browser and `server_scan_required` stays **off**, so nothing is hidden and UX is unchanged.
+
+What it does with each upload: pictures and videos are hash-checked against `media_hashes`, then sent to the classifier. **Videos:** Hive samples frames on its side and the worst frame decides. With Rekognition or `none` there is no video scan, so every video is held as *review* (pending, visible only to its author) until you press Approve in Admin → Moderation. PDFs and other files: hash check only. Any scan error keeps the upload pending while the flag is on (fail closed). The webhook gets an instant 202 and the scan finishes in the background, so a 50 MB video does not time out.
 
 1. Install the CLI once: `npm i -g supabase`, then `supabase login` and `supabase link --project-ref izfccjaznlcffvjxawya` (run inside the repo folder).
 2. Secrets (Dashboard → Edge Functions → Secrets, or `supabase secrets set KEY=value`):
    - `MEDIA_SCAN_SECRET` = a long random string (`openssl rand -hex 32`). The webhook sends it as `x-aou-secret`.
    - `SCAN_PROVIDER` = `hive` or `rekognition` (or `none` for hash-only while you wait for a vendor account).
-   - Hive: `HIVE_API_KEY`. Rekognition: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` (IAM user with only `rekognition:DetectModerationLabels`).
+   - Hive: `HIVE_API_KEY`; if your Hive contract includes CSAM detection (Thorn), its project key goes in `HIVE_CSAM_API_KEY` (checked on every picture and video). Rekognition: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` (IAM user with only `rekognition:DetectModerationLabels`).
    - Optional: `RESEND_API_KEY` + `ALERT_EMAIL=zach@eyetoad.com` for an e-mail on every CSAM-class hit (in-app alert fires regardless). `MAX_SCANS_PER_DAY` (default 3000) caps cost.
 3. Deploy: `supabase functions deploy media-scan --no-verify-jwt` (the shared secret is the gate, not a user JWT).
 4. Wire the trigger, either way:
@@ -56,13 +58,13 @@ The function is `supabase/functions/media-scan/index.ts`. Until it runs, uploads
      select public.safety_set_setting('media_scan_secret', '"<the MEDIA_SCAN_SECRET value>"'::jsonb, true);
      ```
    - **4b (Dashboard → Database → Webhooks → Create):** table `media_items`, event INSERT, type HTTP request, URL above, header `x-aou-secret: <secret>`, timeout 8000 ms.
-5. Test with a harmless picture: upload from the app, then `select id, status, scanner, scanned_at, phash from public.media_items order by id desc limit 3;` → `scanner` filled, `status` ok.
+5. Test with a harmless picture AND a short harmless video (a few seconds of your yard): upload both from the app, then `select id, kind, status, scanner, scanned_at, scan->>'frames' frames, scan->>'note' note from public.media_items order by id desc limit 4;` → `scanner` filled, `status` ok, the video shows a `frames` count (Hive). Never test with real abusive material, not even "to check it works".
 6. Turn the hard rule on: `select public.safety_set_setting('server_scan_required', 'true');` From now on every new upload is `pending` (visible only to its author) until the scanner says ok, usually within 2–5 seconds. Turn it off with `'false'` if the function is down.
 7. Add known-bad hashes any time: `select public.mod_block_hash('<sha256>', 'csam', 'incident #n');` (retro-flags existing copies).
 
 **Which vendor to buy and why.** Buy **Hive** (thehive.ai, Visual Moderation + ask for the CSAM detection add-on, which Hive runs with Thorn's Safer hash matching). It is the only one of the two that can return a CSAM-class signal; AWS Rekognition explicitly is *not* a CSAM detector (nudity/explicit only). Cost at our scale (a few thousand uploads a month): Hive visual moderation is pay-as-you-go in the low single dollars per 1,000 images (expect roughly $5–$15/month; the CSAM add-on is contract-priced, ask); Rekognition is about $1 per 1,000 images (first million) and needs an AWS account. Verify the current price sheets before signing. Either way the Edge Function runs inside the free Supabase quota (500k invocations/month).
 
-**What the scanner cannot do today (plainly):** no server-side frame sampling for *videos* (hash check only; the browser still samples frames); no PhotoDNA / PDQ hash lists until NCMEC grants access (columns are reserved: `media_hashes.pdq`, `media_hashes.photodna`); a classifier is probabilistic, so 100 % is not a real number — the stack is hash lists + classifier + 3-report auto-hide + human review + legal hold.
+**What the scanner cannot do today (plainly):** videos are only classified with Hive (Rekognition/none → held for a human); no PhotoDNA / PDQ hash lists until NCMEC grants access (columns are reserved: `media_hashes.pdq`, `media_hashes.photodna`); a classifier is probabilistic, so 100 % is not a real number — the stack is hash lists + classifier + 3-report auto-hide + human review + legal hold.
 
 ## 4. If it is CSAM (child sexual abuse material): the legal steps
 
@@ -150,6 +152,6 @@ Risk: none to members; the SSO hand-off (`#aou_sso=`) and Supabase calls are una
 
 - **Age is self-declared.** Real age assurance (ID / face estimation) is a paid vendor (Yoti, Veriff, Persona) and a UX cost; required before UK marketing.
 - **100 % CSAM detection does not exist.** Hash lists catch known material; classifiers catch some new material; humans and reports catch the rest. NCMEC hash access needs ESP registration; PhotoDNA needs a Microsoft licence.
-- **Video needs a frame-sampling worker** (ffmpeg on a small VM or Hive's video endpoint). Not in Edge Functions.
+- **Video** is classified by Hive's video endpoint (v28). Without Hive, every video waits for a human.
 - **Headers** need Cloudflare (free) or a server.
 - **A second human moderator** is the single biggest safety upgrade left.

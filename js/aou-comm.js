@@ -57,7 +57,7 @@ const safeBit = (s, n = 80) => String(s || '').replace(/::|\||\n|\r/g, ' ').repl
 export function parseBody(body) {
   const raw = String(body == null ? '' : body); const t = raw.trim(); const m = MARK.exec(t);
   if (m && !t.includes('\n')) { const [, k, v] = m; const parts = v.split('|');
-    if (k === 'vibe') { const vb = VIBES.find(x => x.k === v); if (vb) return { card: { t: 'vibe', v: vb } }; }
+    if (k === 'vibe') { const vb = VIBES.find(x => x.k === v); if (vb) return { card: { t: 'vibe', v: vb } }; return { text: '(a vibe that is no longer offered)', quote: null, imgs: [] }; }
     if (k === 'call') return { card: { t: 'call', code: cleanCode(v) } };
     if (k === 'meet') return { card: { t: 'meet', id: parts[0], at: parts[1], mins: +parts[2] || 30, code: cleanCode(parts[3]), title: parts.slice(4).join('|') || CALL_NAME } };
     if (k === 'react') return { react: { target: parts[0], kind: parts[1] || 'heart' } };
