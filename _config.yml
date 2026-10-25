@@ -1,3 +1,12 @@
 # GitHub Pages (Jekyll) skips dot-folders by default; serve /.well-known/security.txt
 include:
   - .well-known
+# v28 lockdown: planning docs, the runbook and the server code are not part of the website (they stay in the repo)
+exclude:
+  - README.md
+  - SETUP.md
+  - MASTER-GAMEPLAN.md
+  - SAFETY-RUNBOOK.md
+  - ORIGINALITY.md
+  - content
+  - supabase

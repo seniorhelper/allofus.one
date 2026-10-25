@@ -1,5 +1,5 @@
 /* allofus.one · "Ask allofus" AI answers for Orbit (v26, Oct 23 2026).
-   Calls the Supabase Edge Function `aou-guide` (Claude Haiku on the server; the API key never touches the browser).
+   Calls the Supabase Edge Function `aou-guide` (the AI runs on the server; no key ever touches the browser).
    If the function is not deployed, the server is offline, or the visitor is rate-limited, aiAnswer() returns null
    and Orbit keeps using its scripted answers, so nothing breaks before Zach deploys the function.
    No question text is stored anywhere; the last 6 turns live in memory only for follow-up questions. */

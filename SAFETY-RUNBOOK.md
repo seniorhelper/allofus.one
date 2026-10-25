@@ -13,6 +13,7 @@ For Zach, the designated safety reporter. One page you can follow under stress. 
 1. `supabase/_parts/v26-features.sql`
 2. `supabase/_parts/v26-safety.sql`
 3. `supabase/_parts/v27-security.sql`  (then any other `v27-*.sql` from the other rounds)
+4. `supabase/_parts/v28-lockdown.sql` (Oct 25): Brand page manager e-mails move to a private table; an e-mail only links a page manager if a confirmation e-mail was really sent and clicked (Supabase "Confirm email" is OFF on production, so sign-ups are auto-confirmed); only a page's owner/managers can post as that page.
 
 All three are idempotent: re-running is safe, and running v26-safety again after v27 is safe (tested). Check afterwards:
 
