@@ -72,15 +72,21 @@ const hamming = (a: string, b: string) => { let x = BigInt("0x" + a) ^ BigInt("0
 
 /* ---------- classifier: Hive Visual Moderation (pictures and videos) ---------- */
 // One call for both: a picture returns one output entry, a video one entry per sampled frame. Each class keeps its worst frame.
-async function hiveCall(key: string, bytes: Uint8Array, mime: string): Promise<{ ok: false; note: string } | { ok: true; scores: Record<string, number>; frames: number }> {
+// Default: Hive's V3 API (thehive.ai models platform, Oct 2026): POST multipart field "media", "Authorization: Bearer <key>",
+// answer { output: [ { classes: [ { class_name, value } ], extra: [frame_index, timestamp] } ] }. A legacy V2 project
+// (api/v2/task/sync, "token <key>", status[0].response.output[].classes[].{class,score}) is read too; set HIVE_URL for it.
+const HIVE_URL = env("HIVE_URL", "https://api.thehive.ai/api/v3/hive/visual-moderation");
+async function hiveCall(key: string, bytes: Uint8Array, mime: string, url = HIVE_URL): Promise<{ ok: false; note: string } | { ok: true; scores: Record<string, number>; frames: number }> {
   const fd = new FormData(); fd.append("media", new Blob([bytes], { type: mime || "application/octet-stream" }), "upload");
-  const r = await fetch("https://api.thehive.ai/api/v2/task/sync", { method: "POST", headers: { authorization: "token " + key }, body: fd });
+  const v2 = /\/api\/v2\//.test(url);
+  const r = await fetch(url, { method: "POST", headers: { authorization: (v2 ? "token " : "Bearer ") + key }, body: fd });
   if (!r.ok) return { ok: false, note: "hive " + r.status };
   const j = await r.json();
-  const outs: { classes?: { class: string; score: number }[] }[] = j?.status?.[0]?.response?.output ?? [];
+  const outs: { classes?: { class?: string; class_name?: string; score?: number; value?: number }[] }[] = j?.output ?? j?.status?.[0]?.response?.output ?? [];
   if (!outs.length) return { ok: false, note: "hive: empty result" };   // never read "no frames" as clean
   const scores: Record<string, number> = {};
-  for (const o of outs) for (const c of o.classes ?? []) if (typeof c.score === "number" && c.score > (scores[c.class] ?? -1)) scores[c.class] = c.score;
+  for (const o of outs) for (const c of o.classes ?? []) { const k = c.class_name ?? c.class, s = c.value ?? c.score; if (k && typeof s === "number" && s > (scores[k] ?? -1)) scores[k] = s; }
+  if (!Object.keys(scores).length) return { ok: false, note: "hive: no classes in result" };
   return { ok: true, scores, frames: outs.length };
 }
 // verdict from Hive's classes. A child being in a picture is NOT abuse (family photos are fine): CSAM-class means a
@@ -104,7 +110,9 @@ async function hive(bytes: Uint8Array, mime: string): Promise<Partial<Result>> {
   // Check its class names against the first real response in your Hive dashboard and adjust hiveVerdict() if they differ.
   const csamKey = env("HIVE_CSAM_API_KEY");
   if (csamKey && out.verdict !== "csam") {
-    const c = await hiveCall(csamKey, bytes, mime);
+    // Hive gives the CSAM endpoint with the enterprise contract: HIVE_CSAM_URL. Missing → error (held), never silently skipped.
+    if (!env("HIVE_CSAM_URL")) return { ...out, verdict: "error", note: "HIVE_CSAM_URL missing" };
+    const c = await hiveCall(csamKey, bytes, mime, env("HIVE_CSAM_URL"));
     if (!c.ok) return { ...out, verdict: "error", note: "csam check failed: " + c.note };
     const v = hiveVerdict(c.scores, true);
     if (v.verdict === "csam") return { ...out, ...v, scores: { ...out.scores, ...Object.fromEntries(Object.entries(c.scores).map(([k, s]) => ["csam:" + k, +s.toFixed(3)])) } };
