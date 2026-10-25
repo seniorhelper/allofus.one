@@ -210,7 +210,7 @@ begin
       begin
         execute format('select net.http_post(url := %L, body := %L::jsonb, headers := %L::jsonb, timeout_milliseconds := 8000)', v_url,
           jsonb_build_object('mode', 'review', 'post_id', new.id),
-          jsonb_build_object('Content-Type', 'application/json', 'x-aou-secret', coalesce(v_secret, '')));
+          jsonb_build_object('Content-Type', 'application/json', 'x-aou-secret', coalesce(v_secret, ''), 'apikey', 'sb_publishable_b6KPHJ3aPWaxl3yVz93sTw_c47NzfOF'));
       exception when others then raise warning 'match-ai webhook: %', sqlerrm; end;
     end if;
   end if;
@@ -296,7 +296,7 @@ begin
   select s.value #>> '{}' into v_secret from public.safety_settings s where s.key = 'media_scan_secret';
   if coalesce(v_url, '') = '' or to_regnamespace('net') is null then return; end if;
   execute format('select net.http_post(url := %L, body := %L::jsonb, headers := %L::jsonb, timeout_milliseconds := 60000)', v_url,
-    jsonb_build_object('hours', 13), jsonb_build_object('Content-Type', 'application/json', 'x-aou-secret', coalesce(v_secret, '')));
+    jsonb_build_object('hours', 13), jsonb_build_object('Content-Type', 'application/json', 'x-aou-secret', coalesce(v_secret, ''), 'apikey', 'sb_publishable_b6KPHJ3aPWaxl3yVz93sTw_c47NzfOF'));
 end $$;
 revoke all on function public.safety_sweep_kick() from public, anon, authenticated;
 
