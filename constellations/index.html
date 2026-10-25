@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; object-src 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com; worker-src 'self' blob:"><meta name="referrer" content="strict-origin-when-cross-origin"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Constellations · find your people in the sky | allofus.one</title>
+<meta name="description" content="Constellations are the communities of allofus.one. Every star is a person and every shape is a Constellation: parties, guilds, salons, jams, quests and markets, each with its own room, guestbook and feed. Light your own.">
+<link rel="canonical" href="https://allofus.one/constellations/"><meta name="robots" content="index,follow"><meta name="theme-color" content="#2a2160"><link rel="icon" href="/images/favicon-192.png"><link rel="manifest" href="/manifest.webmanifest">
+<link rel="modulepreload" href="/js/aou-constellations.js"><link rel="modulepreload" href="/js/aou-config.js"><link rel="preconnect" href="https://izfccjaznlcffvjxawya.supabase.co" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=VT323&display=swap" rel="stylesheet">
+<meta property="og:type" content="website"><meta property="og:title" content="Constellations · allofus.one"><meta property="og:description" content="Every star is a person. Every shape is a Constellation. Find yours, or light a new one."><meta property="og:url" content="https://allofus.one/constellations/"><meta property="og:image" content="https://allofus.one/images/allofus-share-logo.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="allofus.one logo: All of us. One world."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://allofus.one/images/allofus-share-logo.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","name":"Constellations","url":"https://allofus.one/constellations/","inLanguage":"en-US","dateModified":"2026-10-25","isPartOf":{"@type":"WebSite","name":"allofus.one","url":"https://allofus.one/"},"description":"Communities on allofus.one, drawn as constellations of members."},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a Constellation?","acceptedAnswer":{"@type":"Answer","text":"A community on allofus.one. Each one has a genre, its own title, a live chat room, a guestbook and its own feed. Members are the stars that draw its shape."}},{"@type":"Question","name":"Can I start one?","acceptedAnswer":{"@type":"Answer","text":"Yes. Pick a genre, give it a title and a few words, and submit it. A person at allofus reviews every new Constellation before it lights up."}}]}]}</script>
+<style>
+:root{--ink:#14183a;--mut:#5d6285;--paper:#fbfaf6;--line:#e6e0d3;--coral:#f0526e;--teal:#0fb39a;--gold:#f0b429;--r:10px;--fd:Unbounded,"Bricolage Grotesque",Arial,sans-serif;--fu:"Bricolage Grotesque","Segoe UI",Arial,sans-serif;--px:VT323,ui-monospace,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font:500 16px/1.55 var(--fu);color:var(--ink);background:var(--paper)}a{color:#2453c9}
+header.top{background:#fff;border-bottom:1px solid #ebe5da;position:sticky;top:0;z-index:20}header.top .w{display:flex;align-items:center;gap:16px;max-width:1240px;margin:auto;padding:10px 16px}.brand img{height:70px;width:auto;display:block}header.top nav{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap;font-weight:700;font-size:14.5px}header.top nav a{color:var(--ink);text-decoration:none}header.top nav a:hover{text-decoration:underline;text-underline-offset:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;font:700 15px var(--fu);border-radius:var(--r);border:3px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none;box-shadow:4px 4px 0 var(--ink);transition:transform .1s,box-shadow .1s}.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}.btn.gold{background:#ffd76a}.btn.sm{min-height:38px;padding:0 12px;font-size:13.5px;box-shadow:3px 3px 0 var(--ink)}.btn[disabled]{opacity:.5;cursor:not-allowed}
+/* ---------- SKY ---------- */
+.sky{position:relative;height:min(78vh,640px);min-height:480px;overflow:hidden;background:linear-gradient(180deg,#1d1a4f 0%,#3b2d78 38%,#8a4f8f 66%,#e98e74 86%,#ffd3a6 100%);color:#fff}
+.sky canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:default}
+.sky .copy{position:relative;z-index:2;max-width:1240px;margin:auto;padding:34px 16px 0;pointer-events:none}.sky .copy>*{pointer-events:auto}
+.sky .kick{display:inline-flex;gap:10px;align-items:center;font:20px var(--px);letter-spacing:.08em;color:#ffe9b8;background:rgba(20,24,58,.35);border:2px solid rgba(255,233,184,.55);padding:2px 12px;border-radius:6px}
+.sky h1{font:700 clamp(34px,6vw,76px)/1 var(--fd);letter-spacing:-.035em;margin:14px 0 10px;text-shadow:0 4px 30px rgba(20,10,60,.45)}
+.sky p.sub{font:500 clamp(16px,2vw,20px)/1.5 var(--fu);max-width:620px;margin:0 0 20px;color:#f4ecff}
+.sky .acts{display:flex;gap:12px;flex-wrap:wrap}
+.sky .counter{position:absolute;right:16px;bottom:18px;z-index:2;display:flex;align-items:center;gap:10px;font:20px var(--px);color:#fff;background:rgba(20,24,58,.55);border:2px solid #ffe9b8;border-radius:8px;padding:6px 10px}
+.flip{display:inline-flex;gap:3px}.flip i{font:32px/1 var(--px);font-style:normal;background:linear-gradient(180deg,#23264f 50%,#191c40 50%);color:#ffe9b8;border:1px solid #000;border-radius:4px;padding:4px 6px 2px;min-width:24px;text-align:center;box-shadow:inset 0 -1px 0 rgba(255,255,255,.08)}
+.tip{position:absolute;z-index:3;pointer-events:none;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:8px 12px;font:600 14px var(--fu);box-shadow:4px 4px 0 var(--ink);max-width:260px;display:none}.tip b{font:700 15px var(--fd);display:block;margin-bottom:2px}
+/* ---------- BAND ---------- */
+.band{max-width:1240px;margin:auto;padding:40px 16px}h2{font:700 clamp(24px,3.2vw,38px)/1.1 var(--fd);letter-spacing:-.03em;margin:0 0 8px}.lead{color:var(--mut);font-size:18px;max-width:780px;margin:0 0 18px}
+.genres{display:flex;gap:10px;flex-wrap:wrap}.genre{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 10px;border:2px solid var(--ink);border-radius:8px;background:#fff;font:700 14px var(--fu);cursor:pointer;color:var(--ink)}.genre svg{width:24px;height:24px;color:var(--g)}.genre.on{background:var(--ink);color:#fff}.genre.on svg{color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;margin-top:20px}
+.win{background:#fff;border:3px solid var(--ink);border-radius:10px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .12s,box-shadow .12s}.win:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.bar{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--g,#4338ca);color:#fff;border-bottom:3px solid var(--ink);font:20px/1 var(--px);letter-spacing:.04em}.bar .dots{margin-left:auto;display:flex;gap:4px}.bar .dots i{width:12px;height:12px;border:2px solid var(--ink);background:#fff;border-radius:2px}
+.win .body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column;gap:8px}.win h3{font:700 19px/1.2 var(--fd);letter-spacing:-.02em;margin:0;display:flex;gap:10px;align-items:center}.win h3 svg{width:30px;height:30px;color:var(--g);flex:none}.win p{margin:0;color:var(--mut);font-size:15px}
+.mini{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;font:700 12px var(--fu)}.mini span{border:1.5px solid #ddd6c6;padding:2px 8px;border-radius:6px;background:#faf8f3}.mini .pend{border-color:#f59e0b;background:#fffbeb;color:#92400e}
+.mystars{width:100%;height:58px;display:block}
+.empty{border:2px dashed #cfc8b8;border-radius:10px;padding:22px;text-align:center;color:var(--mut);background:#fff}
+/* ---------- WINDOW (detail / create) ---------- */
+.ov{position:fixed;inset:0;background:rgba(29,26,79,.55);backdrop-filter:blur(3px);z-index:40;display:grid;place-items:center;padding:14px}
+.ov>.win{cursor:default;width:min(860px,100%);max-height:92vh;transform:none}.ov>.win:hover{transform:none;box-shadow:6px 6px 0 var(--ink)}.ov .body{overflow:auto;padding:18px 20px 22px;gap:14px}
+.bar button{margin-left:auto;font:20px/1 var(--px);background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:4px;padding:2px 9px;cursor:pointer}
+.marquee{overflow:hidden;white-space:nowrap;border:2px solid var(--ink);border-radius:6px;background:#141a3f;color:#ffe9b8;font:22px/1.4 var(--px);padding:2px 0}.marquee span{display:inline-block;padding-left:100%;animation:mq 18s linear infinite}@keyframes mq{to{transform:translateX(-100%)}}
+.dhead{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center}.dhead svg.gl{width:64px;height:64px;color:var(--g)}.dhead h3{font:700 clamp(22px,3vw,32px)/1.1 var(--fd);margin:0;letter-spacing:-.03em}.dhead small{color:var(--mut);font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ring{display:flex;justify-content:space-between;align-items:center;gap:8px;border:2px dashed var(--ink);border-radius:8px;padding:8px 10px;font:20px var(--px);background:#fffdf5}.ring button{font:20px var(--px);background:none;border:0;cursor:pointer;color:#2453c9}.ring button:hover{text-decoration:underline}
+.gb{display:grid;gap:8px}.gb .n{border:2px solid var(--line);border-radius:8px;padding:8px 12px;background:#fffdf8}.gb .n b{font:700 14px var(--fu)}.gb .n time{font:16px var(--px);color:var(--mut);margin-left:6px}.gb .n p{margin:2px 0 0;font-size:15px}
+textarea,input[type=text],select{width:100%;font:600 16px var(--fu);color:var(--ink);background:#fff;border:2px solid #cfc8b8;border-radius:var(--r);padding:10px 12px;outline:none}textarea:focus,input:focus,select:focus{border-color:var(--ink)}
+label.f{display:grid;gap:5px;font:700 12px var(--fu);letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.gpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.gpick button{display:flex;gap:10px;align-items:center;text-align:left;border:2px solid var(--ink);border-radius:8px;background:#fff;padding:10px;cursor:pointer;font:700 14px var(--fu);color:var(--ink)}.gpick button small{display:block;font:500 12px var(--fu);color:var(--mut)}.gpick button svg{width:30px;height:30px;color:var(--g);flex:none}.gpick button.on{background:#fff6dd;box-shadow:inset 0 0 0 2px var(--g)}
+.sw{display:flex;gap:8px;flex-wrap:wrap}.sw button{width:34px;height:34px;border:3px solid #fff;outline:2px solid var(--ink);border-radius:6px;cursor:pointer;background:var(--c)}.sw button.on{outline:4px solid var(--ink)}
+.shield{font-size:14px;border:2px solid #e3ddcf;border-radius:8px;padding:8px 12px;background:#faf8f3}.shield.block{border-color:#fb7185;background:#fff1f2;color:#881337}.shield.warn{border-color:#fcd34d;background:#fffbeb;color:#78350f}
+.badge88{image-rendering:pixelated;border:1px solid #000}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font:700 14px var(--fu);z-index:60;max-width:92vw}
+.q{display:grid;gap:10px}.q .win{cursor:default}
+footer{border-top:1px solid #ebe5da;padding:22px 16px 14px;text-align:center;font-size:14px;color:#5b5f7c}footer nav{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+@media (max-width:760px){header.top nav{display:none}.brand img{height:50px}.sky{height:auto;min-height:620px}.sky .counter{left:16px;right:auto}.dhead{grid-template-columns:auto 1fr}.dhead .act{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){.marquee span{animation:none;padding-left:0}}
+</style></head>
+<body>
+<header class="top"><div class="w"><a class="brand" href="/"><img src="/images/allofus-lockup.png" alt="allofus.one" width="280" height="70"></a><nav aria-label="Main"><a href="/">Feed</a><a href="/match/">Match</a><a href="/chat/">Rooms</a><a href="#all">All Constellations</a></nav><a class="btn sm" id="me-chip" href="/?auth=join">Join free</a></div></header>
+
+<section class="sky" aria-labelledby="h1">
+<canvas id="sky" aria-label="A live star map of every Constellation on allofus" role="img"></canvas>
+<div class="tip" id="tip"></div>
+<div class="copy">
+<span class="kick">✦ TONIGHT'S SKY</span>
+<h1 id="h1">Constellations</h1>
+<p class="sub">Every star is a person. Every shape is a Constellation: a party, a guild, a jam, a quest. Find yours in the sky, or light a new one.</p>
+<div class="acts"><button class="btn gold" id="light" type="button">Light a Constellation</button><a class="btn" href="#all">Browse them all</a></div>
+</div>
+<div class="counter" aria-live="polite"><span>STARS IN THE SKY</span><span class="flip" id="flip"></span></div>
+</section>
+
+<section class="band" id="all" aria-labelledby="h-all">
+<h2 id="h-all">Find your people</h2><p class="lead">Each Constellation has a genre, its own title, a live Room, a guestbook and its own feed. Pick a genre or scroll the sky.</p>
+<div class="genres" id="genres" role="toolbar" aria-label="Filter by genre"></div>
+<div class="grid" id="grid"></div>
+</section>
+
+<section class="band" id="mine-band" hidden aria-labelledby="h-mine"><h2 id="h-mine">Yours</h2><p class="lead">Constellations you started or joined. New ones light up after a person at allofus reviews them, usually within a day.</p><div class="grid" id="mine"></div></section>
+<section class="band" id="queue-band" hidden aria-labelledby="h-q"><h2 id="h-q">Review queue (admins)</h2><p class="lead">Approve, pause or turn down each new Constellation. Approving one also opens its Room.</p><div class="q" id="queue"></div></section>
+
+<footer><nav aria-label="Footer"><a href="/">Feed</a><a href="/match/">Global Match</a><a href="/chat/">Rooms</a><a href="/constellations/">Constellations</a><a href="/community-rules/">Rules</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/report-bug/?from=/constellations/">Report a bug</a></nav><p>© 2026 allofus.one · Denver, Colorado, open to the whole world · <a href="tel:18004818638">1-800-481-8638</a></p></footer>
+<script type="module">import { bootConstellations } from '/js/aou-constellations.js'; bootConstellations();</script>
+</body></html>

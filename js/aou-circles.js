@@ -91,7 +91,7 @@ const reasonFor = (p, me, connSet, circleNames) => {
   if (p._seed) return 'A sample post so the feed is never empty. It goes away as real posts arrive.';
   if (me && p.user_id === me.id) return p.circle_id ? `Your post, shared only with your ${circleNames[p.circle_id] || ''} circle.` : 'Your own post.';
   if (p.circle_id) return 'Someone put you in one of their circles and shared this with that circle only.';
-  if (p.group_slug) return 'Posted in a group, shown newest first.';
+  if (p.group_slug) return 'Posted in a Constellation, shown newest first.';
   if (p.page_slug) return 'Posted by a Brand page.';
   if (connSet && connSet.has(p.user_id)) return 'You are connected to this person. Newest first.';
   return 'A public post. Newest first, no engagement ranking.';

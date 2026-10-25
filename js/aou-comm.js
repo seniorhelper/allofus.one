@@ -48,7 +48,7 @@ export const CI = {
   file: P('<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>'), hand: P('<path d="M7 11l3-3a2 2 0 0 1 3 0l1 1 2-2 4 4-5 5-3 3a2 2 0 0 1-3 0l-5-5a2 2 0 0 1 0-3z"/><path d="M3 9l4-4M17 21l4-4"/>'),
   lock: P('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'), hex: P('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 8v8M8 10l8 4M16 10l-8 4"/>'), clock: P('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>')
 };
-const REACTS = [['heart', 'Love'], ['thumb', 'Like'], ['laugh', 'Funny'], ['wow', 'Wow'], ['star', 'Star']];
+const REACTS = [['heart', 'Love'], ['thumb', 'Thumbs up'], ['laugh', 'Funny'], ['wow', 'Wow'], ['star', 'Star']];
 const REQ = { connect: ['hand', 'Connection request'], phone: ['phone', 'Phone-number request'], package: ['box', 'Package request'], pic: ['image', 'Picture'], gif: ['image', 'GIF'], file: ['file', 'File'] };
 
 /* ---------- body markup ---------- */

@@ -11,6 +11,8 @@
 - Global Match: I Have / I Need for items and services only. No money changes hands on allofus.one.
 - Land: open lots along roads that continue without end; home styles include Eco Deco, Bungalow, Beach Villa, Treehouse, Space Villa, Loft Apartment and Cliffside Mansion.
 - Feed: newest first from people the user chooses; no ranking algorithm.
+- Constellations (https://allofus.one/constellations/): the communities of allofus.one, drawn as constellations of members. Each has a genre (Gathering, Party, Guild, Salon, Jam, Summit, Market, Quest, Haven, Kin, Lab, Arena), its own feed, a live chat Room and a guestbook. They replace what older notes below call Groups and Spaces. The ten classic buy / sell / trade boards kept their slugs: Trading Post, Wheels, Home + Nest, Gadget Bench, The Workshop, Little Ones, Free Table, Skills + Pros, Main Street, Lantern Wishes. Deep link: /constellations/#slug; a Constellation's feed: /?g=slug.
+- Rooms (https://allofus.one/chat/): live chat. The Lobby, Help Desk, Kindness Corner, Shop Talk, The Banquet Hall and a Room for every Constellation. Deep link: /chat/?r=slug. The Global Room (/rooms/) is the separate video meeting space.
 - LIFEboard tools (all free, private): Today (daily affirmation that does not loop, top 3, streak), Life Dash (every tool on one screen), focus timer, trackers with charts, reminders that export to phone calendars (.ics), journal, sealed letters to future you, money calculators (50/30/20 budget, snowball vs avalanche debt payoff, savings goal, compound growth, emergency fund), hugs, halo sign.
 - Everyone sees each player's real avatar: same character, colors, body type (regular, slim, muscle, sumo, comic big-head, tall, mini), clothing extras and optional selfie face.
 - Hugs: send hearts to any player in-world, or email a hug card link to anyone.
@@ -39,6 +41,8 @@
 - https://allofus.one/terms/
 - https://allofus.one/privacy/
 - https://allofus.one/accessibility/
+- https://allofus.one/constellations/
+- https://allofus.one/chat/
 
 © 2026 allofus.one. All rights reserved.
 

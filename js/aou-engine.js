@@ -1676,7 +1676,7 @@ export class WVM {
         <p class="wvm-privacy">🔒 <b>Your photo stays on this device.</b> Nothing is uploaded or sent anywhere; it's saved only in this browser and you can clear it any time. Kids: ask a parent to tap the camera button.</p>
         <div class="wvm-pop-actions">
           <button class="wvm-btn" id="wvm-cam-on">📷 Turn on camera</button>
-          <button class="wvm-btn primary" id="wvm-cam-snap" disabled>Snap selfie</button>
+          <button class="wvm-btn primary" id="wvm-cam-snap" disabled>Take selfie</button>
           <button class="wvm-btn ghost" id="wvm-cam-clear">Use cartoon face</button>
           <button class="wvm-btn" id="wvm-selfie-done">Let's go!</button>
         </div>

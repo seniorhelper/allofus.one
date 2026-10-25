@@ -46,7 +46,7 @@ export const PROMPTS = [
   ['gratitude', 'Which meal this week deserves a quiet thank-you to whoever grew or cooked it?'],
   ['creative', 'Rename the days of the week after what you actually do on them.'],
   ['business', 'What is one task you do by hand that a checklist could do for you?'],
-  ['kindness', 'Share a resource (a tool, a list, a link) with a group here that could use it.'],
+  ['kindness', 'Share a resource (a tool, a list, a link) with a Constellation here that could use it.'],
   ['reflection', 'What is a boundary you held recently that felt uncomfortable and right at the same time?'],
   ['gratitude', 'Who makes you laugh most reliably? Tell them what it does for you.'],
   ['creative', 'Describe the view from your window to someone who has never seen a city, or never seen a field.'],
@@ -66,7 +66,7 @@ export const PROMPTS = [
   ['gratitude', 'Who kept a promise to you this year? Recall the moment they kept it.'],
   ['creative', 'Write the first line of a letter to the person who will live in your home fifty years from now.'],
   ['business', 'What would you tell someone starting your kind of business today that nobody told you?'],
-  ['kindness', 'Invite one person to something: a walk, a call, a group here.'],
+  ['kindness', 'Invite one person to something: a walk, a call, a Constellation here.'],
   ['reflection', 'What is a question you have been avoiding? Write it down, no answer required.'],
   ['gratitude', 'Name a tool or app that quietly saves you time. (Yes, this counts as gratitude.)'],
   ['creative', 'Build a three-song soundtrack for your week and say why each track made the cut.'],
@@ -96,7 +96,7 @@ export const PROMPTS = [
   ['gratitude', 'Name a place you can go to feel calm. When were you last there?'],
   ['creative', 'Describe your week as a recipe: ingredients, method, serves how many?'],
   ['business', 'What question should every new customer be asked that you are not asking yet?'],
-  ['kindness', 'Donate one thing you no longer use to someone in a free group here.'],
+  ['kindness', 'Donate one thing you no longer use to someone at the Free Table here.'],
   ['reflection', 'What is a small win from this week that nobody else noticed?'],
   ['gratitude', 'Who was patient with you when you were learning? Say their name.'],
   ['creative', 'Write a three-sentence bedtime story for an adult who cannot sleep.'],
@@ -125,7 +125,7 @@ export const PROMPTS = [
   ['reflection', 'What would you tell a friend who was in your exact situation today?'],
   ['gratitude', 'Name one thing about your body, your home or your work that is working well right now.'],
   ['creative', 'Invent a small ceremony for finishing a workday. What is step one?'],
-  ['business', 'What would you build if you knew ten of your customers would join a Space about it?'],
+  ['business', 'What would you build if you knew ten of your customers would join a Constellation about it?'],
   ['kindness', 'Say something encouraging to a beginner today. Remember what you needed to hear.'],
   ['reflection', 'Which part of today are you most likely to remember in ten years?'],
   ['gratitude', 'What did you take for granted this morning that someone else would call a luxury?'],
@@ -143,15 +143,15 @@ const CAT = { reflection: ['Reflection', '#7c3aed'], gratitude: ['Gratitude', '#
 
 /* ---------- business ideas by Brand page category ---------- */
 const BIZ = [
-  [/restaurant|cafe|coffee|diner|bakery|food|catering|bar|pizza|taco|grill|kitchen/i, 'Food & drink', ['Post the one dish regulars order most, with the story of how it got on the menu.', 'Share a 20-second clip of the kitchen at opening time. Quiet mornings build trust.', 'Ask your feed: what should the next seasonal special be? Make the top answer.', 'Start a Space for your regulars: first look at new items, birthday notes, a monthly table.', 'List a free listing on USA Business Search and Colorado Business List from Grow your business, then post the link.']],
-  [/paint|roof|plumb|electric|hvac|handyman|remodel|contractor|landscap|clean|pest|garage|concrete|fence|window|floor|carpent|build/i, 'Home services', ['Post a before-and-after from this week. Name the problem, not the client.', 'Write the three questions every homeowner should ask before hiring your trade.', 'Share your service area as a simple list of neighborhoods; it helps local search.', 'Offer a free 10-minute phone check in a Local group; answer the rest publicly.', 'Turn on AI Speed to Leads from Grow your business so web inquiries get a reply in a minute, not a day.']],
+  [/restaurant|cafe|coffee|diner|bakery|food|catering|bar|pizza|taco|grill|kitchen/i, 'Food & drink', ['Post the one dish regulars order most, with the story of how it got on the menu.', 'Share a 20-second clip of the kitchen at opening time. Quiet mornings build trust.', 'Ask your feed: what should the next seasonal special be? Make the top answer.', 'Start a Constellation for your regulars: first look at new items, birthday notes, a monthly table.', 'List a free listing on USA Business Search and Colorado Business List from Grow your business, then post the link.']],
+  [/paint|roof|plumb|electric|hvac|handyman|remodel|contractor|landscap|clean|pest|garage|concrete|fence|window|floor|carpent|build/i, 'Home services', ['Post a before-and-after from this week. Name the problem, not the client.', 'Write the three questions every homeowner should ask before hiring your trade.', 'Share your service area as a simple list of neighborhoods; it helps local search.', 'Offer a free 10-minute phone check in a local Constellation; answer the rest publicly.', 'Turn on AI Speed to Leads from Grow your business so web inquiries get a reply in a minute, not a day.']],
   [/health|wellness|fitness|gym|yoga|massage|chiro|dental|dentist|clinic|therap|nutrition|spa|salon|barber|beauty|nail|hair/i, 'Health, wellness & beauty', ['Post one tiny habit a client can do at home in two minutes. Keep it general, not medical advice.', 'Share what a first visit looks like, step by step, so nervous people know what to expect.', 'Ask your feed which hours are hardest to book; adjust one slot and announce it.', 'Create a Course with five short lessons on the basics you explain most often.', 'Invite happy clients to your Brand page and ask for a specific line about what changed for them.']],
-  [/shop|store|boutique|retail|gift|book|antique|thrift|market|furniture|decor|jewel|cloth|apparel|barn|wood/i, 'Retail & makers', ['Post one item with its origin story: who made it, where it came from, why you stock it.', 'Run a weekly "pick one" poll between two products. Stock the winner up front.', 'Share your restock day so people have a reason to come back on a schedule.', 'List a few items in a buy/sell/trade group with a link to your Brand page.', 'Lease a storefront in World VR Mall and post a walk-through clip of it.']],
+  [/shop|store|boutique|retail|gift|book|antique|thrift|market|furniture|decor|jewel|cloth|apparel|barn|wood/i, 'Retail & makers', ['Post one item with its origin story: who made it, where it came from, why you stock it.', 'Run a weekly "pick one" poll between two products. Stock the winner up front.', 'Share your restock day so people have a reason to come back on a schedule.', 'List a few items in the Trading Post with a link to your Brand page.', 'Lease a storefront in World VR Mall and post a walk-through clip of it.']],
   [/law|attorney|legal|account|tax|cpa|bookkeep|insur|financ|mortgage|loan|consult|coach|agency|marketing|design|web|real estate|realtor|broker|notary|advis/i, 'Professional services', ['Answer the question you get in every first meeting, in plain words, as a post.', 'Share a short checklist people can use before they call you. Helpful beats salesy.', 'Write one post that explains what you do NOT do, so the right people call.', 'Host a monthly 20-minute Unity Call Q&A. Post the link, keep it free.', 'Draft a press release about a milestone from the Grow page and publish it.']],
-  [/photo|video|music|art|studio|creative|writer|author|print|film|band|dj|event|wedding|florist|party/i, 'Creative & events', ['Post one piece of work with the single decision that made it better.', 'Share your process in three photos: start, middle, done.', 'Ask your feed what they want to see more of this month. Deliver one.', 'Open a Space for past clients and fans: early access, behind the scenes, pre-orders.', 'Add Moments: a quick face-to-camera clip beats a polished ad for trust.']],
-  [/auto|car|truck|tire|mechanic|detail|glass|body shop|towing|dealer|motor/i, 'Auto', ['Post a one-minute "what that noise might be" explainer for one common symptom.', 'Share seasonal prep tips before the season hits; people save and share those.', 'Show one honest estimate with the reasoning. Transparency is rare and it travels.', 'Offer a free check at a local event and post the schedule in a Local group.', 'Use AI Speed to Leads so after-hours quote requests get a same-minute reply.']]
+  [/photo|video|music|art|studio|creative|writer|author|print|film|band|dj|event|wedding|florist|party/i, 'Creative & events', ['Post one piece of work with the single decision that made it better.', 'Share your process in three photos: start, middle, done.', 'Ask your feed what they want to see more of this month. Deliver one.', 'Open a Constellation for past clients and fans: early access, behind the scenes, pre-orders.', 'Add Moments: a quick face-to-camera clip beats a polished ad for trust.']],
+  [/auto|car|truck|tire|mechanic|detail|glass|body shop|towing|dealer|motor/i, 'Auto', ['Post a one-minute "what that noise might be" explainer for one common symptom.', 'Share seasonal prep tips before the season hits; people save and share those.', 'Show one honest estimate with the reasoning. Transparency is rare and it travels.', 'Offer a free check at a local event and post the schedule in a local Constellation.', 'Use AI Speed to Leads so after-hours quote requests get a same-minute reply.']]
 ];
-const bizIdeas = (cat) => { const hit = BIZ.find(([rx]) => rx.test(cat || '')); return hit ? { label: hit[1], ideas: hit[2] } : { label: cat ? cat : 'Any business', ideas: ['Post one thing you learned from a customer this week.', 'Write the three questions people should ask before hiring anyone in your field.', 'Share a photo of your workspace on an ordinary day. Ordinary builds trust.', 'Pick one neighborhood to be visible in this month: a Local group, a free listing, one event.', 'Set up your free listings and a press release from Grow your business, then post the links.'] }; };
+const bizIdeas = (cat) => { const hit = BIZ.find(([rx]) => rx.test(cat || '')); return hit ? { label: hit[1], ideas: hit[2] } : { label: cat ? cat : 'Any business', ideas: ['Post one thing you learned from a customer this week.', 'Write the three questions people should ask before hiring anyone in your field.', 'Share a photo of your workspace on an ordinary day. Ordinary builds trust.', 'Pick one neighborhood to be visible in this month: a local Constellation, a free listing, one event.', 'Set up your free listings and a press release from Grow your business, then post the links.'] }; };
 
 /* ---------- scripted LIFEspark replies (used when the AI function is not deployed) ---------- */
 const SPARK_FALLBACK = [

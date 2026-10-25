@@ -218,9 +218,10 @@ async function videoScores(blob) {
 }
 /* blank ISO-6709 location strings (e.g. "+39.7392-104.9903+1609.000/") that phones write into MP4 / MOV */
 async function scrubVideoGPS(blob) {
-  const buf = new Uint8Array(await blob.arrayBuffer()); const N = buf.length; const spans = N <= 8e6 ? [[0, N]] : [[0, 4e6], [N - 4e6, N]]; let hits = 0;
-  for (const [a, z] of spans) { const s = new TextDecoder('latin1').decode(buf.subarray(a, z)); const re = /[+-]\d{2}\.\d{2,}[+-]\d{3}\.\d{2,}(?:[+-]\d+(?:\.\d+)?)?\/?/g; let m; while ((m = re.exec(s))) { for (let i = 0; i < m[0].length; i++) { const ch = m[0][i]; if (ch >= '0' && ch <= '9') buf[a + m.index + i] = 0x30; } hits++; } }
-  return { blob: new Blob([buf], { type: blob.type }), hits };
+  const N = blob.size; const spans = N <= 8e6 ? [[0, N]] : [[0, 4e6], [N - 4e6, N]]; let hits = 0; const parts = [];
+  for (const [a, z] of spans) { const buf = new Uint8Array(await blob.slice(a, z).arrayBuffer()); const s = new TextDecoder('latin1').decode(buf); const re = /[+-]\d{2}\.\d{2,}[+-]\d{3}\.\d{2,}(?:[+-]\d+(?:\.\d+)?)?\/?/g; let m; while ((m = re.exec(s))) { for (let i = 0; i < m[0].length; i++) { const ch = m[0][i]; if (ch >= '0' && ch <= '9') buf[m.index + i] = 0x30; } hits++; } parts.push(buf); }
+  if (!hits) return { blob, hits };
+  return { blob: new Blob(spans.length === 1 ? parts : [parts[0], blob.slice(4e6, N - 4e6), parts[1]], { type: blob.type }), hits };
 }
 
 /* ---------- the upload guard ---------- */
@@ -240,10 +241,11 @@ async function prepare(bucket, path, body, opts) {
 export async function inspect(body, bucket = 'posts', declared = '', path = '') {
   const opts = { contentType: declared };
   const blob = body instanceof Blob ? body : null; if (!blob) return { block: 'That upload is not a file.' };
-  if (blob.size > (bucket === 'conference' ? 50 : 20) * 1024 * 1024) return { block: 'That file is too big (' + (bucket === 'conference' ? '50' : '20') + ' MB max).' };
+  if (blob.size > 50 * 1024 * 1024) return { block: 'That file is ' + (blob.size / 1048576).toFixed(1) + ' MB. The limit is 50 MB' + (bucket === 'conference' ? '.' : ' for videos and 20 MB for photos and files.') };
   const t = resolveType(await sniff(blob), opts.contentType || blob.type, blob.name || path); if (t.bad) return { block: t.bad };
   if (!(ALLOW[bucket] || []).includes(t.mime)) return { block: 'That file type is not allowed here.' };
   const kind = /^image\//.test(t.mime) ? 'image' : /^video\//.test(t.mime) ? 'video' : 'file';
+  if (kind !== 'video' && bucket !== 'conference' && blob.size > 20 * 1024 * 1024) return { block: 'That ' + (kind === 'image' ? 'photo' : 'file') + ' is ' + (blob.size / 1048576).toFixed(1) + ' MB. The limit is 20 MB for photos and files (50 MB for videos).' };
   let out = blob, scores = null, note = '';
   try {
     if (kind === 'image') {

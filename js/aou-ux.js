@@ -75,9 +75,9 @@ export const UX_GROUPS = [
     ['/?v=dm', 'DMs', 'chat', '#a855f7', 'Private messages'],
     ['/?v=hub', 'Comm Hub', 'hub', '#8b5cf6', 'Calls, chats and channels in one place'],
     ['/meet/', 'Unity Call', 'phone', '#ef4444', 'Free video calls, one link'],
-    ['/?v=groups', 'Groups', 'groups', '#16a34a', 'Buy, sell, trade and free'],
+    ['/constellations/', 'Constellations', 'star', '#16a34a', 'Find your people, or light a new one'],
     ['/?v=events', 'Events', 'cal', '#f43f5e', 'What is on, with RSVPs'],
-    ['/?v=room', 'Chat rooms', 'hash', '#0ea5e9', '#general, #help, #kindness and more']] },
+    ['/chat/?r=general', 'Rooms', 'hash', '#0ea5e9', 'Live chat: The Lobby, Help Desk and more']] },
   { k: 'grow', n: 'Create & Grow', c: '#f59e0b', items: [
     ['/?v=brand', 'My brand', 'brand', '#6366f1', 'Free Brand pages with real SEO'],
     ['/?v=grow', 'Grow your business', 'rocket', '#0ea5e9', 'Listings, press releases, 60-second lead follow-up'],
@@ -90,15 +90,14 @@ export const UX_GROUPS = [
     ['/?v=work', 'FLOWworks', 'hex', '#14b8a6', 'Your pads, sketches and boards'],
     ['/?v=video', 'Video', 'video', '#dc2626', 'Every video, newest first']] },
   { k: 'explore', n: 'Explore', c: '#8b5cf6', items: [
-    ['/?v=spaces', 'Spaces', 'layers', '#0d9488', 'A home for any group or team'],
     ['/?v=discover', 'Discover', 'news', '#0369a1', 'NASA, Wikipedia and world news, with sources'],
-    ['/rooms/', 'Global Room', 'globe', '#22c55e', 'Your whole group in one room'],
+    ['/rooms/', 'Global Room', 'globe', '#22c55e', 'Your whole team in one room'],
     ['/world/', '3D world', 'cube', '#06b6d4', 'Walk the world in your browser'],
     ['/world/?vr=1', 'VR', 'vr', '#7c3aed', 'Put on a Quest and step in'],
     ['/games/', 'Games', 'game', '#0891b2', 'Play now, no download'],
     ['/match/', 'Match', 'target', '#64748b', 'Have, need, match']] }
 ];
-const EXTRA = { 'v:feed': ['Home', 'home', '#0369a1', 'Your feed', 'you'], 'v:search': ['Search', 'search', '#0369a1', 'People, posts, brands and groups', 'you'], 'v:admin': ['Admin', 'shield', '#16a34a', 'Dashboard and moderation', 'you'], '/mission/': ['Mission', 'flag', '#e11d48', 'Why allofus.one exists', 'explore'] };
+const EXTRA = { 'v:feed': ['Home', 'home', '#0369a1', 'Your feed', 'you'], 'v:search': ['Search', 'search', '#0369a1', 'People, posts, brands and Constellations', 'you'], 'v:groups': ['Constellations', 'star', '#16a34a', 'Find your people, or light a new one', 'connect'], 'v:room': ['Rooms', 'hash', '#0ea5e9', 'Live chat: The Lobby and more', 'connect'], 'v:admin': ['Admin', 'shield', '#16a34a', 'Dashboard and moderation', 'you'], '/mission/': ['Mission', 'flag', '#e11d48', 'Why allofus.one exists', 'explore'] };
 const keyOf = (href) => { try { const u = new URL(String(href || ''), 'https://allofus.one'); if (u.origin !== 'https://allofus.one' && u.origin !== location.origin) return 'ext:' + u.href; if (u.pathname === '/' || u.pathname === '/index.html') { if (u.searchParams.get('v')) return 'v:' + u.searchParams.get('v'); if (u.searchParams.has('board')) return 'v:board'; if (u.searchParams.has('hub')) return 'v:hub'; if (u.searchParams.has('work')) return 'v:work'; return 'v:feed'; } return u.pathname + (u.searchParams.has('vr') ? '?vr=1' : ''); } catch (e) { return 'ext:' + href; } };
 const DEST = {}; UX_GROUPS.forEach(g => g.items.forEach(([h, n, i, c, d]) => { DEST[keyOf(h)] = { h, n, i, c, d, g: g.k, gc: g.c }; })); Object.entries(EXTRA).forEach(([k, [n, i, c, d, g]]) => { DEST[k] = { h: k.startsWith('v:') ? (k === 'v:feed' ? '/' : '/?v=' + k.slice(2)) : k, n, i, c, d, g, gc: (UX_GROUPS.find(x => x.k === g) || {}).c || c }; });
 export const destFor = (href) => DEST[keyOf(href)] || null;

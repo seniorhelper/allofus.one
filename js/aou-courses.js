@@ -1,6 +1,6 @@
 /* allofus.one · Courses v2 (Oct 11 2026)
    A course here is a step-by-step plan: a list of lessons (or days) that anyone can follow and check off.
-   Build one from a template or from scratch, add notes and links, then share the link with friends, a group or your Space.
+   Build one from a template or from scratch, add notes and links, then share the link with friends or your Constellation.
    Everyone's progress is their own (lesson_done per member). Data: courses / lessons / lesson_done (supabase/allofus-v16.sql).
    No schema change. Resource links are plain outbound links to free public sites: nothing here is connected to them. */
 import { COURSE_TEMPLATES, matchTemplate } from './aou-course-templates.js';
@@ -50,7 +50,7 @@ export const COURSES_CSS = `
 
 export const COURSE_GUIDE = {
   icon: 'cap', title: 'What is a course here?',
-  what: 'A course is a step-by-step plan: a list of lessons or days you work through and check off. Build one for yourself, or share the link so friends, a group or your Space can follow along. Everyone keeps their own progress.',
+  what: 'A course is a step-by-step plan: a list of lessons or days you work through and check off. Build one for yourself, or share the link so friends or your Constellation can follow along. Everyone keeps their own progress.',
   steps: ['<b>Pick a template</b> (like Learn Spanish basics) or start a blank course.', '<b>Make it yours:</b> add, edit or reorder lessons with notes, a link to a free video or site, and homework.', '<b>Check lessons off</b> as you go and <b>share the link</b> so others can follow along and track their own progress.'],
   note: 'Links open free public sites (YouTube, Duolingo, Khan Academy and others) in a new tab. allofus.one is not connected to those sites and does not see your activity there.'
 };
