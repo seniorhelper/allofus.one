@@ -95,7 +95,9 @@ function hiveVerdict(scores: Record<string, number>, csamProject = false): { ver
   const max = (re: RegExp) => Math.max(0, ...Object.entries(scores).filter(([k]) => re.test(k)).map(([, v]) => v));
   const csamClass = csamProject ? max(/csam|child_exploit|match|positive/i) : max(/csam|child_exploit/i);
   const minor = max(/^yes_(minor|child|underage)|^(minor|child)_present/i);
-  const nsfw = max(/^yes_(sexual_activity|sexual_intent|female_nudity|male_nudity|genitals|anus|breast)|general_nsfw/i);
+  // Hive V3 class names seen on production 2026-10-25: yes_child_present, yes_female_nudity, yes_male_nudity, yes_genitals,
+  // yes_breast, yes_sexual_activity, yes_sexual_intent, yes_realistic_nsfw, yes_sex_toy, general_nsfw (each with a no_* twin).
+  const nsfw = max(/^yes_(sexual_activity|sexual_intent|female_nudity|male_nudity|genitals|anus|breast|realistic_nsfw|sex_toy)$|^general_nsfw$/i);
   const csam = Math.max(csamClass, Math.min(minor, nsfw));
   if (csam >= CSAM_T) return { verdict: "csam", note: `hive csam ${csam.toFixed(2)}` + (csamClass >= CSAM_T ? "" : " (minor + sexual content)") };
   if (nsfw >= NSFW_T) return { verdict: "nsfw", note: `hive nsfw ${nsfw.toFixed(2)}` };
