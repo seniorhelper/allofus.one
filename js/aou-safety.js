@@ -8,7 +8,7 @@
        NSFW screening in the browser (nsfwjs, lazy-loaded, pinned), EXIF / GPS stripped by re-encoding,
        video GPS tags blanked, new accounts (< 72 h) and accounts without a confirmed DOB blocked,
        borderline pictures held in the private quarantine bucket for a moderator.
-   • Report dialog (posts, comments, DMs, profiles, images), block, link guard (javascript: links).
+   • Report dialog (posts, comments, Messages, profiles, images), block, link guard (javascript: links).
    • Admin moderation queue (rendered inside the admin dashboard).
    The database enforces the same rules (supabase/_parts/v26-safety.sql); this file is the friendly front.
    Works before that SQL is run: falls back to the sign-in's user_metadata for the DOB.
@@ -106,7 +106,7 @@ const whyNot = (s, what = 'do that') => {
   if (s.held) return 'Your account is on hold while our team reviews a report.';
   return 'You can\'t ' + what + ' right now.';
 };
-/* can this person talk to others (calls, voice, DMs)? */
+/* can this person talk to others (calls, voice, Messages)? */
 export async function canTalk(sb = CLIENT) { let s = await status(sb); if (s.admin) return { ok: true, s }; if (s.signed_in && !s.dob_set) { await dobGate(sb); s = await status(sb, true); } return s.adult ? { ok: true, s } : { ok: false, s, msg: whyNot(s, 'talk with people') }; }
 
 /* ---------- the DOB gate (older accounts) ---------- */
@@ -296,7 +296,7 @@ function installUploadGuard(sb) {
 /* ---------- the one call every page makes right after createClient() ---------- */
 /* ---------- v27: private Realtime channels (Realtime Authorization) ----------
    world / pos-* / voice-* / meet:* / dm:* channels are joined as PRIVATE channels, so the realtime.messages policies in
-   supabase/_parts/v27-security.sql decide who may listen or send (confirmed adults; DMs only the two people). If the
+   supabase/_parts/v27-security.sql decide who may listen or send (confirmed adults; Messages only the two people). If the
    policies are not deployed yet (or the visitor is not allowed), the join fails and the client falls back ONCE to the
    public channel, so nothing breaks today. Each channel keeps all its .on() handlers across the fallback. */
 const PRIVATE_TOPICS = /^(world$|pos-|voice-|meet:|dm:|room:)/;
@@ -396,7 +396,7 @@ export async function report(o = {}) {
     };
   });
 }
-/* block: adds the person to my profiles.blocked list (the database refuses their DMs, requests, hugs and calls) */
+/* block: adds the person to my profiles.blocked list (the database refuses their Messages, requests, hugs and calls) */
 export async function block(sb, otherId, on = true) {
   sb = sb || CLIENT; const s = await status(sb); if (!s.signed_in || !otherId || otherId === s.uid) return false;
   try { const { data } = await sb.from('profiles').select('blocked').eq('id', s.uid).maybeSingle(); const cur = new Set((data && data.blocked) || []); on ? cur.add(otherId) : cur.delete(otherId); const { error } = await sb.from('profiles').update({ blocked: [...cur] }).eq('id', s.uid); if (error) throw error; toast(on ? 'Blocked. They cannot message, call or connect with you.' : 'Unblocked.'); return true; } catch (e) { toast('Could not update your block list.'); return false; }

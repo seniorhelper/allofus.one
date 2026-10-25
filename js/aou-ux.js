@@ -1,7 +1,7 @@
 /* ============================================================
    allofus.one · UX layer (Oct 23 2026)
    One outline icon set, the emblem tiles (tinted rounded square + gradient ring), the grouped
-   main menu (You · Connect · Create & Grow · Explore) used by the header row, the home rail,
+   main menu (You · Connect · Create & Grow · Wander) used by the header row, the home rail,
    the Tools card and the More sheet, the signed-in boot cache (no "Sign in" flash), and the
    CSS that styles all of it plus the admin panel. No library, no network.
    ============================================================ */
@@ -72,7 +72,7 @@ export const UX_GROUPS = [
   { k: 'connect', n: 'Connect', c: '#ec4899', items: [
     ['/?v=conn', 'Connections', 'users', '#ec4899', 'Requests and your people'],
     ['/?v=circles', 'Circles', 'users', '#7c3aed', 'Family, Inner Tribe, Professional, Local'],
-    ['/?v=dm', 'DMs', 'chat', '#a855f7', 'Private messages'],
+    ['/?v=dm', 'Messages', 'chat', '#a855f7', 'Private messages'],
     ['/?v=hub', 'Comm Hub', 'hub', '#8b5cf6', 'Calls, chats and channels in one place'],
     ['/meet/', 'Unity Call', 'phone', '#ef4444', 'Free video calls, one link'],
     ['/constellations/', 'Constellations', 'star', '#16a34a', 'Find your people, or light a new one'],
@@ -82,15 +82,15 @@ export const UX_GROUPS = [
     ['/?v=brand', 'My brand', 'brand', '#6366f1', 'Free Brand pages with real SEO'],
     ['/?v=grow', 'Grow your business', 'rocket', '#0ea5e9', 'Listings, press releases, 60-second lead follow-up'],
     ['/?v=marketing', 'Marketing dash', 'chart', '#16a34a', 'Page views, followers, reach and your ads'],
-    ['/boost/', 'searchBOOST', 'rocket', '#f97316', 'Get found, get leads'],
+    ['/boost/', 'LIFEspark Lift', 'rocket', '#f97316', 'Get found, get leads'],
     ['/moments/', 'Moments', 'cam', '#ec4899', 'Faces, backdrops and quick clips'],
     ['/?v=courses', 'Courses', 'book', '#0284c7', 'Learn and teach'],
     ['/?v=board', 'LIFEboard', 'board', '#f59e0b', 'Goals, habits, vision and money'],
     ['/?v=spark', 'LIFEspark', 'smile', '#f59e0b', 'Your daily spark, three tiny wins, two minutes of breath'],
     ['/?v=work', 'FLOWworks', 'hex', '#14b8a6', 'Your pads, sketches and boards'],
     ['/?v=video', 'Video', 'video', '#dc2626', 'Every video, newest first']] },
-  { k: 'explore', n: 'Explore', c: '#8b5cf6', items: [
-    ['/?v=discover', 'Discover', 'news', '#0369a1', 'NASA, Wikipedia and world news, with sources'],
+  { k: 'explore', n: 'Wander', c: '#8b5cf6', items: [
+    ['/?v=discover', 'World Window', 'news', '#0369a1', 'NASA, Wikipedia and world news, with sources'],
     ['/rooms/', 'Global Room', 'globe', '#22c55e', 'Your whole team in one room'],
     ['/world/', '3D world', 'cube', '#06b6d4', 'Walk the world in your browser'],
     ['/world/?vr=1', 'VR', 'vr', '#7c3aed', 'Put on a Quest and step in'],
@@ -107,7 +107,7 @@ export const destFor = (href) => DEST[keyOf(href)] || null;
 export function uxTilesHTML(NAV) {
   const t = (attrs, d, label, badge) => `<button ${attrs} style="--c:${d.c};--g:${d.gc}" title="${esc(d.d || label)}">${emb(d.i, d.c, d.gc)}<span class="l">${esc(label)}</span>${badge ? `<b class="badge" data-badge="${badge}" hidden></b>` : ''}</button>`;
   const short = { conn: 'People', brand: 'Brand' };
-  return `<nav class="fl-tiles ux-tiles" aria-label="Main">${NAV.map(([k, n]) => t(`data-v="${k}"`, destFor(k === 'feed' ? '/' : '/?v=' + k) || { c: '#0369a1', gc: '#0369a1', i: 'star' }, short[k] || n, k)).join('')}${t('data-v="board"', destFor('/?v=board'), 'LIFEboard')}<a class="t ux-boost" href="/boost/" style="--c:#38f0ff;--g:#f97316" title="searchBOOST: get found, get leads">${emb('rocket', '#38f0ff', '#a855f7')}<span class="l">searchBOOST</span></a><button data-more class="t-more" style="--c:#94a3b8;--g:#64748b" aria-label="More: every page on allofus.one">${emb('more', '#94a3b8', '#64748b')}<span class="l">More</span></button></nav>`;
+  return `<nav class="fl-tiles ux-tiles" aria-label="Main">${NAV.map(([k, n]) => t(`data-v="${k}"`, destFor(k === 'feed' ? '/' : '/?v=' + k) || { c: '#0369a1', gc: '#0369a1', i: 'star' }, short[k] || n, k)).join('')}${t('data-v="board"', destFor('/?v=board'), 'LIFEboard')}<a class="t ux-boost" href="/boost/" style="--c:#38f0ff;--g:#f97316" title="LIFEspark Lift: get found, get leads">${emb('rocket', '#38f0ff', '#a855f7')}<span class="l">LIFEspark Lift</span></a><button data-more class="t-more" style="--c:#94a3b8;--g:#64748b" aria-label="More: every page on allofus.one">${emb('more', '#94a3b8', '#64748b')}<span class="l">More</span></button></nav>`;
 }
 
 /* ---------- the home rail: the member's own tiles, grouped ---------- */

@@ -22,7 +22,7 @@ export const CONFIG = {
   // v27: card checkout for ads. '' = "Invoice me" only. Set to the deployed Edge Function URL
   // 'https://izfccjaznlcffvjxawya.supabase.co/functions/v1/authnet-hosted' once the AUTHNET_* secrets are in Supabase (see js/aou-ads.js).
   AUTHNET_PAY_URL: '',
-  // v27 Discover: public API keys (safe to publish). '' = NASA uses DEMO_KEY (low rate limit) and the Pixabay tab stays hidden.
+  // v27 World Window: public API keys (safe to publish). '' = NASA uses DEMO_KEY (low rate limit) and the Pixabay tab stays hidden.
   NASA_KEY: '',
   PIXABAY_KEY: '',
 };

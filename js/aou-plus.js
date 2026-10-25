@@ -28,7 +28,7 @@ export const WORLDS = [
   ['World VR Mall', 'https://worldvrmall.com/', '🛍️', 'The island: mall exterior, beach, park', 'Shopping', 20, 10],
   ['Inside the mall', 'https://worldvrmall.com/mall/?from=allofus', '🏬', 'Walk the atrium + wings, real stores', 'Shopping', 28, 22],
   ['Comics Come Alive', 'https://comicscomealive.com/', '💥', 'Animated comics, games + bedtime stories', 'Family', -10, 60],
-  ['The VR Galaxy', 'https://thevrgalaxy.com/', '🪐', '15 never-seen-before planets', 'Explore', 60, 150],
+  ['The VR Galaxy', 'https://thevrgalaxy.com/', '🪐', '15 never-seen-before planets', 'Wander', 60, 150],
   ['Another Dimension VR', 'https://anotherdimensionvr.com/', '🌀', 'A browser VR game world', 'Games', -30, 120],
   ['Virtual Reality Adventure', 'https://virtualrealityadventure.com/', '🧭', 'Adventures with Coburn', 'Games', 10, -150],
   ['VR Flying Simulator', 'https://vrflyingsimulator.com/', '✈️', 'Realistic 3D flight school', 'Learn', 50, 80],

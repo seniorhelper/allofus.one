@@ -7,7 +7,7 @@
        Business → City (north)        Learning → Library (NE)
        Wellness → Waterfall (west)    Adventure → Desert (east)
        Causes → Starport + Orbit      Creativity → Art Garden (NW)
-       Explore → Beach + Ocean (SW)
+       Wander → Beach + Ocean (SW)
    Past the hub, roads keep going forever in every direction.
    ============================================================ */
 import { THREE, isMobile, makeSprite, makeSign, makeEarth, SKIES, rand, pick } from './aou-engine.js';
@@ -30,7 +30,7 @@ export const LIFE_PATHS = [
   { id: 'adventure', name: 'Adventure', icon: '🏜️', color: 0xff8a3d, css: '#e8671e', to: 'The Desert', pts: [[44, 8], [90, 12], [160, -6], [214, -24]] },
   { id: 'causes', name: 'Causes', icon: '❤️', color: 0xff4f79, css: '#e11d48', to: 'Starport + Orbit Garden', pts: [[38, 24], [76, 40], [160, 92], [206, 186]] },
   { id: 'creativity', name: 'Creativity', icon: '🎨', color: 0xb08cff, css: '#7c3aed', to: 'The Art Garden', pts: [[-30, -34], [-60, -70], [-120, -140], [-160, -180]] },
-  { id: 'explore', name: 'Explore', icon: '🌊', color: 0x2fe0c0, css: '#0d9488', to: 'The Beach + Ocean', pts: [[-34, 30], [-70, 70], [-130, 150], [-168, 206]] },
+  { id: 'explore', name: 'Wander', icon: '🌊', color: 0x2fe0c0, css: '#0d9488', to: 'The Beach + Ocean', pts: [[-34, 30], [-70, 70], [-130, 150], [-168, 206]] },
 ];
 export const ZONES = {
   gate: { x: 0, z: 165 }, plaza: { x: 0, z: 0 }, house: { x: 44, z: 105 }, city: { x: 0, z: -250 }, library: { x: 214, z: -190 }, falls: { x: -248, z: -24 }, desert: { x: 262, z: -70 }, beach: { x: -178, z: 222 }, starport: { x: 226, z: 214 }, art: { x: -178, z: -198 }, orbit: { x: ORBIT.x, z: ORBIT.z },
@@ -124,7 +124,7 @@ export async function buildWorld(app, api) {
     const earth = makeEarth(2.6, { clouds: true }); earth.position.y = 18; one.add(earth); const halo = new T.Mesh(new T.TorusGeometry(3.6, 0.08, 8, 64), glow(0xffffff, 2)); halo.position.y = 18; halo.rotation.x = Math.PI / 2.4; one.add(halo);
     const jets = []; for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; const j = new T.Mesh(new T.CylinderGeometry(0.06, 0.16, 1, 6, 1, true), new T.MeshBasicMaterial({ color: 0xcff6ff, transparent: true, opacity: 0.55, depthWrite: false })); j.position.set(Math.cos(a) * 7, 0.5, Math.sin(a) * 7); j.userData.noCollide = true; one.add(j); jets.push([j, i]); }
     app.onUpdate((dt, t) => { earth.rotation.y += dt * 0.15; halo.rotation.z += dt * 0.4; for (const [j, i] of jets) { const h = 2.2 + Math.sin(t * 2 + i * 0.9) * 1.2; j.scale.y = h; j.position.y = 0.5 + h / 2; } });
-    app.addHotspot(one, { title: '🌍 The One', html: '<p>Seven paths, one world. Every arc is a life path (Business, Learning, Wellness, Adventure, Causes, Creativity, Explore), and they all meet at the same planet.</p><p>Pick your paths on your LIFEboard and your avatar shows up along those trails for others to find.</p>', actions: [{ label: '🏠 Open my LIFEboard', fn: () => api.openLifeboard('paths'), primary: true }] });
+    app.addHotspot(one, { title: '🌍 The One', html: '<p>Seven paths, one world. Every arc is a life path (Business, Learning, Wellness, Adventure, Causes, Creativity, Wander), and they all meet at the same planet.</p><p>Pick your paths on your LIFEboard and your avatar shows up along those trails for others to find.</p>', actions: [{ label: '🏠 Open my LIFEboard', fn: () => api.openLifeboard('paths'), primary: true }] });
     // mode signpost
     const ms = new T.Group(); at(-14, 30, ms); box(0.25, 3.2, 0.25, M(0x2a1a10), 0, 1.6, 0, ms); const mtex = textPlane(['STATUS RINGS', '🏠 Home  🟢 Hanging  💼 Working', '🧭 Exploring  🌙 Do Not Disturb'], 6, 2.6, { bg: 'rgba(5,11,28,.92)', fg: '#fff', accent: '#7cff6b', font: 'bold 64px Poppins, Arial' }); mtex.position.set(0, 3.9, 0.15); ms.add(mtex); ms.rotation.y = Math.PI - 0.4; app.addHotspot(ms, { fn: () => api.openModes() }); app.addInteractable(-14, 30, 4, '🟢 Change my status ring', () => api.openModes());
     // Global Match board
