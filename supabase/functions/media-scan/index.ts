@@ -190,10 +190,22 @@ async function scan(id: number) {
   return { ok: !rpcErr, media_id: id, kind: result.kind, verdict: result.verdict, applied, error: rpcErr?.message };
 }
 
+// The shared secret: MEDIA_SCAN_SECRET if set, else the database's own safety_settings.media_scan_secret (service role
+// read, cached 5 min). The database copy is generated in SQL and never shown to a person, so no key is ever copied by hand.
+let dbSecret = "", dbSecretAt = 0;
+async function scanSecret(): Promise<string> {
+  const e = env("MEDIA_SCAN_SECRET"); if (e) return e;
+  if (!dbSecret || Date.now() - dbSecretAt > 300000) {
+    const { data } = await admin.from("safety_settings").select("value").eq("key", "media_scan_secret").maybeSingle();
+    dbSecret = typeof data?.value === "string" ? data.value : ""; dbSecretAt = Date.now();
+  }
+  return dbSecret;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("method", { status: 405 });
-  const secret = env("MEDIA_SCAN_SECRET");
-  if (!secret || !safeEq(req.headers.get("x-aou-secret") ?? "", secret)) return new Response("forbidden", { status: 403 });
+  const secret = await scanSecret();
+  if (secret.length < 32 || !safeEq(req.headers.get("x-aou-secret") ?? "", secret)) return new Response("forbidden", { status: 403 });
   let body: any = {}; try { body = await req.json(); } catch (_) { return new Response("bad json", { status: 400 }); }
   const rec = body?.record ?? body?.media ?? body;
   const id = Number(rec?.id); if (!id) return new Response("no id", { status: 400 });
