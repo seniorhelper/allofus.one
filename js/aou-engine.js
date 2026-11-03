@@ -57,7 +57,10 @@ export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 export const lerp = (a, b, t) => a + (b - a) * t;
 const isTouch = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 /* Phones and small tablets get the lighter render path. */
-export const isMobile = () => isTouch() && Math.min(innerWidth, innerHeight) < 900;
+/* v31: touchscreen laptops and 2-in-1s (Zach's ROG Flow Z13) report touch points too; with a mouse/trackpad as the main
+   pointer they now get the desktop path instead of the phone UI. Headsets keep the old rule so VR performance is unchanged. */
+const finePointer = () => { try { return matchMedia('(hover: hover) and (pointer: fine)').matches; } catch (e) { return false; } };
+export const isMobile = () => isTouch() && Math.min(innerWidth, innerHeight) < 900 && (/OculusBrowser|Quest|Pico/i.test(navigator.userAgent) || !finePointer());
 export const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 /* Phones get half-size generated textures (a quarter of the GPU memory). iPhones are the strictest: Safari kills a tab that uses too much. */
 /* headsets: 1.0 (Oct 19 2026). 1.75 tripled the pixels of every one of the ~1,300 canvas signs (about 2 GB of texture memory on a Quest 3, which is the
