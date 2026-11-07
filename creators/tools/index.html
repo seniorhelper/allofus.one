@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en"><head><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; object-src 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com; worker-src 'self' blob:"><meta name="referrer" content="strict-origin-when-cross-origin"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free creator tools by MADWACKD Studio | allofus.one Creators Corner</title>
+<meta name="description" content="Nine free creator tools from MADWACKD Studio, inside allofus.one Creators Corner: hook writer, 8-second script fitter, prompt builder, caption maker, teleprompter, beat-cut planner and more. They run in your browser; nothing is uploaded.">
+<link rel="canonical" href="https://allofus.one/creators/tools/"><meta name="robots" content="index,follow"><meta name="theme-color" content="#15121F"><link rel="icon" href="/images/allofus-mark.svg" type="image/svg+xml">
+<meta property="og:type" content="website"><meta property="og:title" content="Free creator tools · MADWACKD Studio on allofus.one"><meta property="og:description" content="Nine free tools that run in your browser. Creators keep 100% of fan tips on allofus."><meta property="og:url" content="https://allofus.one/creators/tools/"><meta property="og:image" content="https://allofus.one/images/allofus-share-logo.jpg">
+<link rel="stylesheet" href="mw-site.css"><link rel="stylesheet" href="creator-studio.css">
+<style>.ao-top{background:#15121F;color:#fff;border-bottom:1px solid #3A3350}.ao-top .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}.ao-top a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem}.ao-top .x{color:#FF7CC0;font-weight:800}.ao-top nav{margin-left:auto;display:flex;gap:16px;flex-wrap:wrap}.ao-hero{background:radial-gradient(120% 120% at 10% 0%,#2a1640 0%,#15121F 55%,#0c0a14 100%);color:#F4F0FA;padding:44px 0 36px}.ao-hero h1{color:#fff;font-size:clamp(2rem,6vw,3.8rem)}.ao-hero p{color:#B9B2C8;max-width:60ch}.ao-hero .hl{background:linear-gradient(90deg,#FF2E93,#FF8A00,#00B8F0);-webkit-background-clip:text;background-clip:text;color:transparent}.ao-pill{display:inline-block;background:#FF2E93;color:#15121F;border-radius:999px;padding:3px 12px;font-weight:700;font-size:.85rem;margin-bottom:12px}.ao-cta{padding:56px 0;background:#F3EEFB}.ao-foot{padding:22px 0;text-align:center;font-size:.9rem;color:#5E5770}.ao-foot a{margin:0 8px}@media (max-width:640px){.wrap{padding:0 16px}}</style>
+</head><body>
+<a class="skip" href="#main">Skip to the tools</a>
+<header class="ao-top"><div class="wrap"><a href="/">allofus.one</a><span class="x">×</span><a href="https://www.madwackd.ai/?utm_source=allofus&amp;utm_medium=creator_tools" target="_blank" rel="noopener">MADWACKD Studio</a><nav aria-label="Creators"><a href="/creators/">Creators Corner</a><a href="/?v=creator">Apply</a><a href="/">Feed</a></nav></div></header>
+<main id="main">
+<section class="ao-hero"><div class="wrap"><span class="ao-pill">Free · no sign-up · nothing uploaded</span><h1>Creator tools by <span class="hl">MADWACKD Studio</span></h1><p>Nine free tools for hooks, scripts, captions and cuts, built by our sister studio. They run right here in your browser. Make something great, post it on allofus, and keep 100% of the tips your fans send.</p><p><a class="btn btn-primary" href="#tools" style="background:#FF2E93;color:#15121F">Open the tools</a> <a class="btn btn-outline" href="/?v=creator" style="background:transparent;color:#fff;border-color:#fff">Apply to Creators Corner</a></p></div></section>
+<section class="cs-console" id="tools" aria-labelledby="tools-h"><div class="wrap">
+  <div class="cs-bar"><h2 id="tools-h">The console</h2><p class="cs-led cs-led-lime">9 modules &middot; all free &middot; works offline</p></div>
+  <div class="cs-grid">
+
+  <article class="cs-mod" id="hooks" aria-labelledby="hk-h">
+    <header><span class="cs-led">MOD 01</span><h3 id="hk-h">Hook writer</h3><p>Pick your business and offer. Get 10 opening lines for your ad.</p></header>
+    <div class="cs-row">
+      <label>Business<select id="hk-biz"></select></label>
+      <label>Tone<select id="hk-tone"></select></label>
+    </div>
+    <label>Your offer<input id="hk-offer" type="text" value="20% off this week" maxlength="80" autocomplete="off"></label>
+    <div class="cs-actions"><button type="button" class="cs-btn cs-primary" id="hk-go">Write 10 hooks</button><button type="button" class="cs-btn" id="hk-ex">Try an example</button><button type="button" class="cs-btn" id="hk-copyall">Copy all</button></div>
+    <ol class="cs-list" id="hk-out"></ol>
+    <p class="cs-status" id="hk-status" role="status" aria-live="polite"></p>
+  </article>
+
+  <article class="cs-mod" id="fitter" aria-labelledby="sf-h">
+    <header><span class="cs-led">MOD 02</span><h3 id="sf-h">8-second script fitter</h3><p>Paste your voiceover. See how long it runs, how it splits into 8-second shots, and the credit estimate.</p></header>
+    <label>Voiceover script<textarea id="sf-text" rows="5"></textarea></label>
+    <label>Shot type<select id="sf-q"><option value="fast720">Fast, 720p (about 24 credits per shot)</option><option value="fast1080">Fast, 1080p (about 29 credits per shot)</option><option value="top">Top quality (about 88 credits per shot)</option></select></label>
+    <div class="cs-actions"><button type="button" class="cs-btn" id="sf-ex">Try an example</button></div>
+    <p class="cs-big" id="sf-sum" role="status" aria-live="polite"></p>
+    <p class="cs-warnline" id="sf-warn" role="alert"></p>
+    <ol class="cs-shots" id="sf-out"></ol>
+    <div class="cs-quote"><p class="cs-led cs-led-cyan">Credit estimate</p><p class="cs-big" id="sf-cost" aria-live="polite"></p><p class="cs-note">Estimate. The studio shows the exact quote before every render. Credits cost $0.09 to $0.12 each depending on plan or pack.</p></div>
+  </article>
+
+  <article class="cs-mod" id="prompt" aria-labelledby="pb-h">
+    <header><span class="cs-led">MOD 03</span><h3 id="pb-h">Prompt builder</h3><p>Fill in the boxes. Get one clean shot description to paste into the studio.</p></header>
+    <label>Who or what<input id="pb-subject" type="text" placeholder="a chef in a white apron"></label>
+    <label>What they do<input id="pb-action" type="text" placeholder="flips a burger and smiles"></label>
+    <label>Where<input id="pb-setting" type="text" placeholder="a busy open kitchen"></label>
+    <div class="cs-row"><label>Camera move<input id="pb-camera" type="text" placeholder="slow push-in"></label><label>Light<input id="pb-light" type="text" placeholder="warm golden light"></label></div>
+    <div class="cs-row"><label>Mood<input id="pb-mood" type="text" placeholder="cozy and energetic"></label><label>Sound<input id="pb-sound" type="text" placeholder="sizzling grill"></label></div>
+    <label>Your prompt<textarea id="pb-out" rows="4" readonly></textarea></label>
+    <div class="cs-actions"><button type="button" class="cs-btn" id="pb-ex">Try an example</button><button type="button" class="cs-btn" id="pb-copy">Copy prompt</button><a class="cs-btn cs-primary" href="https://www.madwackd.ai/studio/?utm_source=allofus&amp;utm_medium=creator_tools" target="_blank" rel="noopener">Open in Studio</a></div>
+    <p class="cs-status" id="pb-status" role="status" aria-live="polite"></p>
+  </article>
+
+  <article class="cs-mod" id="safe" aria-labelledby="sz-h">
+    <header><span class="cs-led">MOD 04</span><h3 id="sz-h">Safe-zone checker</h3><p>See where social apps cover your video. Keep faces and text out of the shaded areas. Guides are general, not exact for every app.</p></header>
+    <label>Your image or video<input id="sz-file" type="file" accept="image/*,video/*"></label>
+    <div class="cs-actions">
+      <button type="button" class="cs-btn" id="sz-9x16" aria-pressed="true">Vertical 9:16</button>
+      <button type="button" class="cs-btn" id="sz-16x9" aria-pressed="false">Wide 16:9</button>
+      <button type="button" class="cs-btn" id="sz-toggle" aria-pressed="true">Show zones</button>
+      <button type="button" class="cs-btn" id="sz-ex">Try an example</button>
+    </div>
+    <div class="cs-stage cs-r9x16" id="sz-stage">
+      <img id="sz-media" alt="Your preview with safe zones drawn over it" hidden>
+      <video id="sz-vid" playsinline hidden></video>
+      <div class="cs-empty">Load a file or tap Try an example</div>
+      <div class="cs-overlay" id="sz-overlay" aria-hidden="true"></div>
+    </div>
+    <p class="cs-status" id="sz-status" role="status" aria-live="polite"></p>
+  </article>
+
+  <article class="cs-mod" id="captions" aria-labelledby="cp-h">
+    <header><span class="cs-led">MOD 05</span><h3 id="cp-h">Caption maker</h3><p>One line per caption. Add how long it shows after a bar, like <code>Hello there | 2</code>. Download SRT or VTT.</p></header>
+    <label>Caption lines<textarea id="cp-text" rows="6" placeholder="Tired of a leaky faucet? | 2"></textarea></label>
+    <div class="cs-actions"><button type="button" class="cs-btn" id="cp-ex">Try an example</button><button type="button" class="cs-btn cs-primary" id="cp-srt">Download .srt</button><button type="button" class="cs-btn cs-primary" id="cp-vtt">Download .vtt</button></div>
+    <p class="cs-status" id="cp-status" role="status" aria-live="polite"></p>
+  </article>
+
+  <article class="cs-mod" id="teleprompter" aria-labelledby="tp-h">
+    <header><span class="cs-led">MOD 06</span><h3 id="tp-h">Teleprompter</h3><p>Paste your script and press Play. Use Mirror if you read it off a glass mirror rig.</p></header>
+    <label>Script<textarea id="tp-text" rows="4"></textarea></label>
+    <div class="cs-row">
+      <label>Speed <output id="tp-speed-v">5</output><input id="tp-speed" type="range" min="1" max="12" value="5"></label>
+      <label>Text size<input id="tp-size" type="range" min="20" max="64" value="32"></label>
+    </div>
+    <div class="cs-actions"><button type="button" class="cs-btn cs-primary" id="tp-play" aria-pressed="false">Play</button><button type="button" class="cs-btn" id="tp-reset">Reset</button><button type="button" class="cs-btn" id="tp-mirror" aria-pressed="false">Mirror</button><button type="button" class="cs-btn" id="tp-full">Full screen</button><button type="button" class="cs-btn" id="tp-ex">Try an example</button></div>
+    <div class="cs-tpbox" id="tp-box"><div class="cs-tp" id="tp-view" tabindex="0" aria-label="Teleprompter text"></div></div>
+    <p class="cs-status" id="tp-status" role="status" aria-live="polite"></p>
+  </article>
+
+  <article class="cs-mod" id="beats" aria-labelledby="bt-h">
+    <header><span class="cs-led">MOD 07</span><h3 id="bt-h">Beat-cut planner</h3><p>Tap the pad to the beat of your song. Get the times to cut your video.</p></header>
+    <div class="cs-row cs-bpmrow"><button type="button" class="cs-tap" id="bt-tap">TAP</button><label>BPM<input id="bt-bpm" type="number" min="40" max="240" inputmode="decimal"></label></div>
+    <p class="cs-lab" id="bt-ev">Cut every</p>
+    <div class="cs-seg" role="group" aria-labelledby="bt-ev"><button type="button" class="cs-btn" data-beats="1" aria-pressed="false">1 beat</button><button type="button" class="cs-btn" data-beats="2" aria-pressed="false">2 beats</button><button type="button" class="cs-btn" data-beats="4" aria-pressed="true">4 beats</button><button type="button" class="cs-btn" data-beats="8" aria-pressed="false">8 beats</button></div>
+    <p class="cs-lab" id="bt-du">Edit length</p>
+    <div class="cs-seg" role="group" aria-labelledby="bt-du"><button type="button" class="cs-btn" data-dur="8" aria-pressed="false">8 s</button><button type="button" class="cs-btn" data-dur="15" aria-pressed="true">15 s</button><button type="button" class="cs-btn" data-dur="30" aria-pressed="false">30 s</button><button type="button" class="cs-btn" data-dur="60" aria-pressed="false">60 s</button></div>
+    <div class="cs-actions"><button type="button" class="cs-btn" id="bt-ex">Try an example</button><button type="button" class="cs-btn" id="bt-reset">Clear</button></div>
+    <p class="cs-big" id="bt-sum" role="status" aria-live="polite"></p>
+    <ol class="cs-chips" id="bt-out"></ol>
+  </article>
+
+  <article class="cs-mod" id="contrast" aria-labelledby="ct-h">
+    <header><span class="cs-led">MOD 08</span><h3 id="ct-h">Brand palette and contrast</h3><p>Pick a text color and a background. See if people can read it.</p></header>
+    <div class="cs-row">
+      <label>Text color<span class="cs-colorrow"><input id="ct-fg" type="color" value="#ffffff"><input id="ct-fg-hex" type="text" value="#ffffff" maxlength="7" aria-label="Text color hex code"></span></label>
+      <label>Background<span class="cs-colorrow"><input id="ct-bg" type="color" value="#ff2e93"><input id="ct-bg-hex" type="text" value="#ff2e93" maxlength="7" aria-label="Background color hex code"></span></label>
+    </div>
+    <div class="cs-actions"><button type="button" class="cs-btn" id="ct-swap">Swap</button><button type="button" class="cs-btn" id="ct-ex">Try an example</button></div>
+    <div class="cs-sample" id="ct-sample"><b>Big sale today</b><span>Small text looks like this.</span></div>
+    <p class="cs-big" id="ct-ratio" role="status" aria-live="polite"></p>
+    <ul class="cs-checks"><li id="ct-aa"></li><li id="ct-aal"></li><li id="ct-aaa"></li></ul>
+    <p class="cs-note">Passing means the text is easy to read. AA is the common goal.</p>
+  </article>
+
+  <article class="cs-mod" id="embed" aria-labelledby="em-h">
+    <header><span class="cs-led">MOD 09</span><h3 id="em-h">Share and embed code</h3><p>Paste the link to your own madwackd.ai video. Get a snippet for your website, with a small credit link.</p></header>
+    <label>Your video link<input id="em-url" type="url" placeholder="https://www.madwackd.ai/..." autocomplete="off"></label>
+    <label>Video title<input id="em-title" type="text" placeholder="My video" maxlength="80"></label>
+    <div class="cs-actions"><button type="button" class="cs-btn cs-primary" id="em-go">Make my code</button><button type="button" class="cs-btn" id="em-ex">Try an example</button><button type="button" class="cs-btn" id="em-copy">Copy code</button></div>
+    <label>Your snippet<textarea id="em-out" rows="6" readonly></textarea></label>
+    <p class="cs-status" id="em-status" role="status" aria-live="polite"></p>
+  </article>
+
+  </div>
+  <p class="cs-after">Like these? <a href="https://www.madwackd.ai/pricing/?utm_source=allofus&amp;utm_medium=creator_tools" target="_blank" rel="noopener">Start for $5</a> and make the video itself, or <a href="https://www.madwackd.ai/producers/?utm_source=allofus&amp;utm_medium=creator_tools" target="_blank" rel="noopener">let our producers make it</a>.</p>
+</div></section>
+<section class="ao-cta"><div class="wrap"><h2>Want the full studio?</h2><p class="lead">MADWACKD Studio makes finished videos and music: AI producers, voice, music and editing. The tools above are free forever; the full studio is on madwackd.ai.</p><p><a class="btn btn-primary" href="https://www.madwackd.ai/creator-studio/?utm_source=allofus&amp;utm_medium=creator_tools#dashboard" target="_blank" rel="noopener">Open MADWACKD Studio</a> <a class="btn btn-outline" href="/creators/">Back to Creators Corner</a></p></div></section>
+</main>
+<footer class="ao-foot"><p>Tools © MADWACKD Studio, shared with allofus.one. <a href="/terms/#creators">Creator Terms</a><a href="/privacy/">Privacy</a><a href="/">allofus.one</a></p></footer>
+<script src="creator-studio.js" defer></script>
+</body></html>
