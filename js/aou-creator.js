@@ -254,7 +254,7 @@ export async function creatorView(body, F3) {
   injectCSS();
   const toast = toastOf(F3); const me = F3.getMe && F3.getMe(); const sb = F3.sb;
   if (!flagOn(F3)) { body.innerHTML = `<div class="cr-wrap"><div class="cr-card"><h3>Creator tools are coming soon</h3><p>Tips that go 100% to creators, and your other channels on your profile. We'll let you know when it opens.</p></div></div>`; return; }
-  if (!me) { body.innerHTML = `<div class="cr-wrap"><div class="cr-card"><h3>Creator tools</h3><p>Sign in to set up tips and connect your channels.</p><button class="fl-btn p" data-signin>🔑 Sign in</button></div></div>`; return; }
+  if (!me) { body.innerHTML = `<div class="cr-wrap"><div class="cr-card"><h3>Creators Corner</h3><p>Sign in (or join free) to apply. Creators keep 100% of fan tips. <a href="/creators/">How it works</a></p><button class="fl-btn p" data-signin>🔑 Sign in</button></div></div>`; return; }
   body.innerHTML = '<div class="cr-wrap"><div class="cr-card">Loading…</div></div>';
   const ms = await sb.rpc('creator_my_status');
   if (ms.error) { body.innerHTML = `<div class="cr-wrap"><div class="cr-card"><h3>Almost ready</h3><p>Creators Corner opens in a moment. Please reload.</p></div></div>`; return; }
