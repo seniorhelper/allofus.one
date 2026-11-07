@@ -35,17 +35,24 @@ export async function pushOn(sb, me) {
   try {
     const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
     if (perm !== 'granted') return { ok: false, msg: 'Notifications stay off until you allow them.' };
-    const r = await reg(); if (!r) return { ok: false, msg: 'The service worker could not start. Reload and try again.' };
-    await navigator.serviceWorker.ready;
+    const r = await reg(); if (!r) return fail(sb, me, 'no-registration', 'The notification helper could not start. Reload the page and try again.');
+    const ready = await Promise.race([navigator.serviceWorker.ready.then(() => true), new Promise(res => setTimeout(() => res(false), 20000))]);
+    if (!ready) return fail(sb, me, 'sw-not-ready', 'Still setting up. Keep this page open a few seconds and tap Turn on again.');
     let sub = await r.pushManager.getSubscription();
     if (!sub) sub = await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(CONFIG.VAPID_PUBLIC_KEY) });
     const j = sub.toJSON(); const row = { user_id: me.id, endpoint: sub.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ua: navigator.userAgent.slice(0, 160) };
     const { error } = await sb.from('push_subscriptions').upsert(row, { onConflict: 'endpoint' });
-    if (error) { if (/relation|schema cache/i.test(error.message)) return { ok: false, msg: 'The server is not ready for push yet (run supabase/allofus-ALL-v20-v21.sql).' }; return { ok: false, msg: error.message }; }
+    if (error) return fail(sb, me, 'save: ' + error.message, 'Could not save this device: ' + error.message);
     try { localStorage.setItem('aou_push', '1'); } catch (e) { }
     try { await r.showNotification('allofus.one notifications are on', { body: 'Tags, comments, reactions, requests and messages reach this device now.', icon: '/images/favicon-192.png', badge: '/images/social/allofus-icon-128.png', tag: 'aou-hello', data: { url: '/?v=notif' } }); } catch (e) { }
     return { ok: true, msg: 'Notifications are on for this device.' };
-  } catch (e) { return { ok: false, msg: e.message || 'Could not turn notifications on.' }; }
+  } catch (e) { return fail(sb, me, 'exception: ' + ((e && (e.name + ' ' + e.message)) || e), (e && e.message) || 'Could not turn notifications on.'); }
+}
+/* v33: every failure is logged (bugs, kind 'push') so we can see what breaks on which phone */
+function fail(sb, me, why, msg) { try { if (sb && me) sb.from('bugs').insert({ user_id: me.id, kind: 'push', note: String(why).slice(0, 300), page: location.pathname, ua: navigator.userAgent.slice(0, 160) }).then(() => { }, () => { }); } catch (e) { } return { ok: false, msg }; }
+/* v33: permission already granted on this device: make sure the subscription is saved (fixes 'it said OK but nothing arrives') */
+export async function pushHeal(sb, me) {
+  try { if (!sb || !me || !('Notification' in window) || Notification.permission !== 'granted' || localStorage.getItem('aou_push') === '0' || localStorage.getItem('aou_push') === '1') return; if (!pushState().ok) return; await pushOn(sb, me); } catch (e) { }
 }
 /* turn off on this device (keeps other devices) */
 export async function pushOff(sb, me) {
@@ -55,13 +62,15 @@ export async function pushOff(sb, me) {
 }
 /* the one-time opt-in card on the feed (dismissable; asked again after 14 days if skipped) */
 export function pushPromptHTML(me) {
-  if (!me) return ''; const st = pushState(); if (!st.ok || st.why === 'granted') return '';
+  if (!me) return ''; const st = pushState();
+  if (st.why === 'ios-home') { try { if (Date.now() - +(localStorage.getItem('aou_push_skip') || 0) < 14 * 864e5) return ''; } catch (e) { } return `<div class="fl-card push-ask" id="push-ask"><div class="pa-t"><b>Get notifications on your iPhone</b><span>Tap the Share button, then “Add to Home Screen”. Open allofus.one from that new icon and tap Turn on.</span></div><button class="fl-btn sm" data-push-skip>Got it</button></div>`; }
+  if (!st.ok || st.why === 'granted') return '';
   try { const skip = +(localStorage.getItem('aou_push_skip') || 0); if (Date.now() - skip < 14 * 864e5) return ''; if (localStorage.getItem('aou_push') === '1') return ''; } catch (e) { }
   return `<div class="fl-card push-ask" id="push-ask"><div class="pa-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></div><div class="pa-t"><b>Get a ping on this device</b><span>When someone tags you, comments, reacts, hugs you, messages you or asks to connect. You pick which under Control panel → Notifications.</span></div><div class="pa-b"><button class="fl-btn p sm" data-push-on>Turn on</button><button class="fl-btn sm" data-push-skip>Not now</button></div></div>`;
 }
 export function wirePushPrompt(root, { sb, me, toast }) {
   const c = root.querySelector('#push-ask'); if (!c) return;
-  c.querySelector('[data-push-on]').onclick = async (e) => { e.target.disabled = true; e.target.textContent = 'Turning on…'; const r = await pushOn(sb, me); toast(r.msg); if (r.ok) c.remove(); else { e.target.disabled = false; e.target.textContent = 'Turn on'; } };
+  const on = c.querySelector('[data-push-on]'); if (on) on.onclick = async (e) => { e.target.disabled = true; e.target.textContent = 'Turning on…'; const r = await pushOn(sb, me); toast(r.msg); if (r.ok) c.remove(); else { e.target.disabled = false; e.target.textContent = 'Turn on'; } };
   c.querySelector('[data-push-skip]').onclick = () => { try { localStorage.setItem('aou_push_skip', String(Date.now())); } catch (e) { } c.remove(); };
 }
 export const PUSH_CSS = `.push-ask{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-color:#bae6fd;background:linear-gradient(135deg,#f0f9ff,#fff)}.push-ask .pa-ic{width:44px;height:44px;border-radius:14px;background:#0369a1;color:#fff;display:grid;place-items:center;flex:none}.push-ask .pa-t{flex:1;min-width:200px}.push-ask .pa-t b{display:block;font-size:14px}.push-ask .pa-t span{display:block;font:500 12.5px/1.4 var(--ff);color:#475569;margin-top:2px}.push-ask .pa-b{display:flex;gap:6px}

@@ -1,7 +1,7 @@
 /* App-like speed: the 3D engine, the VR layer, every world module, the vendored three.js, the skies and the key textures are
    precached on the first visit (versioned: bump V to ship a new set), then served instantly and refreshed in the background.
    Models, images and audio are cached on first use. Pages (navigations) always check the network first. Oct 2026. */
-const V = 'v134';
+const V = 'v135';
 const CORE = [
   '/vendor/three/three.module.min.js', '/vendor/three/jsm/webxr/VRButton.js', '/vendor/three/jsm/loaders/GLTFLoader.js', '/vendor/three/jsm/loaders/RGBELoader.js',
   '/vendor/three/jsm/postprocessing/EffectComposer.js', '/vendor/three/jsm/postprocessing/RenderPass.js', '/vendor/three/jsm/postprocessing/ShaderPass.js', '/vendor/three/jsm/postprocessing/UnrealBloomPass.js', '/vendor/three/jsm/postprocessing/OutputPass.js', '/vendor/three/jsm/postprocessing/Pass.js', '/vendor/three/jsm/postprocessing/MaskPass.js',
@@ -11,8 +11,10 @@ const CORE = [
   '/textures/grass.jpg', '/textures/grass-n.jpg', '/textures/asphalt.jpg', '/textures/asphalt-n.jpg', '/textures/concrete.jpg', '/textures/stone.jpg', '/textures/wood.jpg', '/textures/sand.jpg', '/textures/snow.jpg', '/textures/dirt.jpg',
   '/images/allofus-lockup.png', '/images/allofus-mark.svg', '/images/sky.jpg',
 ];
-self.addEventListener('install', (e) => { e.waitUntil((async () => { const c = await caches.open(V + '-core'); await Promise.all(CORE.map(async (u) => { try { const r = await fetch(u, { cache: 'no-cache' }); if (r && r.ok) await c.put(u, r); } catch (err) { } })); await self.skipWaiting(); })()); });
-self.addEventListener('activate', (e) => e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => !k.startsWith(V)).map((k) => caches.delete(k)))).then(() => self.clients.claim())));
+/* v33: activate at once (push sign-up waits for an active worker); the 3D-world files are precached afterwards in the background */
+const precache = async () => { try { const c = await caches.open(V + '-core'); for (const u of CORE) { try { if (await c.match(u)) continue; const r = await fetch(u, { cache: 'no-cache' }); if (r && r.ok) await c.put(u, r); } catch (err) { } } } catch (err) { } };
+self.addEventListener('install', (e) => { e.waitUntil(self.skipWaiting()); });
+self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => !k.startsWith(V)).map((k) => caches.delete(k)))).then(() => self.clients.claim())); precache(); });
 const cacheFirst = async (req, name) => { const c = await caches.open(name); const hit = await c.match(req); if (hit) return hit; const res = await fetch(req); if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone()); return res; };
 const networkFirst = async (req, name) => { const c = await caches.open(name); try { const res = await fetch(req); if (res && res.ok) c.put(req, res.clone()); return res; } catch (e) { const hit = await c.match(req); if (hit) return hit; throw e; } };
 /* precached core: answer from the cache at once, refresh it in the background so the next visit has the newest build */
