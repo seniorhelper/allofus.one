@@ -82,6 +82,7 @@ export const UX_GROUPS = [
     ['/?v=brand', 'My brand', 'brand', '#6366f1', 'Free Brand pages with real SEO'],
     ['/?v=grow', 'Grow your business', 'rocket', '#0ea5e9', 'Listings, press releases, 60-second lead follow-up'],
     ['/?v=marketing', 'Marketing dash', 'chart', '#16a34a', 'Page views, followers, reach and your ads'],
+    ['/creators/', 'Creators Corner', 'star', '#db2777', 'Creators keep 100% of fan tips'],
     ['/boost/', 'LIFEspark Lift', 'rocket', '#f97316', 'Get found, get leads'],
     ['/moments/', 'Moments', 'cam', '#ec4899', 'Faces, backdrops and quick clips'],
     ['/?v=courses', 'Courses', 'book', '#0284c7', 'Learn and teach'],

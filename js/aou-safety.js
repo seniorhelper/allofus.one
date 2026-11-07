@@ -274,8 +274,8 @@ export async function inspect(body, bucket = 'posts', declared = '', path = '') 
   if (scores && HOLD(scores) && bucket !== 'quarantine') return { hold: true, body: out, mime, kind, scores };
   return { body: out, mime, kind, scores, note };
 }
-async function logMedia(bucket, path, r, status = 'ok', surface = '') {
-  try { const s = ST; if (!CLIENT || !s || !s.uid) return; const url = bucket === 'quarantine' ? null : CLIENT.storage.from(bucket).getPublicUrl(path).data.publicUrl; await CLIENT.from('media_items').insert({ user_id: s.uid, bucket, path, url, mime: r.mime, bytes: r.body && r.body.size, kind: r.kind, surface: surface || (path.split('/')[1] || '').replace(/[-_]?\d.*$/, '').slice(0, 20) || null, scores: r.scores, status, reason: r.note || null }); } catch (e) { }
+async function logMedia(bucket, path, r, status = 'ok', surface = '', pubUrl = null) {
+  try { const s = ST; if (!CLIENT || !s || !s.uid) return; const url = pubUrl || (bucket === 'quarantine' || bucket === 'intake' ? null : CLIENT.storage.from(bucket).getPublicUrl(path).data.publicUrl); await CLIENT.from('media_items').insert({ user_id: s.uid, bucket, path, url, mime: r.mime, bytes: r.body && r.body.size, kind: r.kind, surface: surface || (path.split('/')[1] || '').replace(/[-_]?\d.*$/, '').slice(0, 20) || null, scores: r.scores, status, reason: r.note || null }); } catch (e) { }
 }
 function installUploadGuard(sb) {
   let api; try { api = sb.storage.from('posts'); } catch (e) { return; }
@@ -293,6 +293,14 @@ function installUploadGuard(sb) {
         if (!res.error) await logMedia('quarantine', qpath, r, 'pending');
       } catch (e) { }
       return sErr('This picture may break our rules, so a moderator will look at it first. It was not posted. If it is approved we will let you know.', 'held');
+    }
+    /* v32: members' files wait in the private intake bucket until the server scan clears them; the scanner then
+       publishes them at the same public address (posts|conference/<uid>/<name>), so callers keep using getPublicUrl. */
+    if ((bucket === 'posts' || bucket === 'conference') && CLIENT) {
+      const ip = bucket + '/' + String(path); const res = await orig.call(CLIENT.storage.from('intake'), ip, r.body, Object.assign({}, opts, { contentType: r.mime, upsert: false }));
+      if (res.error) return res;
+      await logMedia('intake', ip, r, 'pending', '', CLIENT.storage.from(bucket).getPublicUrl(String(path)).data.publicUrl);
+      return { data: { path: String(path), fullPath: bucket + '/' + String(path), id: res.data && res.data.id, pending: true }, error: null };
     }
     const res = await orig.call(this, path, r.body, Object.assign({}, opts, { contentType: r.mime }));
     if (!res.error) logMedia(bucket, String(path), r, 'ok');
@@ -409,7 +417,7 @@ export async function report(o = {}) {
 /* block: adds the person to my profiles.blocked list (the database refuses their Messages, requests, hugs and calls) */
 export async function block(sb, otherId, on = true) {
   sb = sb || CLIENT; const s = await status(sb); if (!s.signed_in || !otherId || otherId === s.uid) return false;
-  try { const { data } = await sb.from('profiles').select('blocked').eq('id', s.uid).maybeSingle(); const cur = new Set((data && data.blocked) || []); on ? cur.add(otherId) : cur.delete(otherId); const { error } = await sb.from('profiles').update({ blocked: [...cur] }).eq('id', s.uid); if (error) throw error; toast(on ? 'Blocked. They cannot message, call or connect with you.' : 'Unblocked.'); return true; } catch (e) { toast('Could not update your block list.'); return false; }
+  try { const { data } = await sb.rpc('my_profile'); const cur = new Set((data && data.blocked) || []); on ? cur.add(otherId) : cur.delete(otherId); const { error } = await sb.from('profiles').update({ blocked: [...cur] }).eq('id', s.uid); if (error) throw error; toast(on ? 'Blocked. They cannot message, call or connect with you.' : 'Unblocked.'); return true; } catch (e) { toast('Could not update your block list.'); return false; }
 }
 
 /* ---------- admin moderation queue (inside /?v=admin&what=mod) ---------- */

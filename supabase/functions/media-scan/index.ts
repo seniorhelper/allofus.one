@@ -1,4 +1,4 @@
-// allofus.one · media-scan · Supabase Edge Function (Deno) · v28 (video), Oct 25 2026 (v27 Oct 23)
+// allofus.one · media-scan · Supabase Edge Function (Deno) · v32 intake publish + held files scanned, Nov 7 2026 (v28 video Oct 25, v27 Oct 23)
 // Server-side screening of EVERY upload, pictures AND videos (the browser check in js/aou-safety.js is a convenience; this is the control).
 //
 // Trigger: a database webhook on public.media_items INSERT (pg_net trigger safety_media_webhook_v27 in v27-security.sql,
@@ -35,7 +35,7 @@ const MAX_DAY = +env("MAX_SCANS_PER_DAY", "3000");
 
 // review = no classifier could look at it (video without Hive): held for a human, never auto-published while the flag is on
 type Verdict = "ok" | "nsfw" | "csam" | "review" | "error";
-type Result = { verdict: Verdict; provider: string; sha256?: string; phash?: string; scores?: Record<string, number>; note?: string; moved?: boolean; quarantine_path?: string; matched?: string[]; bytes?: number; kind?: string; frames?: number };
+type Result = { verdict: Verdict; provider: string; published_bucket?: string; published_path?: string; sha256?: string; phash?: string; scores?: Record<string, number>; note?: string; moved?: boolean; quarantine_path?: string; matched?: string[]; bytes?: number; kind?: string; frames?: number };
 type Kind = "image" | "video" | "file";
 
 const hex = (buf: ArrayBuffer | Uint8Array) => [...new Uint8Array(buf instanceof Uint8Array ? buf : new Uint8Array(buf))].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -148,7 +148,9 @@ async function scan(id: number) {
   // fresh row from the database (the webhook payload could be stale)
   const { data: m, error } = await admin.from("media_items").select("*").eq("id", id).maybeSingle();
   if (error || !m) return { ok: false, error: "no row" };
-  if (m.bucket === "quarantine" || ["removed", "csam_suspect", "quarantined"].includes(m.status) || m.scanned_at) return { ok: true, skipped: m.status };
+  // v32: files the browser flagged (bucket 'quarantine') are scanned too, so the CSAM check runs on the riskiest uploads;
+  // they stay private and held for a moderator whatever the verdict (media_scan_result keeps them pending).
+  if (["removed", "csam_suspect", "quarantined"].includes(m.status) || m.scanned_at) return { ok: true, skipped: m.status };
 
   // daily cost cap (counts scans done today)
   const since = new Date(); since.setUTCHours(0, 0, 0, 0);
@@ -183,11 +185,22 @@ async function scan(id: number) {
     else if (PROVIDER === "rekognition") Object.assign(result, await rekognition(bytes));
     else { result.verdict = "ok"; result.note = "no classifier configured (SCAN_PROVIDER=none): hash check only"; }
 
-    // 3. quarantine the bytes BEFORE touching the row, so a public URL dies first
-    if (result.verdict === "nsfw" || result.verdict === "csam") {
-      const qpath = m.path;
+    // 3. quarantine the bytes BEFORE touching the row, so a public URL dies first (already private: nothing to move)
+    if ((result.verdict === "nsfw" || result.verdict === "csam") && m.bucket !== "quarantine") {
+      const qpath = m.bucket === "intake" ? m.path.split("/").slice(1).join("/") : m.path;
       const up = await admin.storage.from("quarantine").upload(qpath, bytes, { contentType: mime || "application/octet-stream", upsert: true });
       if (!up.error) { const rm = await admin.storage.from(m.bucket).remove([m.path]); result.moved = !rm.error; result.quarantine_path = qpath; }
+    }
+    // 4. v32 publish: a clean file in the private intake bucket (intake/<posts|conference>/<uid>/<name>) is copied to its
+    //    public bucket at <uid>/<name> (the address the post already points at), then removed from intake.
+    if (result.verdict === "ok" && m.bucket === "intake") {
+      const target = m.path.split("/")[0]; const dest = m.path.split("/").slice(1).join("/");
+      if (!["posts", "conference"].includes(target) || !dest) { result.verdict = "error"; result.note = "intake path has no target bucket"; }
+      else {
+        const pub = await admin.storage.from(target).upload(dest, bytes, { contentType: mime || "application/octet-stream", upsert: true });
+        if (pub.error) { result.verdict = "error"; result.note = "publish: " + pub.error.message; }
+        else { result.published_bucket = target; result.published_path = dest; await admin.storage.from("intake").remove([m.path]); }
+      }
     }
   } catch (e) {
     result.verdict = "error"; result.note = String((e as Error)?.message ?? e).slice(0, 200);

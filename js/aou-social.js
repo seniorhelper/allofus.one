@@ -55,7 +55,7 @@ function demoDB() {
     async signUp(me) { me.id = me.id || uid(); save('aou_me', me); return me; },
     async signIn() { return load('aou_me', null); },
     async signOut() { /* demo keeps the local profile */ },
-    async profile(id) { const { data } = await sb.from('profiles').select('*').eq('id', id).maybeSingle(); return data ? fromRow(data) : null; },
+    async profile(id) { const { data } = await (id === (me && me.id) ? sb.rpc('my_profile') : sb.from('profiles').select('id,username,display_name,mode,paths,city,bio,causes,looking_for,attractor,avatar,home,created_at,updated_at,adult,pubkey,pubkey_at').eq('id', id).maybeSingle()); return data ? fromRow(data) : null; },
     fx(payload) { if (this._world) this._world.send({ type: 'broadcast', event: 'fx', payload }); },
     async profiles() { return []; },
     connStatus(id) { return S.conns[id] || null; },
@@ -87,7 +87,7 @@ async function liveDB(app, W) {
   const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); try { (await import('./aou-safety.js')).guardClient(sb); } catch (e) { }
   let me = null; const listeners = []; let conns = {}; const threads = {}; const rooms = {};
   const fire = (e) => listeners.forEach(f => f(e));
-  const loadMe = async () => { const { data: { user } } = await sb.auth.getUser(); if (!user) { me = null; return null; } const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle(); me = data ? fromRow(data) : null; if (me) { const { data: lb } = await sb.from('lifeboards').select('data').eq('id', user.id).maybeSingle(); me.lifeboard = (lb && lb.data) || {}; } return me; };
+  const loadMe = async () => { const { data: { user } } = await sb.auth.getUser(); if (!user) { me = null; return null; } const { data } = await sb.rpc('my_profile'); me = data ? fromRow(data) : null; if (me) { const { data: lb } = await sb.from('lifeboards').select('data').eq('id', user.id).maybeSingle(); me.lifeboard = (lb && lb.data) || {}; } return me; };
   const fromRow = (r) => ({ id: r.id, username: r.username, name: r.display_name, mode: r.mode, paths: r.paths || [], city: r.city, bio: r.bio, causes: r.causes || [], looking: r.looking_for, attractor: r.attractor, avatar: r.avatar || {}, home: r.home || {}, ref: r.referred_by });
   const toRow = (m) => ({ id: m.id, username: m.username, display_name: m.name, mode: m.mode, paths: m.paths, city: m.city, bio: m.bio, causes: m.causes, looking_for: m.looking, attractor: m.attractor, avatar: m.avatar, home: m.home, referred_by: m.ref || null, updated_at: now() });
   const refreshConns = async () => { if (!me) return; const { data } = await sb.from('connections').select('*').or(`requester.eq.${me.id},addressee.eq.${me.id}`); conns = {}; for (const c of data || []) { const other = c.requester === me.id ? c.addressee : c.requester; conns[other] = { status: c.status === 'accepted' ? 'connected' : (c.requester === me.id ? (c.kind === 'wave' ? 'waved' : 'pending') : 'incoming'), row: c }; } };

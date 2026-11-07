@@ -126,7 +126,7 @@ export function createStore({ sb, me, toast = commToast }) {
   async function loadProfiles(ids) {
     ids = ids.filter(id => id && !S.prof[id]); if (!ids.length || !sb) return;
     const r = await safe(sb.from('profiles').select('id,username,display_name,home').in('id', ids)); (r.data || []).forEach(p => { S.prof[p.id] = p; });
-    const b = await safe(sb.from('profiles').select('id,blocked,adult').in('id', ids.concat([me.id]))); (b.data || []).forEach(p => { S.blockedBy[p.id] = p.blocked || []; S.adult[p.id] = p.adult; if (p.id === me.id && Array.isArray(p.blocked)) S.blocked = new Set(p.blocked); });
+    const b = await safe(sb.from('profiles').select('id,adult').in('id', ids.concat([me.id]))); const bm = await safe(sb.rpc('blocked_me_among', { p_ids: ids })); const bmSet = new Set(bm.data || []); const own = await safe(sb.rpc('my_profile')); (b.data || []).forEach(p => { S.blockedBy[p.id] = bmSet.has(p.id) ? [me.id] : []; S.adult[p.id] = p.adult; }); if (own.data && Array.isArray(own.data.blocked)) S.blocked = new Set(own.data.blocked);
     const o = await safe(sb.from('presence').select('user_id,last_seen').in('user_id', ids)); (o.data || []).forEach(x => { S.online[x.user_id] = Date.now() - ms(x.last_seen) < 3 * 60000; });
   }
   async function loadAll() {

@@ -23,6 +23,8 @@ export const CONFIG = {
   // 'https://izfccjaznlcffvjxawya.supabase.co/functions/v1/authnet-hosted' once the AUTHNET_* secrets are in Supabase (see js/aou-ads.js).
   AUTHNET_PAY_URL: '',
   // v27 World Window: public API keys (safe to publish). '' = NASA uses DEMO_KEY (low rate limit) and the Pixabay tab stays hidden.
+  // v32 (Nov 7 2026): Creators Corner is open. Members apply, Zach approves each one by hand (Admin queue in /?v=creator).
+  CREATOR_TOOLS: true,
   NASA_KEY: '',
   PIXABAY_KEY: '',
 };

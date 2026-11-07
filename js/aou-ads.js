@@ -52,7 +52,7 @@ export async function setAdPrefs(p, sb, me) {
 /* once per session: the server copy wins (so the setting follows the member across devices) */
 export async function syncAdPrefs(sb, me) {
   if (!sb || !me || sessionStorage.getItem('aou_adprefs_synced') === me.id) return getAdPrefs();
-  try { const { data, error } = await sb.from('profiles').select('ad_pref, ad_filters').eq('id', me.id).maybeSingle(); if (!error && data && data.ad_pref) { const cur = getAdPrefs(); cur.pref = data.ad_pref; cur.filters = data.ad_filters || []; lsSet('aou_adprefs2', JSON.stringify(cur)); lsSet('aou_adprefs', JSON.stringify({ on: cur.pref !== 'off', g: cur.g, videoOnly: cur.videoOnly })); } } catch (e) { }
+  try { const { data, error } = await sb.rpc('my_profile'); if (!error && data && data.ad_pref) { const cur = getAdPrefs(); cur.pref = data.ad_pref; cur.filters = data.ad_filters || []; lsSet('aou_adprefs2', JSON.stringify(cur)); lsSet('aou_adprefs', JSON.stringify({ on: cur.pref !== 'off', g: cur.g, videoOnly: cur.videoOnly })); } } catch (e) { }
   try { sessionStorage.setItem('aou_adprefs_synced', me.id); } catch (e) { }
   return getAdPrefs();
 }
@@ -201,7 +201,7 @@ export async function openComposer(ctx = {}) {
       const b = e.currentTarget; b.disabled = true; b.textContent = 'Sending…';
       const summary = `Ad order ${order.ref} · ${plan().name} · ${money(order.amount_cents)}${order.verified ? ' incl. Verified badge' : ''}\nPromoting: ${order.promo_kind}${order.page_slug ? ' · page ' + order.page_slug : ''}${order.target_id ? ' · ' + order.target_id : ''}\nHeadline: ${order.headline}\nAudience: ${order.audience}${order.city ? ' · ' + order.city : ''}${order.groups.length ? ' · ' + order.groups.join(', ') : ''}\nCategory: ${order.category}\nMember: ${me.email || me.id}${order._local ? '\n(Order kept on the member\'s device: ad_orders table not available yet)' : ''}`;
       let ok = false;
-      try { const fd = new FormData(); fd.append('_subject', 'allofus.one ad order ' + order.ref + ' · invoice requested'); fd.append('_captcha', 'false'); fd.append('_template', 'table'); fd.append('order', summary); fd.append('email', me.email || ''); fd.append('page', location.href); const to = ['aW5mbw', 'ZXlldG9hZC5jb20']; const addr = atob(to[0]) + String.fromCharCode(64) + atob(to[1]); const r = await fetch('https://formsubmit.co/ajax/' + addr, { method: 'POST', body: fd, headers: { Accept: 'application/json' } }); ok = r.ok; } catch (x) { }
+      /* v32: the order is recorded by submit_lead below (no third-party e-mail form) */
       try { if (sb) await sb.rpc('submit_lead', { p_kind: 'ad-order', p_name: me.name || '', p_business: order.page_slug || order.promo_kind, p_email: me.email || '', p_phone: '', p_website: order.url || '', p_details: summary }); ok = true; } catch (x) { }
       if (sb && order.id) { try { await sb.from('ad_orders').update({ pay_method: 'invoice' }).eq('id', order.id); } catch (x) { } }
       b.textContent = ok ? 'Invoice requested ✓' : 'Could not send. Call ' + PHONE; if (ok) say('Invoice requested. Zach will confirm within 1 business day.');
