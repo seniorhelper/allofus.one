@@ -205,6 +205,9 @@ create trigger feed_comment_react_rate_v32 before insert on public.feed_comment_
 -- ---------- 5 · Creators Corner: terms clickwrap + manual approval ----------
 insert into public.safety_settings (key, value, secret) values ('creator_terms_version', '"creator-v2-2026-11-07"'::jsonb, false)
 on conflict (key) do update set value = excluded.value;
+-- open Creators Corner (v28 shipped the switch OFF); approval still gates every creator
+insert into public.safety_settings (key, value, secret) values ('creator_tools', 'true'::jsonb, false)
+on conflict (key) do update set value = 'true'::jsonb;
 
 create table if not exists public.creator_terms_acceptances (
   id bigint generated always as identity primary key,
