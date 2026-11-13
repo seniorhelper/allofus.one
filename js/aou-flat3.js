@@ -286,6 +286,9 @@ export const FLAT3_CSS = `
 .fl .fl-top nav.fl-tiles{display:grid!important;grid-template-columns:repeat(var(--n,13),minmax(0,1fr));gap:8px;max-width:1720px;margin:0 auto!important;justify-content:stretch}
 .fl .fl-top nav.fl-tiles button,.fl .fl-top nav.fl-tiles a.t{width:auto!important;min-width:0;height:60px;border-radius:12px!important;display:flex!important;padding:0 4px}.fl .fl-top nav.fl-tiles .l{overflow:hidden;text-overflow:ellipsis;max-width:100%}
 @media(min-width:1001px){.fl-tiles button.wide{display:flex!important}}
+/* the tour button is for new members: hide it before it can collide with Invite / Acting as */
+@media(max-width:1600px){.fl .fl-top .tour-b{display:none!important}}
+.fl .fl-top .fl-search{min-width:0}
 /* phones + small tablets: compact, not sticky; nav lives in the bottom bar */
 @media(max-width:1000px){.fl .fl-top .bar{position:relative;flex-wrap:wrap;gap:8px 8px;padding:8px 8px 10px}.fl .fl-top .lock .embl{width:36px!important;height:36px!important}.fl .fl-top .lock .wm .a,.fl .fl-top .lock .wm .o{font-size:22px!important}.fl .fl-top .lock{order:1}.hact{order:2;margin-left:auto;gap:6px}.fl .fl-top .hrow{order:3;flex:1 1 100%;flex-direction:row}.fl .fl-top .ms{width:100%}.fl .fl .fl-top .fl-search,.fl .fl-top .bar .fl-search{display:none!important}.ha{height:38px}.ha span,.ha.actas .t,.ha.actas>svg:last-child{display:none}.ha.hs{display:inline-flex}.ha:not(.actas){width:38px;padding:0}.ha.actas{padding:0 4px}.ha.p{width:auto;padding:0 10px}.ha.p span{display:inline}.fl .fl-top .w{display:none!important}}
 @media(max-width:360px){.fl .fl-top .lock .wm{display:none}}
