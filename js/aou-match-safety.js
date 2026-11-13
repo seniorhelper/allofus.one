@@ -5,7 +5,7 @@
         then check it against the rules below while the member types. Friendly, instant.
      2. the database: supabase/_parts/v29-match.sql runs the same BLOCK rules in a trigger,
         so nothing can skip this file. Hits are logged and count as strikes (3 strikes = no posting).
-     3. Claude (Edge Function match-ai): every new post is read by the AI and held if it is risky.
+     3. The AI reviewer (Edge Function match-ai): every new post is read by the AI and held if it is risky.
      4. the safety sweep (Edge Function safety-sweep): 7am + 7pm Denver, re-reads the day's posts.
    level 'block' = cannot post (and a strike); 'warn' = may post after a heads-up; 'ok' = clean.
    ============================================================ */

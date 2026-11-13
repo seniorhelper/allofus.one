@@ -176,7 +176,7 @@ export function sawcutArrival(app, cfg = {}) {
   const showWorld = () => { hidden.splice(0).forEach((o) => { o.visible = true; }); };
   const bg0 = scene.background, fog0 = scene.fog; let hemi0 = null;
   const begin = () => {
-    started = true; const xc = R.xr.isPresenting ? R.xr.getCamera() : app.camera; const P = new T.Vector3(), D = new T.Vector3(); xc.getWorldPosition(P); xc.getWorldDirection(D); D.y = 0; if (D.lengthSq() < 1e-6) D.set(0, 0, -1); D.normalize();
+    started = true; const xc = app.camera; const P = new T.Vector3(), D = new T.Vector3(); xc.getWorldPosition(P); xc.getWorldDirection(D); D.y = 0; if (D.lengthSq() < 1e-6) D.set(0, 0, -1); D.normalize();
     root.position.set(P.x, app.player.position.y, P.z); root.rotation.set(0, Math.atan2(-D.x, -D.z), 0); root.visible = true; if (!root.parent) scene.add(root);
     K.flash.visible = true; try { app.camera.add(K.flash); } catch (e) { }
     if (!cfg.short) { hideWorld(); scene.background = new T.Color(0x030405); scene.fog = null; try { if (app.hemi) { hemi0 = app.hemi.intensity; app.hemi.intensity = Math.max(hemi0, 0.95); } } catch (e) { } }
@@ -233,7 +233,7 @@ export function sawcutArrival(app, cfg = {}) {
     if (t >= TL.flash && !S.world) { S.world = true; showWorld(); scene.background = bg0; scene.fog = fog0; try { if (app.hemi && hemi0 !== null) app.hemi.intensity = hemi0; } catch (e) { } [K.stage, K.carriage, K.arm, K.head, K.veil].forEach((o) => (o.visible = false)); K.sparks.clear(); K.embers.clear(); K.flames.forEach((f) => { f.life = 0; f.m.visible = false; }); K.smoke.forEach((s) => { s.life = 0; s.sp.visible = false; }); H.active = false; hap(0.8, 120); }
     K.sparks.step(dt); K.embers.step(dt);
     /* flames and smoke face the viewer */
-    const xc = R.xr.isPresenting ? R.xr.getCamera() : app.camera; xc.getWorldQuaternion(camQ); root.getWorldQuaternion(rootQ).invert(); camQ.premultiply(rootQ);
+    const xc = app.camera; xc.getWorldQuaternion(camQ); root.getWorldQuaternion(rootQ).invert(); camQ.premultiply(rootQ);
     for (const f of K.flames) { if (f.life <= 0) { f.m.visible = false; continue; } f.life -= dt; const kk = 1 - f.life / f.max; const env = smooth(0, 0.15, kk) * (1 - smooth(0.55, 1, kk)); f.u.t.value += dt; f.u.uA.value = env; f.m.scale.set(f.w * (0.8 + 0.2 * env), f.h * (0.4 + 0.6 * env), 1); f.m.quaternion.copy(camQ); }
     for (const s of K.smoke) { if (s.life <= 0) { s.sp.visible = false; continue; } s.life -= dt; const kk = 1 - s.life / s.max; s.sp.position.x += s.vx * dt; s.sp.position.y += s.vy * dt; s.sp.scale.setScalar(s.s0 + (s.s1 - s.s0) * Math.sqrt(kk)); s.sp.material.opacity = s.op * smooth(0, 0.12, kk) * (1 - kk); }
     if (t >= TL.end) H.done();
