@@ -71,7 +71,7 @@ export const UX_GROUPS = [
     ['/?v=mydata', 'Your data', 'shield', '#3b82f6', 'Download or delete your data']] },
   { k: 'connect', n: 'Connect', c: '#ec4899', items: [
     ['/?v=conn', 'Connections', 'users', '#ec4899', 'Requests and your people'],
-    ['/?v=circles', 'Rings', 'users', '#7c3aed', 'Family, Inner Tribe, Professional, Local'],
+    ['/?v=circles', 'Audiences', 'users', '#7c3aed', 'Family, Inner Tribe, Professional, Local'],
     ['/?v=dm', 'Messages', 'chat', '#a855f7', 'Private messages'],
     ['/?v=hub', 'Comm Hub', 'hub', '#8b5cf6', 'Calls, chats and channels in one place'],
     ['/meet/', 'Unity Call', 'phone', '#ef4444', 'Free video calls, one link'],
@@ -153,7 +153,7 @@ export const skel = (n = 3, kind = 'rows') => kind === 'posts' ? `<div class="ux
 /* ---------- bottom-bar style pieces: a bare icon in its own color (filters, order, quick bubbles) ---------- */
 export const uxChip = (icon, c, label) => `<span class="ux-ci" style="--c:${c}">${uxIcon(icon)}</span>${esc(label)}`;
 /* quick bubbles after the "who posted lately" faces, so the row is never half empty */
-const QUICK = [['/glimmers/', 'Glimmer', 'cam', '#ec4899'], ['/?v=grow', 'Grow', 'rocket', '', 'hot'], ['/?v=circles', 'Rings', 'users', '#7c3aed'], ['/?v=events', 'Events', 'cal', '#e11d48'], ['/?v=courses', 'Courses', 'book', '#0284c7'], ['/?v=board', 'LIFEboard', 'board', '#65a30d'], ['/?v=spark', 'Spark', 'smile', '#f59e0b'], ['/?tour=1', 'Tour', 'star', '#0ea5e9']];
+const QUICK = [['/glimmers/', 'Glimmer', 'cam', '#ec4899'], ['/?v=grow', 'Grow', 'rocket', '', 'hot'], ['/?v=circles', 'Audiences', 'users', '#7c3aed'], ['/?v=events', 'Events', 'cal', '#e11d48'], ['/?v=courses', 'Courses', 'book', '#0284c7'], ['/?v=board', 'LIFEboard', 'board', '#65a30d'], ['/?v=spark', 'Spark', 'smile', '#f59e0b'], ['/?tour=1', 'Tour', 'star', '#0ea5e9']];
 export function uxQuickHTML() { return `<span class="ux-sep" aria-hidden="true"></span><b class="ux-rowlab q">Quick start</b>${QUICK.map(([h, n, i, c, x]) => `<a class="mo ux-q${x ? ' ' + x : ''}" href="${h}" style="--c:${c || '#4f46e5'}"><span class="ring"><span class="av">${uxIcon(i)}</span></span><small>${esc(n)}</small></a>`).join('')}`; }
 
 export const UX_CSS = `
