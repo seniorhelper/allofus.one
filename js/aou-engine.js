@@ -1094,9 +1094,9 @@ export class WVM {
     const groups = goGroups(this); const cur = group || this._goGroup || groups[0].key; this._goGroup = cur;
     const g = groups.find(x => x.key === cur) || groups[0];
     const html = `<div class="wvm-go-tabs">${groups.map(x => `<button class="wvm-tab${x.key === g.key ? ' on' : ''}" data-gg="${x.key}">${x.icon} ${esc(x.label)}</button>`).join('')}</div>
-      <div class="wvm-go-grid">${g.items.map((it, i) => `<button class="wvm-place" data-gi="${i}"><span>${it.icon || '📍'}</span><b>${esc(it.label)}</b><small>${it.url ? esc(it.url.replace(/^https?:\/\//, '').replace(/\/$/, '')) : (it.place && it.place.cat ? esc(it.place.cat) : 'tap to jump')}</small></button>`).join('')}</div>`;
+      ${g.note ? `<p class="wvm-go-note" style="margin:6px 2px 8px;font:600 13px Poppins,Arial;color:#475569">${esc(g.note)}</p>` : ''}<div class="wvm-go-grid">${g.items.map((it, i) => `<button class="wvm-place" data-gi="${i}"><span>${it.icon || '📍'}</span><b>${esc(it.label)}</b><small>${it.url ? esc(it.url.replace(/^https?:\/\//, '').replace(/\/$/, '')) : (it.place && it.place.cat ? esc(it.place.cat) : 'tap to jump')}</small></button>`).join('')}</div>`;
     if (this.renderer.xr && this.renderer.xr.isPresenting && this._xrApi && this._xrApi.openGo) { this._xrApi.openGo(); return; }
-    this.popup('🧭 Go anywhere', html, [{ label: '🗺️ Open the map', fn: () => this.showMap() }]);
+    const bh = this.places.find(q => q.id === 'build-house' && q.fn); this.popup('🧭 Go anywhere', html, (bh ? [{ label: '🏗️ Build my house', fn: () => { this.closePopup(); setTimeout(() => bh.fn(this), 40); } }] : []).concat([{ label: '🗺️ Open the map', fn: () => this.showMap() }]));
     const card = this.pop; if (!card) return;
     card.querySelectorAll('[data-gg]').forEach(b => b.onclick = () => this.goMenu(b.dataset.gg));
     card.querySelectorAll('[data-gi]').forEach(b => b.onclick = () => { const it = g.items[+b.dataset.gi]; this.closePopup(); setTimeout(() => goItem(this, it, 'port'), 40); });
