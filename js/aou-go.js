@@ -24,7 +24,7 @@ export const GO_GROUPS = [
       ['Messages', '/?v=dm', '✉️'], ['Comm Hub', '/?v=hub', '🛰️'], ['Rooms · live chat', '/chat/?r=general', '💬'], ['Global Room', '/rooms/', '🌐'], ['Unity Call', '/meet/', '📞'], ['Global Match', '/match/', '🎯'],
       ['Alerts', '/?v=notif', '🔔'], ['Inbox', '/?v=inbox', '📥'], ['Search', '/?v=search', '🔎']] },
   { key: 'family', label: 'Family fun', icon: '🎈', note: 'Open to everyone.',
-    ids: ['comics', 'dream-room', 'zach-pool', 'jamoke', 'party49', 'movie', 'plant-cart'],
+    ids: ['comics', 'dream-room', 'zach-pool', 'jamoke', 'movie', 'plant-cart'],
     urls: [['Games', '/games/', '🎮'], ['Moments', '/moments/', '📸']] },
   { key: 'help', label: 'Rules and help', icon: '🛟', note: 'Open to everyone.',
     urls: [['Community rules', '/community-rules/', '📜'], ['Terms', '/terms/', '📄'], ['Privacy', '/privacy/', '🔒'], ['Accessibility', '/accessibility/', '♿'], ['Report a bug', '/report-bug/', '🐞'], ['Our mission', '/mission/', '🚩'],
