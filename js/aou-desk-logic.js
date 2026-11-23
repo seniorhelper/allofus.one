@@ -3,8 +3,9 @@
 
 export const KEY = 'aou_desk_v1';
 export const LIMITS = { todos: 10, todoLen: 48, notes: 8, noteLen: 110, links: 8, labelLen: 22, urlLen: 300, nameLen: 18 };
-export const STYLES = ['wood', 'metal', 'neon'];
-export const ROOMS = ['plain', 'loft', 'sky', 'real'];
+export const STYLES = ['wood', 'metal', 'steel', 'black', 'neon'];
+export const FINISHES = ['matte', 'gloss'];
+export const ROOMS = ['plain', 'loft', 'sky', 'stars', 'real'];
 export const NEONS = ['#22e6ff', '#ff3df0', '#7dff5a', '#ffb020', '#8b7bff'];
 export const NOTE_COLORS = ['#ffe873', '#ffb3c7', '#a8e6ff', '#b9f5a6', '#ffd0a1'];
 export const DESK = { wMin: 1.0, wMax: 2.4, dMin: 0.6, dMax: 1.0, hOffMin: -0.15, hOffMax: 0.2 };
@@ -33,8 +34,8 @@ const pick = (v, list, d) => (list.includes(v) ? v : d);
 export function defaults() {
   return {
     v: 1, name: '',
-    desk: { style: 'wood', w: 1.6, d: 0.8, hOff: 0, neon: NEONS[0] },
-    room: 'plain', dist: 'far', focus: false, tab: 'today', rtab: 'notes', sound: true,
+    desk: { style: 'wood', finish: 'matte', w: 1.6, d: 0.8, hOff: 0, neon: NEONS[0] },
+    room: 'plain', planets: true, cork: true, dist: 'far', focus: false, tab: 'today', rtab: 'notes', sound: true,
     todos: [{ t: 'Put on the headset and say hello', done: false }],
     notes: [{ t: 'Tap a note to write on it', c: 0 }],
     links: [], embed: '',
@@ -47,8 +48,8 @@ export function clean(raw) {
   const k = raw.desk || {}, t = raw.timer || {};
   const s = {
     v: 1, name: str(raw.name, LIMITS.nameLen),
-    desk: { style: pick(k.style, STYLES, 'wood'), w: clamp(k.w, DESK.wMin, DESK.wMax, 1.6), d: clamp(k.d, DESK.dMin, DESK.dMax, 0.8), hOff: clamp(k.hOff, DESK.hOffMin, DESK.hOffMax, 0), neon: pick(k.neon, NEONS, NEONS[0]) },
-    room: pick(raw.room, ROOMS, 'plain'), dist: pick(raw.dist, ['far', 'near'], 'far'), focus: raw.focus === true,
+    desk: { style: pick(k.style, STYLES, 'wood'), finish: pick(k.finish, FINISHES, 'matte'), w: clamp(k.w, DESK.wMin, DESK.wMax, 1.6), d: clamp(k.d, DESK.dMin, DESK.dMax, 0.8), hOff: clamp(k.hOff, DESK.hOffMin, DESK.hOffMax, 0), neon: pick(k.neon, NEONS, NEONS[0]) },
+    room: pick(raw.room, ROOMS, 'plain'), planets: raw.planets !== false, cork: raw.cork !== false, dist: pick(raw.dist, ['far', 'near'], 'far'), focus: raw.focus === true,
     tab: pick(raw.tab, ['today', 'focus'], 'today'), rtab: pick(raw.rtab, ['notes', 'links'], 'notes'), sound: raw.sound !== false,
     todos: (Array.isArray(raw.todos) ? raw.todos : d.todos).slice(0, LIMITS.todos).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), done: !!(x && x.done) })).filter((x) => x.t),
     notes: (Array.isArray(raw.notes) ? raw.notes : d.notes).slice(0, LIMITS.notes).map((x) => ({ t: str(x && x.t, LIMITS.noteLen), c: clamp(x && x.c, 0, NOTE_COLORS.length - 1, 0) | 0 })),
@@ -136,4 +137,33 @@ export function wrap(text, maxW, measure, maxLines) {
 export function seatFor(headY, hOff) {
   const top = Math.min(1.25, Math.max(0.55, headY - 0.47 + (hOff || 0)));
   return { top, eye: Math.max(top + 0.3, headY) };
+}
+
+/* keyboard height: its centre sits a forearm below the eyes, but its lowest edge always clears the desk top. */
+export const KB = { h: 0.336, tilt: 0.6, clear: 0.03, drop: 0.36, reach: 0.36 };
+export function kbY(top, headY) { return Math.max(top + KB.clear + (KB.h / 2) * Math.sin(KB.tilt), headY - KB.drop); }
+
+/* real sky: how far the star globe is turned for a moment in time (radians), from the clock and the time zone.
+   Longitude is estimated from the time zone (15 degrees an hour); no location is asked for. */
+export function siderealAngle(ms, tzOffsetMin) {
+  const days = ms / 86400000 - 10957.5;
+  const gmstH = (((18.697374558 + 24.06570982441908 * days) % 24) + 24) % 24;
+  const lonDeg = Math.max(-180, Math.min(180, -(Number(tzOffsetMin) || 0) / 4));
+  return ((((gmstH * 15 + lonDeg) % 360) + 360) % 360) * Math.PI / 180;
+}
+
+/* star colour from its measured colour index (blue-white through white to orange). Writes 0..1 values into out. */
+export function starColor(bv, out) {
+  const t = Math.max(0, Math.min(1, ((Number(bv) || 0) + 0.4) / 2.4));
+  const stops = [[0, 0.62, 0.75, 1], [0.35, 1, 1, 1], [0.7, 1, 0.84, 0.62], [1, 1, 0.64, 0.42]];
+  let i = 0; while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
+  const a = stops[i], b = stops[i + 1], k = (t - a[0]) / (b[0] - a[0]);
+  out[0] = a[1] + (b[1] - a[1]) * k; out[1] = a[2] + (b[2] - a[2]) * k; out[2] = a[3] + (b[3] - a[3]) * k; return out;
+}
+
+/* moving the desk with the grab ball: where the seat point and the desk angle end up so the ball sits at (bx, bz)
+   and the desk keeps facing the head at (hx, hz). cz = desk centre along the desk's own forward line (negative). */
+export function faceHead(cx, cz, hx, hz, deskCz, yawNow) {
+  const dx = cx - hx, dz = cz - hz, len = Math.hypot(dx, dz); const yaw = len < 0.25 ? yawNow : Math.atan2(-dx, -dz);
+  return { yaw, x: cx - deskCz * Math.sin(yaw), z: cz - deskCz * Math.cos(yaw) };
 }

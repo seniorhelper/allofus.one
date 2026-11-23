@@ -90,9 +90,33 @@ export async function start() {
   { const g = rooms.sky = new T.Group(); const dome = put(g, new T.SphereGeometry(60, 32, 16), B({ map: TX.sky, side: T.BackSide, fog: false }), 1, 1, 1, 0, 0, 0); dome.rotation.y = Math.PI; dimmable.push(dome.material);
     const pm = M({ map: TX.metal, color: 0x7b8088, roughness: 0.5, metalness: 0.6 }); const p = put(g, new T.CylinderGeometry(3, 3.1, 0.12, 48), pm, 1, 1, 1, 0, -0.06, 0);
     const rim = put(g, new T.TorusGeometry(3.02, 0.02, 6, 64), B({ color: 0xffc98a }), 1, 1, 1, 0, 0.01, 0); rim.rotation.x = Math.PI / 2; void p; }
+  let starPts = null, starsAsked = false; const skyTurn = new T.Group(), skyTilt = new T.Group(), planetG = new T.Group();
+  { const g = rooms.stars = new T.Group(); const dm = B({ map: tex(gradCanvas([[0, '#01020a'], [0.46, '#040816'], [0.5, '#0d1736'], [0.53, '#04060e'], [1, '#020308']])), side: T.BackSide }); put(g, new T.SphereGeometry(95, 24, 12), dm, 1, 1, 1, 0, 0, 0); dimmable.push(dm);
+    put(g, new T.CylinderGeometry(3, 3.1, 0.12, 48), M({ map: TX.metal, color: 0x4a4f58, roughness: 0.45, metalness: 0.7 }), 1, 1, 1, 0, -0.06, 0); const rim = put(g, new T.TorusGeometry(3.02, 0.02, 6, 64), B({ color: 0x7fa8ff }), 1, 1, 1, 0, 0.01, 0); rim.rotation.x = Math.PI / 2;
+    skyTilt.rotation.x = -50 * Math.PI / 180; skyTilt.add(skyTurn); g.add(skyTilt, planetG);
+    seed = 83; const pc = cv(256, 128), pg = pc.getContext('2d'); for (let y = 0; y < 128; y += 2) { const t = y / 128, b = 0.5 + 0.5 * Math.sin(t * 34 + Math.sin(t * 9) * 2); pg.fillStyle = `rgb(${200 + b * 42 | 0},${150 + b * 52 | 0},${96 + b * 46 | 0})`; pg.fillRect(0, y, 256, 2); }
+    for (let i = 0; i < 70; i++) { pg.fillStyle = `rgba(${rnd() < 0.5 ? '120,70,40' : '255,235,200'},${0.05 + rnd() * 0.12})`; pg.fillRect(rnd() * 256, rnd() * 128, 20 + rnd() * 90, 1 + rnd() * 2); }
+    const gm = M({ map: tex(pc), roughness: 1, metalness: 0, envMapIntensity: 0 }); const gas = put(planetG, new T.SphereGeometry(1, 40, 20), gm, 7, 7, 7, -36, 27, -52); gas.rotation.z = 0.4;
+    const rc = cv(256, 256), rg = rc.getContext('2d'); for (let r = 70; r < 126; r += 1.5) { rg.strokeStyle = `rgba(${225 + rnd() * 30 | 0},${200 + rnd() * 30 | 0},${160 + rnd() * 30 | 0},${(r > 96 && r < 101) ? 0.04 : 0.25 + rnd() * 0.5})`; rg.lineWidth = 1.6; rg.beginPath(); rg.arc(128, 128, r, 0, 6.283); rg.stroke(); }
+    const ringM = B({ map: tex(rc), transparent: true, side: T.DoubleSide, depthWrite: false }); dimmable.push(ringM); const pr = put(planetG, plane, ringM, 30, 30, 1, -36, 27, -52); pr.rotation.set(-Math.PI / 2 + 0.32, 0, 0.4);
+    seed = 91; const mc = cv(256, 128), mg = mc.getContext('2d'); mg.fillStyle = '#9a9ca3'; mg.fillRect(0, 0, 256, 128); for (let i = 0; i < 130; i++) { const x = rnd() * 256, y = rnd() * 128, r = 1 + rnd() * 9; mg.fillStyle = `rgba(60,62,70,${0.12 + rnd() * 0.25})`; mg.beginPath(); mg.arc(x, y, r, 0, 6.283); mg.fill(); mg.strokeStyle = 'rgba(230,232,240,0.25)'; mg.lineWidth = 1; mg.beginPath(); mg.arc(x, y, r, 3.6, 5.6); mg.stroke(); }
+    put(planetG, new T.SphereGeometry(1, 32, 16), M({ map: tex(mc), roughness: 1, metalness: 0, envMapIntensity: 0 }), 2.1, 2.1, 2.1, 30, 20, -38); }
+  async function loadStars() {
+    if (starsAsked) return; starsAsked = true;
+    try {
+      const r = await fetch('/desk/stars.bin'); if (!r.ok) throw new Error('stars'); const f = new Float32Array(await r.arrayBuffer()), n = Math.min(5000, (f.length / 4) | 0); const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), siz = new Float32Array(n), c3 = [0, 0, 0];
+      for (let i = 0; i < n; i++) { const ra = f[i * 4], dec = f[i * 4 + 1], mag = f[i * 4 + 2], cd = Math.cos(dec); if (!Number.isFinite(ra + dec + mag)) continue; pos[i * 3] = 80 * cd * Math.cos(ra); pos[i * 3 + 1] = 80 * Math.sin(dec); pos[i * 3 + 2] = -80 * cd * Math.sin(ra);
+        L.starColor(f[i * 4 + 3], c3); const b = Math.max(0.13, Math.min(1, Math.pow(10, -0.22 * (mag - 1.5)))); col[i * 3] = c3[0] * b; col[i * 3 + 1] = c3[1] * b; col[i * 3 + 2] = c3[2] * b; siz[i] = Math.max(1.3, Math.min(7, 5.6 - 0.8 * mag)); }
+      const g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(pos, 3)); g.setAttribute('aC', new T.BufferAttribute(col, 3)); g.setAttribute('aS', new T.BufferAttribute(siz, 1));
+      starPts = new T.Points(g, new T.ShaderMaterial({ uniforms: { uK: { value: 1 } }, blending: T.AdditiveBlending, depthWrite: false, transparent: true,
+        vertexShader: 'attribute float aS; attribute vec3 aC; varying vec3 vC; uniform float uK; void main(){ vC = aC; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_PointSize = aS * uK; }',
+        fragmentShader: 'varying vec3 vC; void main(){ float r = length(gl_PointCoord - 0.5) * 2.0; float a = 1.0 - smoothstep(0.2, 1.0, r); gl_FragColor = vec4(vC * a, 1.0);\n#include <colorspace_fragment>\n}' }));
+      starPts.frustumCulled = false; skyTurn.add(starPts); applyRoom();
+    } catch (e) { starsAsked = false; say('The stars could not load. Check the connection.'); }
+  }
   rooms.real = new T.Group();
   Object.values(rooms).forEach((g) => { g.visible = false; rig.add(g); });
-  const LIGHT = { plain: [0xffffff, 0x6b6f78, 1.15, 0xffffff, 1.3], loft: [0xffd9b0, 0x1a1c26, 0.55, 0xffc890, 0.9], sky: [0xffc9a0, 0x3a3550, 0.9, 0xffa868, 1.5], real: [0xffffff, 0x777777, 1.1, 0xffffff, 1.2] };
+  const LIGHT = { plain: [0xffffff, 0x6b6f78, 1.15, 0xffffff, 1.3], loft: [0xffd9b0, 0x1a1c26, 0.55, 0xffc890, 0.9], sky: [0xffc9a0, 0x3a3550, 0.9, 0xffa868, 1.5], stars: [0xa9b8ff, 0x10121c, 0.5, 0xd5dcff, 0.9], real: [0xffffff, 0x777777, 1.1, 0xffffff, 1.2] };
 
   /* ---------- the desk ---------- */
   const desk = new T.Group(); rig.add(desk);
@@ -100,23 +124,28 @@ export async function start() {
     woodTop: M({ map: TX.wood, roughness: 0.42, metalness: 0, envMapIntensity: 0.5 }), woodLeg: M({ map: TX.wood, color: 0x8a6a52, roughness: 0.6, metalness: 0, envMapIntensity: 0.3 }),
     metalTop: M({ map: TX.metal, roughness: 0.32, metalness: 1, envMapIntensity: 1.2 }), metalLeg: M({ color: 0x23262c, roughness: 0.45, metalness: 0.8 }),
     neonTop: M({ color: 0x0a0b0e, roughness: 0.18, metalness: 0.35, envMapIntensity: 0.9 }), neonSide: M({ color: 0x101116, roughness: 0.5, metalness: 0.2 }), neonEdge: B({ color: 0x22e6ff }),
+    steelTop: M({ color: 0xe3e7ec, roughness: 0.07, metalness: 1, envMapIntensity: 1.5 }), steelLeg: M({ color: 0xc4cad2, roughness: 0.16, metalness: 1, envMapIntensity: 1.2 }),
+    blackTop: M({ color: 0x0c0d10, roughness: 0.85, metalness: 0.1, envMapIntensity: 1 }), blackLeg: M({ color: 0x15171b, roughness: 0.6, metalness: 0.3 }),
     glow: B({ map: TX.glow, color: 0x22e6ff, transparent: true, opacity: 0.5, blending: T.AdditiveBlending, depthWrite: false }), shadow: B({ map: TX.shadow, transparent: true, opacity: 0.8, depthWrite: false }),
   };
   let seat = L.seatFor(1.2, S.desk.hOff);
   const FRONT = -0.2;
+  const ROUGH = { woodTop: [0.5, 0.12], metalTop: [0.36, 0.16], steelTop: [0.2, 0.05], blackTop: [0.85, 0.06], neonTop: [0.45, 0.1] };
   function buildDesk() {
     while (desk.children.length) desk.remove(desk.children[0]);
+    for (const k in ROUGH) DM[k].roughness = ROUGH[k][S.desk.finish === 'gloss' ? 1 : 0];
+    const tm = S.desk.style === 'black' ? DM.blackTop : DM.woodTop, lm = S.desk.style === 'black' ? DM.blackLeg : DM.woodLeg, mt = S.desk.style === 'steel' ? DM.steelTop : DM.metalTop, ml = S.desk.style === 'steel' ? DM.steelLeg : DM.metalLeg;
     const { style, w, d } = S.desk, top = seat.top, zc = FRONT - d / 2;
     TX.wood.repeat.set(Math.max(1, w / 1.3), Math.max(1, d / 0.8)); TX.metal.repeat.set(Math.max(1, w / 1.2), 1);
     const sh = put(desk, plane, DM.shadow, w * 1.5, d * 1.9, 1, 0, 0.004, zc); sh.rotation.x = -Math.PI / 2; sh.renderOrder = 1;
-    if (style === 'wood') {
-      put(desk, box, DM.woodTop, w, 0.045, d, 0, top - 0.0225, zc);
-      put(desk, box, DM.woodLeg, w - 0.16, 0.09, 0.022, 0, top - 0.09, zc - d / 2 + 0.07); put(desk, box, DM.woodLeg, w - 0.16, 0.09, 0.022, 0, top - 0.09, zc + d / 2 - 0.07);
-      [-1, 1].forEach((sx) => { put(desk, box, DM.woodLeg, 0.022, 0.09, d - 0.14, sx * (w / 2 - 0.07), top - 0.09, zc); [-1, 1].forEach((sz) => put(desk, box, DM.woodLeg, 0.06, top - 0.045, 0.06, sx * (w / 2 - 0.07), (top - 0.045) / 2, zc + sz * (d / 2 - 0.07))); });
-    } else if (style === 'metal') {
-      put(desk, box, DM.metalTop, w, 0.022, d, 0, top - 0.011, zc);
-      [-1, 1].forEach((sx) => { const x = sx * (w / 2 - 0.1), h = top - 0.022; put(desk, box, DM.metalLeg, 0.04, 0.04, d - 0.08, x, 0.02, zc); put(desk, box, DM.metalLeg, 0.04, 0.04, d - 0.08, x, h - 0.02, zc); [-1, 1].forEach((sz) => { const l = put(desk, box, DM.metalLeg, 0.04, h, 0.04, x, h / 2, zc + sz * (d / 2 - 0.16)); l.rotation.x = sz * 0.12; }); });
-      put(desk, box, DM.metalLeg, w - 0.2, 0.03, 0.03, 0, top * 0.3, zc - d / 2 + 0.2);
+    if (style === 'wood' || style === 'black') {
+      put(desk, box, tm, w, 0.045, d, 0, top - 0.0225, zc);
+      put(desk, box, lm, w - 0.16, 0.09, 0.022, 0, top - 0.09, zc - d / 2 + 0.07); put(desk, box, lm, w - 0.16, 0.09, 0.022, 0, top - 0.09, zc + d / 2 - 0.07);
+      [-1, 1].forEach((sx) => { put(desk, box, lm, 0.022, 0.09, d - 0.14, sx * (w / 2 - 0.07), top - 0.09, zc); [-1, 1].forEach((sz) => put(desk, box, lm, 0.06, top - 0.045, 0.06, sx * (w / 2 - 0.07), (top - 0.045) / 2, zc + sz * (d / 2 - 0.07))); });
+    } else if (style === 'metal' || style === 'steel') {
+      put(desk, box, mt, w, 0.022, d, 0, top - 0.011, zc);
+      [-1, 1].forEach((sx) => { const x = sx * (w / 2 - 0.1), h = top - 0.022; put(desk, box, ml, 0.04, 0.04, d - 0.08, x, 0.02, zc); put(desk, box, ml, 0.04, 0.04, d - 0.08, x, h - 0.02, zc); [-1, 1].forEach((sz) => { const l = put(desk, box, ml, 0.04, h, 0.04, x, h / 2, zc + sz * (d / 2 - 0.16)); l.rotation.x = sz * 0.12; }); });
+      put(desk, box, ml, w - 0.2, 0.03, 0.03, 0, top * 0.3, zc - d / 2 + 0.2);
     } else {
       put(desk, box, DM.neonTop, w, 0.05, d, 0, top - 0.025, zc); const e = 0.008, y = top - 0.025;
       put(desk, box, DM.neonEdge, w + e, e, e, 0, y, zc + d / 2 + e / 2); put(desk, box, DM.neonEdge, w + e, e, e, 0, y, zc - d / 2 - e / 2);
@@ -124,7 +153,9 @@ export async function start() {
       const gl = put(desk, plane, DM.glow, w * 1.25, d * 1.6, 1, 0, 0.008, zc); gl.rotation.x = -Math.PI / 2; gl.renderOrder = 2;
     }
   }
-  const accent = () => (S.desk.style === 'wood' ? '#f2b45e' : S.desk.style === 'metal' ? '#8fc4ff' : S.desk.neon);
+  const accent = () => ({ wood: '#f2b45e', metal: '#8fc4ff', steel: '#bfe0ff', black: '#e8ecf2' }[S.desk.style] || S.desk.neon);
+  /* the move ball: grab it (pinch or trigger) and the whole desk follows your hand, always turned to face you */
+  const ball = new T.Mesh(new T.SphereGeometry(0.032, 20, 14), M({ color: 0xffffff, roughness: 0.25, metalness: 0.2, emissive: 0x2a6cff, emissiveIntensity: 0.9 })); ball.visible = false; rig.add(ball);
 
   /* ---------- panels: each is one canvas, redrawn only when its content changes ---------- */
   const R0 = 0.97, ring = new T.Group(); rig.add(ring);
@@ -132,16 +163,17 @@ export async function start() {
   function surface(name, W, H, w, h, parent) {
     const c = cv(W, H); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.generateMipmaps = false; t.minFilter = T.LinearFilter;
     const mesh = new T.Mesh(plane, new T.MeshBasicMaterial({ map: t, alphaTest: 0.5, toneMapped: false })); mesh.scale.set(w, h, 1); parent.add(mesh);
-    const s = { name, c, g: c.getContext('2d'), t, mesh, W, H, w, h, regions: [], dirty: true, inv: new T.Matrix4(), sc: 1, hx: 0, hy: 0, poke: [{ armed: false }, { armed: false }], draw: null, touch: true };
+    const s = { name, c, g: c.getContext('2d'), t, mesh, W, H, w, h, regions: [], dirty: true, inv: new T.Matrix4(), sc: 1, wx: 1, wy: 1, hx: 0, hy: 0, poke: [{ armed: false }, { armed: false }], draw: null, touch: true };
     surfaces.push(s); return s;
   }
   const P = { front: surface('front', 1024, 640, 1.0, 0.625, ring), left: surface('left', 640, 640, 0.62, 0.62, ring), right: surface('right', 640, 640, 0.62, 0.62, ring) };
   const A = 47 * Math.PI / 180;
   P.front.mesh.position.set(0, -0.09, -R0); P.left.mesh.position.set(-Math.sin(A) * R0, -0.09, -Math.cos(A) * R0); P.right.mesh.position.set(Math.sin(A) * R0, -0.09, -Math.cos(A) * R0);
   [P.front, P.left, P.right].forEach((p) => p.mesh.lookAt(0, 0, 0));
+  const cork = surface('cork', 640, 412, 0.62, 0.4, ring); cork.mesh.position.set(Math.sin(A) * R0, 0.45, -Math.cos(A) * R0); cork.mesh.lookAt(0, 0.2, 0);
   const strip = surface('strip', 512, 96, 0.5, 0.09375, P.front.mesh); strip.mesh.scale.set(0.5 / 1.0, 0.09375 / 0.625, 1); strip.mesh.position.set(0.5 - 0.25 - 0.022, 0.5 - 0.075 - 0.03, 0.002); strip.touch = false;
   const kb = surface('kb', 1000, 600, 0.56, 0.336, rig); kb.mesh.visible = false;
-  const kbTop = surface('kbtop', 1000, 110, 0.56, 0.0616, kb.mesh); kbTop.mesh.scale.set(1, 0.0616 / 0.336, 1); kbTop.mesh.position.set(0, 0.5 + 0.11, 0); kbTop.touch = false;
+  const kbTop = surface('kbtop', 1000, 110, 0.56, 0.0616, kb.mesh); kbTop.mesh.scale.set(1, 0.0616 / 0.336, 1); kbTop.mesh.position.set(0, 0.5 + 0.11, 0);
 
   const FF = 'system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif';
   const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
@@ -179,6 +211,7 @@ export async function start() {
       label(g, 'Focus timer', 40, 232, 30, '#ffffff', 'left', 700); label(g, 'Length ' + Math.round(S.timer.len / 60) + ' min. The live countdown is at the top right.', 40, 274, 24);
       btn(p, 36, 306, 300, 84, run ? 'Pause' : (left < S.timer.len && left > 0 ? 'Resume' : 'Start'), 'timer.toggle', null, { on: run, size: 34, line: accent() }); btn(p, 352, 306, 200, 84, 'Reset', 'timer.reset', null, { size: 30 });
       [5, 15, 25, 50].forEach((m, i) => btn(p, 36 + i * 142, 416, 130, 62, m + ' min', 'timer.set', m * 60, { on: S.timer.len === m * 60 }));
+      btn(p, 36 + 4 * 142, 416, 150, 62, 'Custom', 'timer.custom', null, { on: ![5, 15, 25, 50].includes(S.timer.len / 60) });
       label(g, 'A soft chime plays when the time is up.', 40, 520, 22);
     }
     btn(p, 36, 580, 190, 44, 'Recenter', 'recenter', null, { size: 22 }); btn(p, 238, 580, 190, 44, S.sound ? 'Sound: on' : 'Sound: off', 'sound', null, { size: 22 });
@@ -188,15 +221,16 @@ export async function start() {
   };
   P.left.draw = () => {
     const p = P.left, g = base(p, 'Make it yours'); const k = S.desk;
-    label(g, 'Desk', 36, 118, 22); ['wood', 'metal', 'neon'].forEach((s, i) => btn(p, 36 + i * 192, 136, 180, 54, s === 'wood' ? 'Wood' : s === 'metal' ? 'Metal' : 'Neon', 'desk.style', s, { on: k.style === s }));
+    label(g, 'Desk', 36, 118, 22); [['wood', 'Wood'], ['metal', 'Metal'], ['steel', 'Steel'], ['black', 'Black'], ['neon', 'Neon']].forEach(([s, n], i) => btn(p, 36 + i * 115, 136, 107, 54, n, 'desk.style', s, { on: k.style === s, size: 23 }));
+    btn(p, 404, 34, 200, 48, k.finish === 'gloss' ? 'Finish: gloss' : 'Finish: matte', 'desk.finish', null, { size: 22, on: k.finish === 'gloss' });
     const row = (y, name, val, act) => { label(g, name, 36, y + 24, 24, '#f1f4f9'); btn(p, 300, y, 70, 48, '−', act, -1, { size: 34 }); label(g, val, 448, y + 24, 24, '#ffffff', 'center', 700); btn(p, 526, y, 70, 48, '+', act, 1, { size: 34 }); };
     row(206, 'Width', k.w.toFixed(1) + ' m', 'desk.w'); row(262, 'Depth', k.d.toFixed(2) + ' m', 'desk.d'); row(318, 'Height', (k.hOff >= 0 ? '+' : '−') + Math.abs(Math.round(k.hOff * 100)) + ' cm', 'desk.h');
     label(g, 'Neon colour', 36, 398, 22); L.NEONS.forEach((c, i) => { rr(g, 190 + i * 84, 376, 68, 44, 12); g.fillStyle = c; g.fill(); if (k.neon === c) { g.lineWidth = 5; g.strokeStyle = '#ffffff'; g.stroke(); } p.regions.push({ x: 190 + i * 84, y: 376, w: 68, h: 44, act: 'neon', arg: i }); });
-    label(g, 'Room', 36, 446, 22); const rs = [['plain', 'Plain'], ['loft', 'Night loft'], ['sky', 'Open sky']]; if (arOK) rs.push(['real', 'My room']);
-    const bw = (568 - (rs.length - 1) * 10) / rs.length; rs.forEach(([id, n], i) => btn(p, 36 + i * (bw + 10), 462, bw, 52, n, 'room', id, { on: S.room === id, size: rs.length > 3 ? 21 : 24 }));
+    label(g, 'Room', 36, 446, 22); const rs = [['plain', 'Plain'], ['loft', 'Loft'], ['sky', 'Sky'], ['stars', S.room === 'stars' ? (S.planets ? 'Stars ●' : 'Stars ○') : 'Stars']]; if (arOK) rs.push(['real', 'My room']);
+    const bw = (568 - (rs.length - 1) * 10) / rs.length; rs.forEach(([id, n], i) => btn(p, 36 + i * (bw + 10), 462, bw, 52, n, 'room', id, { on: S.room === id, size: rs.length > 4 ? 20 : 22 }));
     label(g, 'Panels', 36, 546, 22); btn(p, 130, 524, 226, 46, 'Far · point', 'dist', 'far', { on: S.dist === 'far', size: 22 }); btn(p, 368, 524, 236, 46, 'Near · touch', 'dist', 'near', { on: S.dist === 'near', size: 22 });
     btn(p, 36, 582, 280, 42, S.name ? 'Name: ' + S.name : 'Set your name', 'name', null, { size: 21, bg: '#141a24', line: '#3a4456' });
-    if (arOK && S.room === 'real') label(g, 'My room is a prototype', 604, 603, 19, '#ffcf7a', 'right');
+    btn(p, 328, 582, 276, 42, S.cork ? 'Corkboard: on' : 'Corkboard: off', 'cork', null, { size: 21, on: S.cork });
   };
   P.right.draw = () => {
     const p = P.right, g = base(p); btn(p, 36, 30, 180, 56, 'Notes', 'rtab', 'notes', { on: S.rtab === 'notes' }); btn(p, 228, 30, 180, 56, 'Links', 'rtab', 'links', { on: S.rtab === 'links' });
@@ -216,27 +250,38 @@ export async function start() {
       label(g, presenting ? 'A link opens in the browser and pauses VR.' : 'A link opens in a new tab.', 36, 606, 20, '#7c8798');
     }
   };
+  const corkBg = (() => { seed = 71; const c = cv(640, 412), g = c.getContext('2d'); g.fillStyle = '#b98a57'; g.fillRect(0, 0, 640, 412); for (let i = 0; i < 5200; i++) { g.fillStyle = rnd() < 0.5 ? `rgba(90,58,28,${0.08 + rnd() * 0.25})` : `rgba(235,200,150,${0.06 + rnd() * 0.2})`; const r = 1 + rnd() * 2.6; g.beginPath(); g.ellipse(rnd() * 640, rnd() * 412, r, r * (0.5 + rnd() * 0.6), rnd() * 3, 0, 6.283); g.fill(); } g.lineWidth = 18; g.strokeStyle = '#5a3d22'; g.strokeRect(9, 9, 622, 394); g.lineWidth = 3; g.strokeStyle = 'rgba(255,220,170,0.25)'; g.strokeRect(19, 19, 602, 374); return c; })();
+  cork.draw = () => {
+    const p = cork, g = p.g; p.regions.length = 0; g.clearRect(0, 0, p.W, p.H); g.drawImage(corkBg, 0, 0); const n = S.notes.slice(0, 8);
+    n.forEach((nt, i) => { const x = 34 + (i % 4) * 146, y = 36 + ((i / 4) | 0) * 176, w = 134, h = 158; g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(((i * 53) % 7 - 3) * 0.012); g.translate(-w / 2, -h / 2); g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(4, 6, w, h); g.fillStyle = L.NOTE_COLORS[nt.c]; g.fillRect(0, 0, w, h);
+      g.fillStyle = '#20222a'; g.font = `600 18px ${FF}`; g.textAlign = 'left'; g.textBaseline = 'top'; L.wrap(nt.t || 'Empty note', w - 16, (s) => g.measureText(s).width, 6).forEach((ln, k) => g.fillText(ln, 8, 24 + k * 21));
+      g.beginPath(); g.arc(w / 2, 10, 7, 0, 6.283); g.fillStyle = ['#e5484d', '#3b82f6', '#22a559', '#f59e0b'][i % 4]; g.fill(); g.strokeStyle = 'rgba(0,0,0,0.4)'; g.lineWidth = 2; g.stroke(); g.restore(); p.regions.push({ x, y, w, h, act: 'note.edit', arg: i }); });
+    if (!n.length) label(g, 'Nothing pinned. Add a note on the right panel.', 320, 206, 22, '#3a2613', 'center', 700);
+  };
   let stripMsg = '', stripUntil = 0, stripLast = '';
   strip.draw = () => {
     const g = strip.g; g.clearRect(0, 0, 512, 96); rr(g, 2, 2, 508, 92, 20); g.fillStyle = '#171d28'; g.fill();
     const now = Date.now(); const run = !!S.timer.endsAt, left = L.timerLeft(S.timer, now);
     if (stripMsg && now < stripUntil) { label(g, stripMsg, 256, 49, 26, '#ffffff', 'center', 700, 480); return; }
     label(g, new Date(now).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }), 24, 49, 38, '#ffffff', 'left', 700);
+    if (presenting && fpsNow) label(g, fpsNow + ' fps', 256, 82, 16, '#7c8798', 'center');
     label(g, L.mmss(left), 488, 49, 38, run ? accent() : '#7c8798', 'right', 700); label(g, run ? 'focus' : 'timer', 372, 52, 20, '#aab3c2', 'right');
   };
-  const stripKey = () => { const now = Date.now(); return (stripMsg && now < stripUntil ? stripMsg : '') + '|' + ((now / 60000) | 0) + '|' + L.timerLeft(S.timer, now) + '|' + accent() + (DEV ? statLine : ''); };
+  const stripKey = () => { const now = Date.now(); return (stripMsg && now < stripUntil ? stripMsg : '') + '|' + ((now / 60000) | 0) + '|' + L.timerLeft(S.timer, now) + '|' + accent() + (presenting ? fpsNow : '') + (DEV ? statLine : ''); };
   function say(msg, ms = 3200) { stripMsg = msg; stripUntil = Date.now() + ms; const t = $('dk-toast'); if (t) { t.textContent = msg; t.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => { t.hidden = true; }, ms); } }
 
   /* ---------- desk keyboard (headset typing) ---------- */
-  const KROWS = ['1234567890', 'qwertyuiop', "asdfghjkl'", '^zxcvbnm,.', '-/:@_!?&+#']; let shift = false, edit = null;
+  const KROWS = ['1234567890', 'qwertyuiop', "asdfghjkl'", '^zxcvbnm,.', '-/:@_!?&+#']; let shift = false, edit = null, kbPos = null, fpsNow = 0; const HINT = 'Tap a note to write on it';
   kb.draw = () => {
     const p = kb, g = p.g; g.clearRect(0, 0, p.W, p.H); p.regions.length = 0; rr(g, 2, 2, p.W - 4, p.H - 4, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 4; g.strokeStyle = accent(); g.stroke();
-    KROWS.forEach((row, r) => [...row].forEach((ch, c) => { const isShift = ch === '^'; const k = isShift ? '⇧' : (shift ? ch.toUpperCase() : ch); btn(p, 10 + c * 98, 10 + r * 97, 90, 89, k, 'key', isShift ? 'SHIFT' : k, { size: 40, on: isShift && shift, bg: '#222a38' }); }));
-    btn(p, 10, 495, 188, 95, 'Cancel', 'key', 'CANCEL', { size: 30, bg: '#2a1f25', fg: '#ff9aa8' }); btn(p, 206, 495, 392, 95, 'space', 'key', 'SPACE', { size: 30 }); btn(p, 606, 495, 188, 95, '⌫', 'key', 'BACK', { size: 40 }); btn(p, 802, 495, 188, 95, 'Done', 'key', 'DONE', { size: 32, on: true });
+    KROWS.forEach((row, r) => [...row].forEach((ch, c) => { const isShift = ch === '^'; const k = isShift ? '⇧' : (shift ? ch.toUpperCase() : ch); btn(p, 8 + c * 90, 10 + r * 97, 84, 89, k, 'key', isShift ? 'SHIFT' : k, { size: 40, on: isShift && shift, bg: '#222a38' }); }));
+    /* delete, clear and enter live in a tall column on the right, at the top, so they can never sit low */
+    btn(p, 908, 10, 84, 186, '⌫', 'key', 'BACK', { size: 42, bg: '#3a2a12', fg: '#ffd27a', line: '#ffd27a' }); btn(p, 908, 204, 84, 89, 'Clear', 'key', 'CLEAR', { size: 22, bg: '#2a1f25', fg: '#ff9aa8' }); btn(p, 908, 301, 84, 289, 'Enter', 'key', 'DONE', { size: 24, on: true });
+    btn(p, 8, 495, 188, 95, 'Cancel', 'key', 'CANCEL', { size: 30, bg: '#2a1f25', fg: '#ff9aa8' }); btn(p, 204, 495, 698, 95, 'space', 'key', 'SPACE', { size: 30 });
   };
   kbTop.draw = () => { const g = kbTop.g; g.clearRect(0, 0, 1000, 110); rr(g, 2, 2, 996, 106, 22); g.fillStyle = '#171d28'; g.fill(); if (!edit) return; label(g, edit.title, 24, 28, 22, '#aab3c2'); const t = edit.text + '▏'; g.font = `600 34px ${FF}`; let s = t; while (g.measureText(s).width > 950 && s.length > 2) s = s.slice(1); label(g, s, 24, 72, 34, '#ffffff', 'left', 600); };
   function askText(title, initial, max, cb) {
-    if (presenting) { edit = { title, text: initial || '', max, cb }; shift = !initial; kb.mesh.visible = true; kb.dirty = kbTop.dirty = true; layout(); return; }
+    if (presenting) { edit = { title, text: initial || '', max, cb }; shift = !initial; head.setFromMatrixPosition(camera.matrixWorld); rig.worldToLocal(head); (kbPos || (kbPos = new T.Vector3())).set(Math.max(-0.35, Math.min(0.35, head.x)), L.kbY(seat.top, head.y), head.z - L.KB.reach); kb.mesh.visible = true; kb.dirty = kbTop.dirty = true; layout(); return; }
     const dlg = $('dk-ask'); $('dk-ask-title').textContent = title; const inp = $('dk-ask-in'); inp.value = initial || ''; inp.maxLength = max;
     $('dk-ask-form').onsubmit = (e) => { e.preventDefault(); dlg.close(); cb(inp.value.trim()); }; $('dk-ask-no').onclick = () => dlg.close(); dlg.showModal(); inp.focus(); inp.select();
   }
@@ -254,7 +299,7 @@ export async function start() {
   const chime = () => { [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.3, 0.09, i * 0.34)); };
 
   /* ---------- actions ---------- */
-  let saveT = 0; function commit(...dirty) { clearTimeout(saveT); saveT = setTimeout(() => L.save(localStorage, S), 250); (dirty.length ? dirty : [P.front, P.left, P.right]).forEach((p) => { p.dirty = true; }); sheet(); }
+  let saveT = 0; function commit(...dirty) { clearTimeout(saveT); saveT = setTimeout(() => L.save(localStorage, S), 250); (dirty.length ? dirty : [P.front, P.left, P.right]).forEach((p) => { p.dirty = true; }); if (!dirty.length || dirty.includes(P.right)) cork.dirty = true; sheet(); }
   const all = () => { commit(P.front, P.left, P.right, kb); };
   function act(a, arg, src) {
     audio(); beep(660);
@@ -271,8 +316,11 @@ export async function start() {
       case 'timer.toggle': S.timer = S.timer.endsAt ? L.timerPause(S.timer, Date.now()) : L.timerStart(S.timer, Date.now()); commit(P.front); break;
       case 'timer.reset': S.timer = L.timerReset(S.timer); commit(P.front); break;
       case 'timer.set': S.timer = L.timerSet(S.timer, arg); commit(P.front); break;
+      case 'timer.custom': askText('Timer length in minutes (1 to 120)', String(Math.round(S.timer.len / 60)), 3, (t) => { const m = parseInt(t, 10); if (m >= 1 && m <= 120) { S.timer = L.timerSet(S.timer, m * 60); commit(P.front); } else if (t) say('Type a number from 1 to 120'); }); break;
+      case 'desk.finish': k.finish = k.finish === 'gloss' ? 'matte' : 'gloss'; buildDesk(); commit(P.left); break;
+      case 'cork': S.cork = !S.cork; applyRoom(); commit(P.left, P.right); break;
       case 'desk.style': k.style = arg; DM.neonEdge.color.set(k.neon); DM.glow.color.set(k.neon); buildDesk(); all(); break;
-      case 'desk.w': k.w = r2(Math.min(L.DESK.wMax, Math.max(L.DESK.wMin, k.w + arg * 0.1))); buildDesk(); commit(P.left); break;
+      case 'desk.w': k.w = r2(Math.min(L.DESK.wMax, Math.max(L.DESK.wMin, k.w + arg * 0.1))); buildDesk(); layout(); commit(P.left); break;
       case 'desk.d': k.d = r2(Math.min(L.DESK.dMax, Math.max(L.DESK.dMin, k.d + arg * 0.05))); buildDesk(); layout(); commit(P.left); break;
       case 'desk.h': k.hOff = r2(Math.min(L.DESK.hOffMax, Math.max(L.DESK.hOffMin, k.hOff + arg * 0.01))); reseat(); commit(P.left); break;
       case 'neon': k.neon = L.NEONS[arg]; DM.neonEdge.color.set(k.neon); DM.glow.color.set(k.neon); all(); break;
@@ -280,7 +328,7 @@ export async function start() {
       case 'dist': S.dist = arg; layout(); commit(P.left); break;
       case 'name': askText('Your first name (shown on the desk only)', S.name, L.LIMITS.nameLen, (t) => { S.name = t; commit(P.front, P.left); }); break;
       case 'note.add': if (S.notes.length < L.LIMITS.notes) { S.notes.push({ t: '', c: S.notes.length % L.NOTE_COLORS.length }); commit(P.right); act('note.edit', S.notes.length - 1); } break;
-      case 'note.edit': if (S.notes[arg]) askText('Sticky note', S.notes[arg].t, L.LIMITS.noteLen, (t) => { if (S.notes[arg]) { S.notes[arg].t = t; commit(P.right); } }); break;
+      case 'note.edit': if (S.notes[arg]) askText('Sticky note', S.notes[arg].t === HINT ? '' : S.notes[arg].t, L.LIMITS.noteLen, (t) => { if (S.notes[arg]) { S.notes[arg].t = t; commit(P.right); } }); break;
       case 'note.del': S.notes.splice(arg, 1); commit(P.right); break;
       case 'note.color': if (S.notes[arg]) { S.notes[arg].c = (S.notes[arg].c + 1) % L.NOTE_COLORS.length; commit(P.right); } break;
       case 'link.add': askText('Web address (for example yoursite.com)', '', L.LIMITS.urlLen, (t) => { const url = L.safeUrl(t); if (!url) { if (t) say('That is not a web address'); return; } setTimeout(() => askText('Name for this link', L.hostOf(url), L.LIMITS.labelLen, (n) => { if (S.links.length < L.LIMITS.links) { S.links.push({ label: n || L.hostOf(url), url }); S.rtab = 'links'; commit(P.right); } }), 60); }); break;
@@ -303,18 +351,24 @@ export async function start() {
     hemi.color.set(l[0]); hemi.groundColor.set(l[1]); hemi.intensity = l[2] * (S.focus ? 0.7 : 1); sun.color.set(l[3]); sun.intensity = l[4] * (S.focus ? 0.7 : 1);
     dimmable.forEach((m) => { if (m._c === undefined) m._c = m.color.getHex(); m.color.setHex(m._c).multiplyScalar(f); });
     const ar = presenting && S.room === 'real'; scene.background = ar ? null : (bg || (bg = new T.Color(0x0b0d12)));
-    P.left.mesh.visible = P.right.mesh.visible = !S.focus;
+    P.left.mesh.visible = P.right.mesh.visible = !S.focus; cork.mesh.visible = S.cork && !S.focus; ball.visible = presenting; planetG.visible = S.planets;
+    if (S.room === 'stars') { loadStars(); skyTurn.rotation.y = -Math.PI / 2 - L.siderealAngle(Date.now(), new Date().getTimezoneOffset()); } if (starPts) starPts.material.uniforms.uK.value = presenting ? 2.4 : R.getPixelRatio() * 1.15;
   }
   let bg = null;
   function setRoom(id) {
-    if (!L.ROOMS.includes(id) || (id === 'real' && !arOK)) return; const was = S.room; S.room = id; applyRoom(); commit(P.left);
+    if (!L.ROOMS.includes(id) || (id === 'real' && !arOK)) return;
+    if (id === 'stars' && S.room === 'stars') { S.planets = !S.planets; applyRoom(); commit(P.left); say(S.planets ? 'Planets: on' : 'Planets: off'); return; }
+    if (id === 'real') say('My room is a prototype'); const was = S.room; S.room = id; applyRoom(); commit(P.left);
     if (presenting && (was === 'real') !== (id === 'real')) { $('dk-go').hidden = true; resume = true; say('Switching rooms. Tap Enter VR again.'); const s = R.xr.getSession(); if (s) s.end().catch(() => { }); }
   }
   let resume = false;
   function layout() {
-    const near = S.dist === 'near', Rr = near ? 0.46 : 0.27 + S.desk.d, s = Rr / R0; ring.position.set(0, seat.eye, 0); ring.scale.setScalar(s);
-    kb.mesh.position.set(0, Math.max(seat.top + 0.07, seat.eye - 0.35), -0.33); kb.mesh.rotation.set(-Math.PI / 2 + 0.6, 0, 0);
-    scene.updateMatrixWorld(true); surfaces.forEach((p) => { p.inv.copy(p.mesh.matrixWorld).invert(); p.sc = (p.mesh.parent === ring || p.mesh.parent === P.front.mesh) ? s : 1; });
+    const near = S.dist === 'near', Rr = near ? 0.46 : 0.27 + S.desk.d, s = Rr / R0;
+    /* the boards never dip into the desk: the ring rises until their lowest edge clears the desk top */
+    ring.position.set(0, Math.max(seat.eye, seat.top + 0.03 + 0.4025 * s), 0); ring.scale.setScalar(s);
+    if (kbPos) kb.mesh.position.copy(kbPos); else kb.mesh.position.set(0, L.kbY(seat.top, seat.eye), -0.33); kb.mesh.rotation.set(-Math.PI / 2 + L.KB.tilt, 0, 0);
+    ball.position.set(S.desk.w / 2 - 0.12, seat.top + 0.05, FRONT - 0.1);
+    scene.updateMatrixWorld(true); surfaces.forEach((p) => { p.inv.copy(p.mesh.matrixWorld).invert(); const e = p.mesh.matrixWorld.elements; p.wx = Math.hypot(e[0], e[1], e[2]); p.wy = Math.hypot(e[4], e[5], e[6]); p.sc = Math.hypot(e[8], e[9], e[10]); });
   }
   function reseat(headY) { if (headY) seatHead = headY; seat = L.seatFor(seatHead, S.desk.hOff); buildDesk(); layout(); if (!presenting) camera.position.set(0, seat.eye + 0.1, 0.8); }
   let seatHead = 1.2;
@@ -324,15 +378,14 @@ export async function start() {
   function rayHit(o, d) {
     let best = null, bt = 1e9;
     for (let i = 0; i < surfaces.length; i++) {
-      const p = surfaces[i]; if (!p.touch || !shown(p)) continue; lo.copy(o).applyMatrix4(p.inv); ld.copy(d).transformDirection(p.inv); if (ld.z > -1e-4) continue; const t = -lo.z / ld.z; if (t < 0) continue;
-      const x = lo.x + ld.x * t, y = lo.y + ld.y * t; if (x < -0.5 || x > 0.5 || y < -0.5 || y > 0.5) continue; const dist = t * p.sc * (p.mesh.parent === ring ? 1 : 1); const td = dist * lenScale(p, ld);
+      const p = surfaces[i]; if (!p.touch || !shown(p) || (edit && p !== kb && p !== kbTop)) continue; lo.copy(o).applyMatrix4(p.inv); ld.copy(d).transformDirection(p.inv); if (ld.z > -1e-4) continue; const t = -lo.z / ld.z; if (t < 0) continue;
+      const x = lo.x + ld.x * t, y = lo.y + ld.y * t; if (x < -0.5 || x > 0.5 || y < -0.5 || y > 0.5) continue; const td = t * Math.sqrt((ld.x * p.wx) ** 2 + (ld.y * p.wy) ** 2 + (ld.z * p.sc) ** 2);
       if (td < bt) { bt = td; best = p; p.hx = (x + 0.5) * p.W; p.hy = (0.5 - y) * p.H; }
     }
     hitDist = bt; return best;
   }
   let hitDist = 0;
-  const lenScale = (p, dirLocal) => { const sx = p.mesh.scale.x, sy = p.mesh.scale.y; return Math.sqrt((dirLocal.x * sx) ** 2 + (dirLocal.y * sy) ** 2 + dirLocal.z ** 2); };
-  const shown = (p) => p.mesh.visible && p.mesh.parent.visible !== false && (p !== kb || !!edit);
+  const shown = (p) => p.mesh.visible && p.mesh.parent.visible !== false && ((p !== kb && p !== kbTop) || !!edit);
   function regionAt(p) { for (let i = p.regions.length - 1; i >= 0; i--) { const r = p.regions[i]; if (p.hx >= r.x && p.hx <= r.x + r.w && p.hy >= r.y && p.hy <= r.y + r.h) return r; } return null; }
   const hl = [0, 1, 2].map(() => { const m = new T.Mesh(plane, new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2, depthWrite: false, toneMapped: false })); m.visible = false; m.renderOrder = 5; return m; });
   const hov = [null, null, null], hovP = [null, null, null];
@@ -354,43 +407,66 @@ export async function start() {
   R.domElement.addEventListener('pointerleave', () => { if (!down) setHover(2, null, null); });
 
   /* headset: controllers and bare hands */
+  let drag = null; const ballW = new T.Vector3();
+  function dragStep(o) {
+    head.setFromMatrixPosition(camera.matrixWorld); const reach = Math.hypot(o.O.x - head.x, o.O.z - head.z), g = Math.max(0.05, Math.min(3.5, drag.g0 + (reach - drag.r0) * 3));
+    const bx = o.O.x + o.D.x * g, bz = o.O.z + o.D.z * g, y = rig.rotation.y, sn = Math.sin(y), cs = Math.cos(y), lx = ball.position.x, lz = ball.position.z, zc = FRONT - S.desk.d / 2;
+    const px = bx - (lx * cs + lz * sn), pz = bz - (-lx * sn + lz * cs), cx = px + zc * sn, cz = pz + zc * cs;
+    if (Math.hypot(cx - head.x, cz - head.z) < 0.45) return; const f = L.faceHead(cx, cz, head.x, head.z, zc, y), ny = y + Math.atan2(Math.sin(f.yaw - y), Math.cos(f.yaw - y)) * 0.3;
+    rig.rotation.y = ny; rig.position.x += (cx - zc * Math.sin(ny) - rig.position.x) * 0.5; rig.position.z += (cz - zc * Math.cos(ny) - rig.position.z) * 0.5;
+    o.line.scale.z = g; o.line.visible = true; o.dot.visible = false;
+  }
   const ctl = [0, 1].map((i) => {
-    const c = R.xr.getController(i), h = R.xr.getHand(i); scene.add(c, h); const o = { c, h, src: null, isHand: false, on: false, near: false };
+    const c = R.xr.getController(i), h = R.xr.getHand(i); scene.add(c, h); const o = { c, h, src: null, isHand: false, on: false, near: false, O: new T.Vector3(), D: new T.Vector3(), ball: false, hold: 0 };
     const line = new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0, 0, 0), new T.Vector3(0, 0, -1)]), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })); const dot = new T.Mesh(new T.SphereGeometry(0.006, 10, 8), new T.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
     line.visible = dot.visible = false; c.add(line); scene.add(dot); o.line = line; o.dot = dot;
     c.addEventListener('connected', (e) => { o.src = e.data; o.isHand = !!(e.data && e.data.hand); o.on = true; });
-    c.addEventListener('disconnected', () => { o.src = null; o.on = false; line.visible = dot.visible = false; setHover(i, null, null); });
-    c.addEventListener('selectstart', () => { if (!o.near && hov[i] && hovP[i]) { const r = hov[i]; act(r.act, r.arg, o.src); } });
+    c.addEventListener('disconnected', () => { o.src = null; o.on = false; o.ball = false; o.hold = 0; if (drag && drag.i === i) { drag = null; layout(); } line.visible = dot.visible = false; setHover(i, null, null); });
+    c.addEventListener('selectstart', () => {
+      if (o.ball && !drag) { head.setFromMatrixPosition(camera.matrixWorld); drag = { i, g0: Math.max(0.05, ballW.distanceTo(o.O)), r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; audio(); beep(440, 0.08); return; }
+      if (!o.near && hov[i] && hovP[i]) { const r = hov[i]; act(r.act, r.arg, o.src); } else if (!o.near && !edit && seated) o.hold = performance.now();
+    });
+    c.addEventListener('selectend', () => { o.hold = 0; if (drag && drag.i === i) { drag = null; layout(); beep(660, 0.08); } });
     return o;
   });
   const JN = 25, joints = new T.InstancedMesh(new T.SphereGeometry(1, 8, 6), new T.MeshStandardMaterial({ color: 0xdfe6f2, roughness: 0.5, metalness: 0.1 }), JN * 2); joints.frustumCulled = false; joints.count = 0; scene.add(joints); joints.instanceMatrix.setUsage(T.DynamicDrawUsage);
   const JS = new T.Vector3(), JNAMES = ['wrist', 'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip', 'index-finger-metacarpal', 'index-finger-phalanx-proximal', 'index-finger-phalanx-intermediate', 'index-finger-phalanx-distal', 'index-finger-tip', 'middle-finger-metacarpal', 'middle-finger-phalanx-proximal', 'middle-finger-phalanx-intermediate', 'middle-finger-phalanx-distal', 'middle-finger-tip', 'ring-finger-metacarpal', 'ring-finger-phalanx-proximal', 'ring-finger-phalanx-intermediate', 'ring-finger-phalanx-distal', 'ring-finger-tip', 'pinky-finger-metacarpal', 'pinky-finger-phalanx-proximal', 'pinky-finger-phalanx-intermediate', 'pinky-finger-phalanx-distal', 'pinky-finger-tip'];
   function xrInput() {
-    let n = 0;
+    let n = 0; const now = performance.now(); ballW.setFromMatrixPosition(ball.matrixWorld);
     for (let i = 0; i < 2; i++) {
-      const o = ctl[i]; let near = false;
+      const o = ctl[i]; let near = false, grabNear = false;
       if (o.on && o.isHand && o.h.joints) {
         for (let j = 0; j < JN; j++) { const jt = o.h.joints[JNAMES[j]]; if (!jt || jt.visible === false) continue; const rad = Math.max(0.005, Math.min(0.012, (jt.jointRadius || 0.008) * 0.8)); tmpM.compose(jt.position, tmpQ.identity(), JS.setScalar(rad)); joints.setMatrixAt(n++, tmpM); }
         const it = o.h.joints['index-finger-tip'];
         if (it && it.visible !== false) {
+          grabNear = it.position.distanceTo(ballW) < 0.075;
           for (let s = 0; s < surfaces.length; s++) {
-            const p = surfaces[s]; if (!p.touch || !shown(p)) continue; tip.copy(it.position).applyMatrix4(p.inv); const z = tip.z * p.sc - 0.006, inside = tip.x > -0.5 && tip.x < 0.5 && tip.y > -0.5 && tip.y < 0.5;
+            const p = surfaces[s]; if (drag || !p.touch || !shown(p) || (edit && p !== kb && p !== kbTop)) continue; tip.copy(it.position).applyMatrix4(p.inv); const z = tip.z * p.sc - 0.006, inside = tip.x > -0.5 && tip.x < 0.5 && tip.y > -0.5 && tip.y < 0.5;
             if (inside && z < 0.1 && z > L.POKE.deep) { near = true; p.hx = (tip.x + 0.5) * p.W; p.hy = (0.5 - tip.y) * p.H; const r = regionAt(p); setHover(i, p, r); if (L.pokeStep(p.poke[i], z, true) && r) act(r.act, r.arg, o.src); } else L.pokeStep(p.poke[i], z, false);
           }
         }
       }
       o.near = near; const live = o.on && o.c.visible !== false;
-      if (!live || near) { o.line.visible = o.dot.visible = false; if (!live || !near) setHover(i, null, null); continue; }
-      tmpM.identity().extractRotation(o.c.matrixWorld); O.setFromMatrixPosition(o.c.matrixWorld); D.set(0, 0, -1).applyMatrix4(tmpM);
-      const p = rayHit(O, D); if (p) { setHover(i, p, regionAt(p)); o.line.scale.z = hitDist; o.dot.position.copy(O).addScaledVector(D, hitDist); o.line.visible = o.dot.visible = true; } else { setHover(i, null, null); o.line.scale.z = 0.6; o.line.visible = !o.isHand; o.dot.visible = false; }
+      if (!live) { o.line.visible = o.dot.visible = false; o.ball = false; o.hold = 0; setHover(i, null, null); continue; }
+      tmpM.identity().extractRotation(o.c.matrixWorld); o.O.setFromMatrixPosition(o.c.matrixWorld); o.D.set(0, 0, -1).applyMatrix4(tmpM);
+      if (drag) { setHover(i, null, null); o.ball = false; if (drag.i === i) dragStep(o); else o.line.visible = o.dot.visible = false; continue; }
+      if (near && !grabNear) { o.line.visible = o.dot.visible = false; o.ball = false; o.hold = 0; continue; }
+      tip.copy(ballW).sub(o.O); const tb = tip.dot(o.D), miss = Math.sqrt(Math.max(0, tip.lengthSq() - tb * tb)); const p = grabNear ? null : rayHit(o.O, o.D);
+      o.ball = !edit && (grabNear || (tb > 0 && miss < 0.05 + tb * 0.035 && (!p || tb < hitDist + 0.05)));
+      if (o.ball) { setHover(i, null, null); o.hold = 0; o.line.scale.z = Math.max(0.02, tb); o.dot.position.copy(ballW); o.line.visible = !grabNear; o.dot.visible = true; }
+      else if (p) { o.hold = 0; setHover(i, p, regionAt(p)); o.line.scale.z = hitDist; o.dot.position.copy(o.O).addScaledVector(o.D, hitDist); o.line.visible = o.dot.visible = true; }
+      else { setHover(i, null, null); o.line.scale.z = 0.6; o.line.visible = !o.isHand; o.dot.visible = false; if (o.hold && now - o.hold > 1100) { o.hold = 0; placeSeat(); beep(520, 0.2); say('Desk brought to you'); } }
     }
+    ball.scale.setScalar(drag || ctl[0].ball || ctl[1].ball ? 1.4 : 1);
     if (joints.count !== n || n) { joints.count = n; joints.instanceMatrix.needsUpdate = true; }
   }
 
   /* seat: placed once after tracking settles; never follows the head; recenter only when asked */
-  let sessT0 = 0, seated = false, recenterAt = 0; const head = new T.Vector3();
+  let sessT0 = 0, seated = false, recenterAt = 0, still = 0; const head = new T.Vector3(), pHead = new T.Vector3(), pDir = new T.Vector3();
   function placeSeat() {
-    head.setFromMatrixPosition(camera.matrixWorld); tmpE.setFromQuaternion(tmpQ.setFromRotationMatrix(camera.matrixWorld)); rig.position.set(head.x, 0, head.z); rig.rotation.set(0, tmpE.y, 0);
+    /* in front of the face: the desk is aimed along where the head points, flattened to the floor (safe even when looking down) */
+    head.setFromMatrixPosition(camera.matrixWorld); D.set(0, 0, -1).transformDirection(camera.matrixWorld); if (Math.hypot(D.x, D.z) > 0.25) rig.rotation.set(0, Math.atan2(-D.x, -D.z), 0);
+    rig.position.set(head.x, 0, head.z); kbPos = null; drag = null;
     reseat(Math.min(2.1, Math.max(0.8, head.y))); seated = true; rig.visible = true;
   }
 
@@ -403,12 +479,12 @@ export async function start() {
     try { audio(); const s = await navigator.xr.requestSession(mode, { requiredFeatures: ['local-floor'], optionalFeatures: ['hand-tracking'] }); await R.xr.setSession(s); } catch (e) { say('VR could not start: ' + (e && e.name || 'error')); }
   }
   R.xr.addEventListener('sessionstart', () => {
-    presenting = true; seated = false; rig.visible = false; sessT0 = performance.now(); Object.assign(stat, { n: 0, slow: 0, worst: 0, sum: 0, t0: sessT0, cpuMax: 0 }); setHover(2, null, null); $('dk-go').hidden = true; document.body.classList.add('dk-xr');
+    presenting = true; seated = false; still = 0; drag = null; rig.visible = false; sessT0 = performance.now(); Object.assign(stat, { n: 0, slow: 0, worst: 0, sum: 0, t0: sessT0, cpuMax: 0 }); setHover(2, null, null); $('dk-go').hidden = true; document.body.classList.add('dk-xr');
     try { const s = R.xr.getSession(); if (s && s.updateTargetFrameRate && s.supportedFrameRates && Array.from(s.supportedFrameRates).includes(72)) s.updateTargetFrameRate(72).catch(() => { }); } catch (e) { }
     applyRoom(); all();
   });
   R.xr.addEventListener('sessionend', () => {
-    presenting = false; rig.visible = true; rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); if (edit) key('CANCEL'); ctl.forEach((o, i) => { o.line.visible = o.dot.visible = false; setHover(i, null, null); }); joints.count = 0; document.body.classList.remove('dk-xr');
+    presenting = false; drag = null; kbPos = null; rig.visible = true; rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); ball.scale.setScalar(1); if (edit) key('CANCEL'); ctl.forEach((o, i) => { o.line.visible = o.dot.visible = false; setHover(i, null, null); }); joints.count = 0; document.body.classList.remove('dk-xr');
     if (stat.n > 30) { const secs = (performance.now() - stat.t0) / 1000; const run = { when: new Date().toISOString(), secs: Math.round(secs), fps: +(stat.n / secs).toFixed(1), slow: stat.slow, worstMs: +stat.worst.toFixed(1), cpuMaxMs: +stat.cpuMax.toFixed(1), calls: lastCalls, tris: lastTris }; try { localStorage.setItem('aou_desk_lastrun', JSON.stringify(run)); } catch (e) { } }
     reseat(1.2); applyRoom(); resize(); all(); if (resume) { resume = false; }
   });
@@ -422,7 +498,7 @@ export async function start() {
     sec('To-do', [...S.todos.map((t, i) => el('div', { className: 'dk-row' }, [el('label', { className: 'dk-grow' }, [el('input', { type: 'checkbox', checked: t.done, on: { change: () => { sheet.force = true; act('todo.toggle', i); } } }), el('span', { text: ' ' + t.t })]), b('Remove', () => act('todo.del', i), 'dk-x')])),
       S.todos.length < L.LIMITS.todos ? adder('New to-do', L.LIMITS.todoLen, (v) => { S.todos.push({ t: v.slice(0, L.LIMITS.todoLen), done: false }); commit(P.front); }) : null]);
     const left = L.timerLeft(S.timer, Date.now());
-    sec('Focus timer', [el('div', { className: 'dk-row' }, [el('strong', { text: L.mmss(left), id: 'dk-sheet-time' }), b(S.timer.endsAt ? 'Pause' : 'Start', () => act('timer.toggle')), b('Reset', () => act('timer.reset')), ...[5, 15, 25, 50].map((m) => b(m + ' min', () => act('timer.set', m * 60), S.timer.len === m * 60 ? 'dk-on' : ''))])]);
+    sec('Focus timer', [el('div', { className: 'dk-row' }, [el('strong', { text: L.mmss(left), id: 'dk-sheet-time' }), b(S.timer.endsAt ? 'Pause' : 'Start', () => act('timer.toggle')), b('Reset', () => act('timer.reset')), ...[5, 15, 25, 50].map((m) => b(m + ' min', () => act('timer.set', m * 60), S.timer.len === m * 60 ? 'dk-on' : '')), b('Custom', () => act('timer.custom'))])]);
     sec('Sticky notes', [...S.notes.map((n, i) => el('div', { className: 'dk-row' }, [el('textarea', { value: n.t, maxLength: L.LIMITS.noteLen, rows: 2, className: 'dk-grow', 'aria-label': 'Sticky note ' + (i + 1), style: 'background:' + L.NOTE_COLORS[n.c], on: { change: (e) => { n.t = e.target.value.slice(0, L.LIMITS.noteLen); commit(P.right); } } }), b('Colour', () => act('note.color', i)), b('Remove', () => act('note.del', i), 'dk-x')])),
       S.notes.length < L.LIMITS.notes ? b('+ New note', () => { S.notes.push({ t: '', c: S.notes.length % L.NOTE_COLORS.length }); commit(P.right); }) : null]);
     sec('Links', [...S.links.map((l, i) => el('div', { className: 'dk-row' }, [el('a', { href: L.safeUrl(l.url) || '#', target: '_blank', rel: 'noopener noreferrer', className: 'dk-grow', text: l.label + ' · ' + L.hostOf(l.url) }), b('Remove', () => act('link.del', i), 'dk-x')])),
@@ -432,12 +508,12 @@ export async function start() {
       em ? el('iframe', { src: em.src, title: em.kind + ' player', loading: 'lazy', referrerPolicy: 'strict-origin-when-cross-origin', sandbox: 'allow-scripts allow-same-origin allow-presentation', allow: 'encrypted-media; picture-in-picture; fullscreen', className: 'dk-frame' }) : null, em ? b('Remove player', () => { S.embed = ''; commit(); }, 'dk-x') : null]);
     const k = S.desk; const sel = (lab, val, opts, fn) => el('label', { className: 'dk-row' }, [el('span', { text: lab, className: 'dk-lab' }), el('select', { on: { change: (e) => { sheet.force = true; fn(e.target.value); } } }, opts.map(([v, t]) => el('option', { value: v, text: t, selected: v === val })))]);
     const rng = (lab, val, min, max, step, fn) => el('label', { className: 'dk-row' }, [el('span', { text: lab, className: 'dk-lab' }), el('input', { type: 'range', min, max, step, value: val, className: 'dk-grow', on: { change: (e) => { sheet.force = true; fn(+e.target.value); } } })]);
-    sec('Desk and room', [sel('Desk', k.style, [['wood', 'Wood'], ['metal', 'Brushed metal'], ['neon', 'Black with neon edge']], (v) => act('desk.style', v)),
+    sec('Desk and room', [sel('Desk', k.style, [['wood', 'Wood'], ['metal', 'Brushed metal'], ['steel', 'Polished stainless steel'], ['black', 'Black'], ['neon', 'Black with neon edge']], (v) => act('desk.style', v)), sel('Finish', k.finish, [['matte', 'Matte'], ['gloss', 'Gloss']], (v) => { if (v !== k.finish) act('desk.finish'); }),
       rng('Width ' + k.w.toFixed(1) + ' m', k.w, L.DESK.wMin, L.DESK.wMax, 0.1, (v) => { k.w = r2(v); buildDesk(); commit(P.left); }), rng('Depth ' + k.d.toFixed(2) + ' m', k.d, L.DESK.dMin, L.DESK.dMax, 0.05, (v) => { k.d = r2(v); buildDesk(); layout(); commit(P.left); }), rng('Height ' + Math.round(k.hOff * 100) + ' cm', k.hOff, L.DESK.hOffMin, L.DESK.hOffMax, 0.01, (v) => { k.hOff = r2(v); reseat(); commit(P.left); }),
-      sel('Neon colour', k.neon, L.NEONS.map((c, i) => [c, ['Cyan', 'Pink', 'Green', 'Amber', 'Violet'][i]]), (v) => act('neon', L.NEONS.indexOf(v))), sel('Room', S.room, [['plain', 'Plain'], ['loft', 'Night loft'], ['sky', 'Open sky']].concat(arOK ? [['real', 'My room (prototype)']] : []), (v) => act('room', v)),
-      sel('Panels', S.dist, [['far', 'Far: point at them'], ['near', 'Near: touch them']], (v) => act('dist', v)), el('div', { className: 'dk-row' }, [b(S.focus ? 'Focus mode: on' : 'Focus mode: off', () => act('focus'), S.focus ? 'dk-on' : ''), b(S.sound ? 'Sound: on' : 'Sound: off', () => act('sound'))])]);
+      sel('Neon colour', k.neon, L.NEONS.map((c, i) => [c, ['Cyan', 'Pink', 'Green', 'Amber', 'Violet'][i]]), (v) => act('neon', L.NEONS.indexOf(v))), sel('Room', S.room, [['plain', 'Plain'], ['loft', 'Night loft'], ['sky', 'Open sky'], ['stars', 'Real night sky']].concat(arOK ? [['real', 'My room (prototype)']] : []), (v) => act('room', v)),
+      sel('Panels', S.dist, [['far', 'Far: point at them'], ['near', 'Near: touch them']], (v) => act('dist', v)), el('div', { className: 'dk-row' }, [b(S.focus ? 'Focus mode: on' : 'Focus mode: off', () => act('focus'), S.focus ? 'dk-on' : ''), b(S.sound ? 'Sound: on' : 'Sound: off', () => act('sound')), b(S.cork ? 'Corkboard: on' : 'Corkboard: off', () => act('cork'), S.cork ? 'dk-on' : ''), S.room === 'stars' ? b(S.planets ? 'Planets: on' : 'Planets: off', () => act('room', 'stars'), S.planets ? 'dk-on' : '') : null])]);
     let run = null; try { run = JSON.parse(localStorage.getItem('aou_desk_lastrun') || 'null'); } catch (e) { }
-    sec('This device', [el('p', { className: 'dk-note', text: 'Everything here is saved in this browser only. Nothing is sent to a server. Clearing site data erases it.' }),
+    sec('This device', [el('p', { className: 'dk-note', text: 'Everything here is saved in this browser only. Nothing is sent to a server. Clearing site data erases it.' }), el('p', { className: 'dk-note', text: 'Real night sky: 5,000 real star positions and colours from the HYG star database (CC BY-SA 4.0), turned to roughly what is overhead now at mid-northern latitudes. The planets are decoration.' }),
       run && typeof run === 'object' ? el('p', { className: 'dk-note', text: 'Last headset run: ' + Number(run.secs) + ' s, ' + Number(run.fps) + ' frames a second, ' + Number(run.slow) + ' slow frames, worst frame ' + Number(run.worstMs) + ' ms, ' + Number(run.calls) + ' draw calls, ' + Number(run.tris) + ' triangles.' }) : null,
       b('Erase everything on this desk', () => { if (confirm('Erase all notes, links and to-dos on this device?')) { S = L.defaults(); DM.neonEdge.color.set(S.desk.neon); DM.glow.color.set(S.desk.neon); reseat(); applyRoom(); all(); } }, 'dk-x')]);
   }
@@ -447,11 +523,16 @@ export async function start() {
   /* ---------- frame loop ---------- */
   function resize() { const w = host.clientWidth, h = host.clientHeight; if (!w || !h || presenting) return; R.setSize(w, h); camera.aspect = w / h; const want = (camera.aspect < 0.8 ? 40 : camera.aspect < 1.2 ? 52 : 64) * Math.PI / 180; camera.fov = Math.min(100, Math.max(52, 2 * Math.atan(Math.tan(want / 2) / camera.aspect) * 180 / Math.PI)); camera.updateProjectionMatrix(); }
   addEventListener('resize', resize); new ResizeObserver(resize).observe(host);
-  let last = performance.now(), lastCalls = 0, lastTris = 0, secT = 0, flatN = 0, flatSum = 0, flatWorst = 0, rang = false;
+  let fpsN = 0, fpsT = 0, last = performance.now(), lastCalls = 0, lastTris = 0, secT = 0, flatN = 0, flatSum = 0, flatWorst = 0, rang = false;
   function frame() {
     const t0 = performance.now(), dt = t0 - last; last = t0;
     if (presenting) {
-      if (!seated) { if (t0 - sessT0 > 900) { head.setFromMatrixPosition(camera.matrixWorld); if (head.y > 0.3 || t0 - sessT0 > 2500) placeSeat(); } }
+      fpsN++; if (t0 - fpsT >= 1000) { fpsNow = Math.round(fpsN * 1000 / (t0 - fpsT)); fpsN = 0; fpsT = t0; }
+      if (!seated) {
+        /* wait until the head is tracked and holding still for about half a second, then place the desk once */
+        const el = t0 - sessT0; head.setFromMatrixPosition(camera.matrixWorld); D.set(0, 0, -1).transformDirection(camera.matrixWorld);
+        if (el > 600 && head.y > 0.3) { still = (head.distanceTo(pHead) < 0.005 && D.dot(pDir) > 0.9997 && Math.abs(D.y) < 0.55) ? still + 1 : 0; pHead.copy(head); pDir.copy(D); if (still > 30 || el > 6000) placeSeat(); } else if (el > 6000) placeSeat();
+      }
       else { if (recenterAt && t0 > recenterAt) { recenterAt = 0; placeSeat(); } xrInput(); if (t0 - sessT0 > 3000) { stat.n++; stat.sum += dt; if (dt > 20) stat.slow++; if (dt > stat.worst) stat.worst = dt; } }
     } else { camera.rotation.set(pitch, yaw, 0, 'YXZ'); flatN++; flatSum += dt; if (dt > flatWorst) flatWorst = dt; }
     if (t0 - secT > 250) {
@@ -473,10 +554,12 @@ export async function start() {
   $('dk-vr-btn').hidden = !vrOK; $('dk-vr-none').hidden = vrOK;
   if (innerWidth < 760) { $('dk-sheet').hidden = false; $('dk-sheet-btn').setAttribute('aria-expanded', 'true'); }
   reseat(1.2); applyRoom(); resize(); sheet.force = true; sheet(); surfaces.forEach((p) => { p.draw(); p.t.needsUpdate = true; p.dirty = false; R.initTexture(p.t); }); Object.values(TX).forEach((t) => R.initTexture(t));
-  { const vis = {}; Object.keys(rooms).forEach((id) => { vis[id] = rooms[id].visible; rooms[id].visible = true; }); const dk = S.desk.style; const extra = new T.Group(); [DM.woodTop, DM.woodLeg, DM.metalTop, DM.metalLeg, DM.neonTop, DM.neonSide, DM.neonEdge, DM.glow].forEach((m) => put(extra, box, m, 0.01, 0.01, 0.01, 0, -5, 0)); scene.add(extra); kb.mesh.visible = true; joints.count = 1;
+  { const vis = {}; Object.keys(rooms).forEach((id) => { vis[id] = rooms[id].visible; rooms[id].visible = true; }); const dk = S.desk.style; const extra = new T.Group(); [DM.woodTop, DM.woodLeg, DM.metalTop, DM.metalLeg, DM.steelTop, DM.steelLeg, DM.blackTop, DM.blackLeg, ball.material, DM.neonTop, DM.neonSide, DM.neonEdge, DM.glow].forEach((m) => put(extra, box, m, 0.01, 0.01, 0.01, 0, -5, 0)); scene.add(extra); kb.mesh.visible = true; joints.count = 1;
     try { await R.compileAsync(scene, camera); } catch (e) { } R.render(scene, camera); scene.remove(extra); kb.mesh.visible = false; joints.count = 0; Object.keys(rooms).forEach((id) => { rooms[id].visible = vis[id]; }); void dk; }
   R.setAnimationLoop(frame); $('dk-load').hidden = true; setTimeout(() => { const h = $('dk-hint'); if (h) h.hidden = true; }, 9000);
   if (QA) window.__desk = { get S() { return S; }, act, P, surfaces, stat, info: () => ({ calls: lastCalls, tris: lastTris, programs: R.info.programs.length, textures: R.info.memory.textures, geometries: R.info.memory.geometries }), look: (y, p) => { yaw = y; pitch = p; }, key, get edit() { return edit; },
+    dragTest: (o3, d3, steps) => { const o = ctl[0]; scene.updateMatrixWorld(true); ballW.setFromMatrixPosition(ball.matrixWorld); o.O.set(o3[0], o3[1], o3[2]); o.D.set(d3[0], d3[1], d3[2]).normalize(); head.setFromMatrixPosition(camera.matrixWorld); const g0 = ballW.distanceTo(o.O); drag = { i: 0, g0, r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; for (let k = 0; k < steps; k++) dragStep(o); drag = null; o.line.visible = false; layout(); ballW.setFromMatrixPosition(ball.matrixWorld); const c = new T.Vector3(0, 0, FRONT - S.desk.d / 2).applyMatrix4(rig.matrixWorld); return { want: [o.O.x + o.D.x * g0, o.O.z + o.D.z * g0], ball: [ballW.x, ballW.z], centre: [c.x, c.z], head: [head.x, head.z], yaw: rig.rotation.y }; },
+    home: () => { rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); layout(); },
     sim: (headY) => { presenting = true; edit = null; reseat(headY || 1.18); applyRoom(); all(); return seat; }, unsim: () => { presenting = false; reseat(1.2); all(); },
     poke: (name, px, py, z) => { const p = surfaces.find((s) => s.name === name); p.hx = px; p.hy = py; const r = regionAt(p); const f = L.pokeStep(p.poke[0], z, true); if (f && r) act(r.act, r.arg); return { fired: f, region: r && r.act }; },
     ray: (o, d) => { const p = rayHit(new T.Vector3(...o), new T.Vector3(...d).normalize()); return p ? { name: p.name, x: Math.round(p.hx), y: Math.round(p.hy), dist: +hitDist.toFixed(3), region: (regionAt(p) || {}).act || null } : null; },
