@@ -33,6 +33,14 @@
 ## App views (JavaScript)
 - /?v=board LIFEboard · /?v=brand Brand pages · /?v=groups Constellations in the feed · /?v=events Events · /?v=courses Courses · /?v=dm Messages · /?v=panel Control panel
 
+## Lantern Guides
+
+- [Lantern Guides](https://allofus.one/guides/): Plain guides to a social life you control: feeds, privacy, safety and your data, with every number sourced.
+- [An adults-only social network: how age checks and reports work](https://allofus.one/guides/adults-only-social-network/): How an 18+ social network keeps minors out: a private date of birth, a one-time on-device selfie age check, human-read reports, and the honest limits.
+- [Chronological vs ranked feeds: what changes when no algorithm picks your posts](https://allofus.one/guides/chronological-feed-vs-algorithm/): What really changes day to day when no algorithm picks your posts: what you gain, what you lose, and how to make a newest-first feed work for you.
+- [How to download your social media data before you leave a platform](https://allofus.one/guides/download-your-social-media-data/): Step-by-step: download your data from Instagram, Facebook, X and YouTube before you leave, what each export includes, and how to keep it safe.
+- [Social media you control: a plain-English checklist](https://allofus.one/guides/social-media-you-control-checklist/): Ten questions that show whether a social network gives you real control: your feed, your data, ads, messages, safety and leaving. Use it on any app.
+
 ## Founder
 - Zachary Tye Wennstedt: https://zacharytyewennstedt.com/
 
