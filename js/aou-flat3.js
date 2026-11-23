@@ -55,8 +55,10 @@ const G = {
   tg: S('<path d="M21 4L3 11l6 2 2 6 3-4 5 4z"/><path d="M9 13l8-6"/>'), dc: S('<path d="M7 7c3-1.5 7-1.5 10 0l2 9c-1.5 1.5-3.5 2.5-5 2.5l-1-2M7 7L5 16c1.5 1.5 3.5 2.5 5 2.5l1-2M8 15c2.5 1.2 5.5 1.2 8 0"/><circle cx="9.5" cy="12" r="1"/><circle cx="14.5" cy="12" r="1"/>'),
   native: S('<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 6v8M9 9l3-3 3 3M10 18h4"/>')
 };
-const NET_ADMINS = ['zach@eyetoad.com', 'zachwennstedt@gmail.com'];
-const isNetEmail = (e) => NET_ADMINS.includes(String(e || '').toLowerCase());
+const NET_ADMINS = ['zach@eyetoad.com'];
+/* second owner address is matched by a one-way fingerprint so no personal address ships in public code */
+const _oh = (s) => { let a = 2166136261, b = 5381; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619) >>> 0; b = (Math.imul(b, 33) ^ c) >>> 0; } return a.toString(36) + '.' + b.toString(36); };
+const isNetEmail = (e) => { const x = String(e || '').toLowerCase(); return NET_ADMINS.includes(x) || _oh(x) === '9ki5qq.m48jmc'; };
 export const SITE = 'https://allofus.one';
 export const inviteLink = (me) => SITE + '/' + (me && me.username ? '?ref=' + encodeURIComponent(me.username) : '');
 export const profileLink = (u) => SITE + '/?u=' + encodeURIComponent(u || '');

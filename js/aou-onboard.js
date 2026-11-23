@@ -117,7 +117,10 @@ export function claimDue(pages, me, claimedNow) {
    Keyed by lower-case sign-in email. style 'simple' = the large-type, one-thing-per-screen guide; 'standard' = the
    4-step claim modal, personalised, with the optional tour at the end. The SQL twin is supabase/allofus-v19-clients.sql. */
 export const ZACH_PHONE = '1-800-481-8638'; const ZACH_TEL = 'tel:+18004818638'; const ZACH_MAIL = ['zach', 'eyetoad.com'].join('@');
-export const FOUNDER_EMAILS = ['zach@eyetoad.com', 'zachwennstedt@gmail.com'];
+export const FOUNDER_EMAILS = ['zach@eyetoad.com'];
+/* second founder address is matched by a one-way fingerprint so no personal address ships in public code */
+const _oh = (s) => { let a = 2166136261, b = 5381; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619) >>> 0; b = (Math.imul(b, 33) ^ c) >>> 0; } return a.toString(36) + '.' + b.toString(36); };
+const isFounderEmail = (e) => { const x = String(e || '').toLowerCase(); return FOUNDER_EMAILS.includes(x) || _oh(x) === '9ki5qq.m48jmc'; };
 export const SLUG_ALIAS = { 'raised-in-a-barn-furniture': 'raised-in-a-barn' };
 export const canonSlug = (s) => SLUG_ALIAS[s] || s;
 export const VIP = {
@@ -173,7 +176,7 @@ async function getSB() {
 }
 export async function founderConnect(me) {
   try {
-    if (!me || !me.id || FOUNDER_EMAILS.includes(String(me.email || '').toLowerCase())) return null; const key = 'aou_founder_' + me.id; if (lsGet(key)) return lsGet(key);
+    if (!me || !me.id || isFounderEmail(me.email)) return null; const key = 'aou_founder_' + me.id; if (lsGet(key)) return lsGet(key);
     const sb = await getSB(); if (!sb) return null;
     let fid = null;
     for (const u of ['zach', 'zachwennstedt']) { try { const { data } = await sb.rpc('find_user', { p_username: u }); const r = Array.isArray(data) ? data[0] : data; if (r && r.id) { fid = r.id; break; } } catch (e) { } }
