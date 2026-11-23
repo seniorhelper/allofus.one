@@ -7,6 +7,7 @@
 - Feed order is the member's choice: New (newest first, no ranking, the default), Top (most reactions and comments) or Hot (the published Reddit formula). Each option is explained on screen.
 - Safety: posts, comments, rooms and Global Match listings are screened for slurs and harassment; every post, comment, message and profile can be reported to a human moderation queue; child-safety reports go to NCMEC. Adults and minors can never message, connect or call.
 - Ads: rare, labeled Sponsored, reviewed by a person, never targeted by tracking (only city, the Constellation being read and pages followed). Every ad has "Why this ad?", "Hide ads like this" and "Turn ads off".
+- Analytics: Google Analytics 4 counts visits on public pages only (home while signed out, about, mission, updates, guides, constellations, creators, games, rules and policy pages), with Google signals and ad personalization off and page addresses sent without query strings. Nothing inside a signed-in account is measured. Details: https://allofus.one/privacy/
 - Free: membership, the feed, your page, Brand pages, Constellations, Rooms, Unity Call video, Global Match, Glimmers, the LIFEboard and the 3D world. Paid: LIFEspark Lift marketing packages and ad placements for businesses.
 - Your data: download everything you posted as one file, or delete your account yourself from the Control panel.
 - allofus.one never holds or touches money that members send each other and takes no cut; Creators Corner tips go straight to the creator's own Venmo, PayPal or Cash App.
