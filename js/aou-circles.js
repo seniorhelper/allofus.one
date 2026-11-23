@@ -53,8 +53,8 @@ export async function decorateComposer(c, F3) {
     const h = $('h3', c); if (h && /Post as|Post to/.test(h.textContent)) return; /* page and group posts keep their own audience */
     if (!(await circlesReady(sb))) return; const list = await loadMine(sb, me); css();
     const pub = $('#c-pub', c); const host = (pub && pub.closest('label')) || $('.tools', c) || c;
-    const w = document.createElement('label'); w.className = 'aw-aud'; w.title = 'Circles keep audiences apart. A circle post is seen only by you and that circle.';
-    w.innerHTML = `Who sees this <select data-aw-aud><option value="">${pub ? 'Use the Public switch' : 'Everyone I normally share with'}</option>${list.map(ci => `<option value="${esc(ci.id)}">Only my ${esc(ci.name)} circle</option>`).join('')}<option value="__new">+ Set up circles…</option></select>`;
+    const w = document.createElement('label'); w.className = 'aw-aud'; w.title = 'Rings keep audiences apart. A ring post is seen only by you and that ring.';
+    w.innerHTML = `Who sees this <select data-aw-aud><option value="">${pub ? 'Use the Public switch' : 'Everyone I normally share with'}</option>${list.map(ci => `<option value="${esc(ci.id)}">Only my ${esc(ci.name)} ring</option>`).join('')}<option value="__new">+ Set up rings…</option></select>`;
     host.after ? host.after(w) : c.appendChild(w);
     const sel = $('[data-aw-aud]', w); sel.onchange = () => { if (sel.value === '__new') { location.href = '/?v=circles'; return; } if (pub) { const lab = pub.closest('label') || pub; lab.style.opacity = sel.value ? '.4' : ''; pub.disabled = !!sel.value; } };
   } catch (e) { }
@@ -76,8 +76,8 @@ async function feedBar(mount, ctx) {
   const d = document.createElement('details'); d.className = 'aw-bar'; if (ctl.circle || ctl.mute.length || ctl.hideReposts) d.open = false;
   const active = (ctl.mute.length ? 1 : 0) + (ctl.hideReposts ? 1 : 0) + (ctl.circle ? 1 : 0);
   d.innerHTML = `<summary><b>Feed controls</b><span class="pill">${esc(sortName())}</span>${active ? `<span class="pill on">${active} filter${active > 1 ? 's' : ''} on</span>` : ''}<span style="margin-left:auto;color:#0369a1;font-weight:700">Why am I seeing this?</span></summary>
-  <div class="aw-in"><div class="why"><b>How this feed is built:</b> ${esc(sortName())}. You see public posts from members${me ? ', posts shared with circles you are in' : ''}, and your own posts. ${dearOn() ? 'Your Dear Feed words nudge matching posts up or down (you set them in the right rail). ' : ''}Nothing is ranked by what keeps you scrolling, no ad tracker decides what you see, and every post shows its own reason below it.</div>
-  ${me && live ? `<label>Show <select data-aw-circle><option value="">Everyone (default)</option><option value="__in">Posts shared with me in circles</option>${list.map(ci => `<option value="${esc(ci.id)}"${ctl.circle === ci.id ? ' selected' : ''}>Only my ${esc(ci.name)} circle</option>`).join('')}</select><a href="/?v=circles" style="font-weight:700;color:#0369a1">Manage circles</a></label>` : (me ? '' : '')}
+  <div class="aw-in"><div class="why"><b>How this feed is built:</b> ${esc(sortName())}. You see public posts from members${me ? ', posts shared with rings you are in' : ''}, and your own posts. ${dearOn() ? 'Your Dear Feed words nudge matching posts up or down (you set them in the right rail). ' : ''}Nothing is ranked by what keeps you scrolling, no ad tracker decides what you see, and every post shows its own reason below it.</div>
+  ${me && live ? `<label>Show <select data-aw-circle><option value="">Everyone (default)</option><option value="__in">Posts shared with me in rings</option>${list.map(ci => `<option value="${esc(ci.id)}"${ctl.circle === ci.id ? ' selected' : ''}>Only my ${esc(ci.name)} ring</option>`).join('')}</select><a href="/?v=circles" style="font-weight:700;color:#0369a1">Manage rings</a></label>` : (me ? '' : '')}
   <label>Mute words <input type="text" data-aw-mute placeholder="comma separated, e.g. election, spoilers" value="${esc(ctl.mute.join(', '))}"></label>
   <label><input type="checkbox" data-aw-rp ${ctl.hideReposts ? 'checked' : ''}> Hide reposts (🔁 Shared)</label>
   <div><button class="fl-btn sm p" data-aw-save type="button">Apply</button> <button class="fl-btn sm" data-aw-clear type="button">Clear filters</button> <small class="muted">Saved on this device only.</small></div></div>`;
@@ -89,8 +89,8 @@ async function feedBar(mount, ctx) {
 
 const reasonFor = (p, me, connSet, circleNames) => {
   if (p._seed) return 'A sample post so the feed is never empty. It goes away as real posts arrive.';
-  if (me && p.user_id === me.id) return p.circle_id ? `Your post, shared only with your ${circleNames[p.circle_id] || ''} circle.` : 'Your own post.';
-  if (p.circle_id) return 'Someone put you in one of their circles and shared this with that circle only.';
+  if (me && p.user_id === me.id) return p.circle_id ? `Your post, shared only with your ${circleNames[p.circle_id] || ''} ring.` : 'Your own post.';
+  if (p.circle_id) return 'Someone put you in one of their rings and shared this with that ring only.';
   if (p.group_slug) return 'Posted in a Constellation, shown newest first.';
   if (p.page_slug) return 'Posted by a Brand page.';
   if (connSet && connSet.has(p.user_id)) return 'You are connected to this person. Newest first.';
@@ -126,32 +126,32 @@ export async function feedHook(mount, q, data, ctx) {
 /* ---------- /?v=circles ---------- */
 export async function circlesView(body, F3) {
   css(); const sb = F3.sb, me = F3.getMe && F3.getMe(), toast = F3.toast || (() => { });
-  body.innerHTML = `<div class="ci-wrap"><div class="ci-card"><h2>Circles</h2><p>Your own audiences. Family sees family things, work sees work things, and they never mix. Put connections in a circle, then pick "Who sees this" when you post. A circle post is visible only to you and that circle. Nobody is told which circles they are in or not in.</p></div><div id="ci-body"><div class="ci-card">Loading…</div></div></div>`;
+  body.innerHTML = `<div class="ci-wrap"><div class="ci-card"><h2>Rings</h2><p>Your own audiences. Family sees family things, work sees work things, and they never mix. Put connections in a ring, then pick "Who sees this" when you post. A ring post is visible only to you and that ring. Nobody is told which rings they are in or not in.</p></div><div id="ci-body"><div class="ci-card">Loading…</div></div></div>`;
   const host = $('#ci-body', body);
   if (!me) { host.innerHTML = `<div class="ci-card"><p>Sign in to set up your circles.</p><a class="fl-btn p" href="/?auth=in">Sign in</a> <a class="fl-btn" href="/?auth=join">Join free</a></div>`; return; }
-  if (!F3.live || !(await circlesReady(sb))) { host.innerHTML = `<div class="ci-card"><h3>Circles are turning on soon</h3><p>This part needs a quick server update (v26). Until then your posts work exactly as before: public, or connections only.</p></div>`; return; }
+  if (!F3.live || !(await circlesReady(sb))) { host.innerHTML = `<div class="ci-card"><h3>Rings are turning on soon</h3><p>This part needs a quick server update (v26). Until then your posts work exactly as before: public, or connections only.</p></div>`; return; }
   const draw = async () => {
     const list = await seedDefaults(sb, me); const mem = await members(sb, list.map(c => c.id)); const cs = await loadConns(sb, me); const nm = {}; cs.forEach(c => nm[c.id] = c);
     host.innerHTML = `<div class="ci-grid">${list.map(ci => { const ms = mem.filter(m => m.circle_id === ci.id); return `<div class="ci-c" data-ci="${esc(ci.id)}"><h4><i style="background:${esc(ci.color || '#0ea5e9')}"></i>${esc(ci.name)} <small class="muted" style="margin-left:auto">${ms.length}</small></h4><div class="ci-m">${ms.map(m => `<span>${esc((nm[m.member_id] || {}).name || 'Member')}<button type="button" title="Remove" data-rm="${esc(m.member_id)}">×</button></span>`).join('') || '<small class="muted">No one yet.</small>'}</div><div class="ci-row"><select data-add><option value="">Add a connection…</option>${cs.filter(c => !ms.some(m => m.member_id === c.id)).map(c => `<option value="${esc(c.id)}">${esc(c.name)}${c.username ? ' @' + esc(c.username) : ''}</option>`).join('')}</select>${ci.kind === 'custom' ? `<button class="fl-btn sm" type="button" data-del>Delete</button>` : ''}</div></div>`; }).join('')}</div>
-    <div class="ci-card"><h3>New circle</h3><div class="ci-row"><input data-new maxlength="40" placeholder="e.g. Book club, Hiking crew, Neighbors on 5th"><button class="fl-btn p" type="button" data-mk>Create</button></div>${cs.length ? '' : '<p class="muted" style="margin-top:8px">Circles are made from your connections. <a href="/?v=search">Find people</a> to connect with first.</p>'}</div>`;
+    <div class="ci-card"><h3>New ring</h3><div class="ci-row"><input data-new maxlength="40" placeholder="e.g. Book club, Hiking crew, Neighbors on 5th"><button class="fl-btn p" type="button" data-mk>Create</button></div>${cs.length ? '' : '<p class="muted" style="margin-top:8px">Rings are made from your connections. <a href="/?v=search">Find people</a> to connect with first.</p>'}</div>`;
     $$('[data-ci]', host).forEach(card => {
       const id = card.dataset.ci;
       const add = $('[data-add]', card); add.onchange = async () => { if (!add.value) return; const { error } = await sb.from('circle_members').insert({ circle_id: id, member_id: add.value, owner_id: me.id }); toast(error ? error.message : 'Added'); draw(); };
       $$('[data-rm]', card).forEach(b => b.onclick = async () => { const { error } = await sb.from('circle_members').delete().eq('circle_id', id).eq('member_id', b.dataset.rm); toast(error ? error.message : 'Removed'); draw(); });
-      const del = $('[data-del]', card); if (del) del.onclick = async () => { if (!confirm('Delete this circle? Posts shared with it become visible only to you.')) return; const { error } = await sb.from('circles').delete().eq('id', id); toast(error ? error.message : 'Circle deleted'); myCircles = null; draw(); };
+      const del = $('[data-del]', card); if (del) del.onclick = async () => { if (!confirm('Delete this ring? Posts shared with it become visible only to you.')) return; const { error } = await sb.from('circles').delete().eq('id', id); toast(error ? error.message : 'Ring deleted'); myCircles = null; draw(); };
     });
-    $('[data-mk]', host).onclick = async () => { const n = ($('[data-new]', host).value || '').trim().slice(0, 40); if (!n) return; const { error } = await sb.from('circles').insert({ owner_id: me.id, name: n, kind: 'custom', sort: 10 + list.length }); toast(error ? error.message : 'Circle created'); myCircles = null; draw(); };
+    $('[data-mk]', host).onclick = async () => { const n = ($('[data-new]', host).value || '').trim().slice(0, 40); if (!n) return; const { error } = await sb.from('circles').insert({ owner_id: me.id, name: n, kind: 'custom', sort: 10 + list.length }); toast(error ? error.message : 'Ring created'); myCircles = null; draw(); };
   };
-  try { await draw(); } catch (e) { host.innerHTML = `<div class="ci-card">Could not load circles: ${esc(e.message || e)}</div>`; }
+  try { await draw(); } catch (e) { host.innerHTML = `<div class="ci-card">Could not load rings: ${esc(e.message || e)}</div>`; }
 }
 
 /* ---------- /?v=mydata ---------- */
 export async function myDataView(body, F3) {
   css(); const me = F3.getMe && F3.getMe();
   body.innerHTML = `<div class="ci-wrap"><div class="ci-card"><h2>Your data, your graph</h2><p>Everything you make on allofus.one is yours. Take it with you any time in one tap, or close your account.</p>
-  <ul class="ci-promise"><li><b>No ad trackers</b>No third-party ad pixels or behavioral profiles.</li><li><b>Never sold</b>We do not sell or rent your data.</li><li><b>No rage-bait ranking</b>Newest first by default; any other sort shows its formula.</li><li><b>You own your graph</b>Export your posts, connections and circles as open JSON.</li></ul></div>
-  <div class="ci-card"><h3>Download my data</h3><p>A JSON file with your profile, posts, comments, reactions, saves, connections, circles, LIFEboard and this device's feed settings.</p>${me ? '<button class="fl-btn p" type="button" data-dl>Download my data</button>' : '<a class="fl-btn p" href="/?auth=in">Sign in to download</a>'}</div>
-  <div class="ci-card"><h3>Delete my account</h3><p>Removes your posts, comments, reactions, saves, connections, circles and profile. Your sign-in is removed by our team within 7 days.</p>${me ? '<button class="fl-btn" type="button" data-del style="color:#b91c1c;border-color:#fecaca">Delete my account…</button>' : ''}</div>
+  <ul class="ci-promise"><li><b>No ad trackers</b>No third-party ad pixels or behavioral profiles.</li><li><b>Never sold</b>We do not sell or rent your data.</li><li><b>No rage-bait ranking</b>Newest first by default; any other sort shows its formula.</li><li><b>You own your graph</b>Export your posts, connections and rings as open JSON.</li></ul></div>
+  <div class="ci-card"><h3>Download my data</h3><p>A JSON file with your profile, posts, comments, reactions, saves, connections, rings, LIFEboard and this device's feed settings.</p>${me ? '<button class="fl-btn p" type="button" data-dl>Download my data</button>' : '<a class="fl-btn p" href="/?auth=in">Sign in to download</a>'}</div>
+  <div class="ci-card"><h3>Delete my account</h3><p>Removes your posts, comments, reactions, saves, connections, rings and profile. Your sign-in is removed by our team within 7 days.</p>${me ? '<button class="fl-btn" type="button" data-del style="color:#b91c1c;border-color:#fecaca">Delete my account…</button>' : ''}</div>
   <div class="ci-card"><p class="muted">Questions about your data: info@eyetoad.com · 1-800-481-8638 · <a href="/privacy/">Privacy policy</a> · <a href="/mission/#promise">Our promise</a></p></div></div>`;
   try { const card = document.createElement('div'); card.className = 'ci-card'; card.id = 'ci-identity'; const last = $('.ci-wrap > .ci-card:last-child', body); last.before(card); const ID = await import('./aou-identity.js'); await ID.identityBlock(card, F3); } catch (e) { } /* v27 */
   if (!me) return;

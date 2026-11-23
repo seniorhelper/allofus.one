@@ -35,7 +35,7 @@ const art = (k) => `<svg class="tr-art" viewBox="0 0 120 90" aria-hidden="true">
    feature lives (the preview card's "Open it"). art: illustration when the element is not on screen. */
 const STEPS = [
   { k: 'feed', t: 'Your feed, newest first', p: 'No hidden ranking. Pick who you see, mute words, and open "Why am I seeing this?" on any post. The feed is yours to tune.', sel: () => '.fl-filters, #f-feed', href: '/', art: 'feed' },
-  { k: 'circles', t: 'Circles keep audiences apart', p: 'Family, Inner Tribe, Professional, Local. Post to one circle and only that circle sees it. Nobody is told which circles they are in.', sel: () => '.ux-q[href="/?v=circles"], a.ux-row[href="/?v=circles"]', href: '/?v=circles', art: 'circles' },
+  { k: 'circles', t: 'Rings keep audiences apart', p: 'Family, Inner Tribe, Professional, Local. Post to one ring and only that ring sees it. Nobody is told which rings they are in.', sel: () => '.ux-q[href="/?v=circles"], a.ux-row[href="/?v=circles"]', href: '/?v=circles', art: 'circles' },
   { k: 'board', t: 'LIFEboard: your private dashboard', p: 'Goals, habits, a life wheel, vision board, journal and money tools. Private to you, and the same board shows up in 3D and VR.', sel: () => mobile() ? '.ux-q[href="/?v=board"]' : '.fl-top [data-v="board"], .ux-q[href="/?v=board"]', href: '/?v=board', art: 'board' },
   { k: 'work', t: 'FLOWworks: pads for getting things done', p: 'Sketch, plan and track on tiles you lay out yourself. Great for a project, a small team or a Saturday plan.', sel: () => 'a.ux-row[href="/?v=work"]', href: '/?v=work', art: 'work' },
   { k: 'brand', t: 'A free Brand page, and a way to grow', p: 'Every business gets a real page with SEO schema, buttons and FAQs. "Grow your business" adds free listings, press releases and 60-second lead follow-up.', sel: () => mobile() ? '.ux-q[href="/?v=grow"]' : '.fl-top [data-v="brand"], .ux-q[href="/?v=grow"]', href: '/?v=grow', art: 'brand' },
@@ -43,11 +43,11 @@ const STEPS = [
   { k: 'call', t: 'Unity Call: free video calls', p: 'One link, no download, no time limit. Open it, share the link, talk.', sel: () => 'a.ux-row[href="/meet/"]', href: '/meet/', art: 'call' },
   { k: 'spaces', t: 'Rooms and the Global Room', p: 'Rooms are live chat: The Lobby, Help Desk, Kindness Corner and a Room for every Constellation. The Global Room puts everyone on one wall for a presentation or a watch party.', sel: () => 'a.ux-row[href="/chat/"]', href: '/chat/', art: 'spaces' },
   { k: 'world', t: 'A 3D world, in your browser or a headset', p: `Walk, build a house, meet people. Put on a Quest for VR. Shopping in 3D? Visit <a href="${WVM}" target="_blank" rel="sponsored noopener">World VR Mall</a>, built by the same team.`, sel: () => '.ms, a.ux-row[href="/world/"]', href: '/world/', art: 'world', html: true },
-  { k: 'moments', t: 'Moments: faces, backdrops, quick clips', p: 'Fast, fun posts with a camera and a backdrop. Share one to your feed or a circle.', sel: () => '.ux-q[href="/moments/"], a.ux-row[href="/moments/"]', href: '/moments/', art: 'moments' },
+  { k: 'moments', t: 'Glimmers: faces, backdrops, quick clips', p: 'Fast, fun posts with a camera and a backdrop. Share one to your feed or a ring.', sel: () => '.ux-q[href="/glimmers/"], a.ux-row[href="/glimmers/"]', href: '/glimmers/', art: 'moments' },
   { k: 'data', t: 'Your data, your graph', p: 'Download everything in one tap. No ad trackers, never sold, no rage-bait ranking. Soon: sign your export with your own key so it is verifiable anywhere.', sel: () => 'a.ux-row[href="/?v=mydata"]', href: '/?v=mydata', art: 'data' },
   { k: 'ask', t: 'Ask allofus, any time', p: 'The hand in the corner is the guide. Ask how anything works. Real answers, and it tells you when it is an AI.', sel: () => '#orbit-tab, #orbit', href: '/?v=spark', art: 'ask' }
 ];
-const END = { t: 'That is the tour. Where to first?', p: 'Three good first moves:' , links: [['/?v=spark', 'Open LIFEspark: your daily spark', 'spark'], ['/?v=circles', 'Set up your circles', 'circles'], ['/?v=grow', 'Grow your business', 'brand']] };
+const END = { t: 'That is the tour. Where to first?', p: 'Three good first moves:' , links: [['/?v=spark', 'Open LIFEspark: your daily spark', 'spark'], ['/?v=circles', 'Set up your rings', 'circles'], ['/?v=grow', 'Grow your business', 'brand']] };
 
 export const TOUR_CSS = `
 .tr-ov{position:fixed;inset:0;z-index:100000;font-family:Poppins,Arial,sans-serif}

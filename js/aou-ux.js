@@ -71,7 +71,7 @@ export const UX_GROUPS = [
     ['/?v=mydata', 'Your data', 'shield', '#3b82f6', 'Download or delete your data']] },
   { k: 'connect', n: 'Connect', c: '#ec4899', items: [
     ['/?v=conn', 'Connections', 'users', '#ec4899', 'Requests and your people'],
-    ['/?v=circles', 'Circles', 'users', '#7c3aed', 'Family, Inner Tribe, Professional, Local'],
+    ['/?v=circles', 'Rings', 'users', '#7c3aed', 'Family, Inner Tribe, Professional, Local'],
     ['/?v=dm', 'Messages', 'chat', '#a855f7', 'Private messages'],
     ['/?v=hub', 'Comm Hub', 'hub', '#8b5cf6', 'Calls, chats and channels in one place'],
     ['/meet/', 'Unity Call', 'phone', '#ef4444', 'Free video calls, one link'],
@@ -84,8 +84,8 @@ export const UX_GROUPS = [
     ['/?v=marketing', 'Marketing dash', 'chart', '#16a34a', 'Page views, followers, reach and your ads'],
     ['/creators/', 'Creators Corner', 'star', '#db2777', 'Creators keep 100% of fan tips'],
     ['/creators/tools/', 'Free creator tools', 'video', '#FF2E93', 'Hooks, scripts, captions: by MADWACKD Studio'],
-    ['/boost/', 'LIFEspark Lift', 'rocket', '#f97316', 'Get found, get leads'],
-    ['/moments/', 'Moments', 'cam', '#ec4899', 'Faces, backdrops and quick clips'],
+    ['/lift/', 'LIFEspark Lift', 'rocket', '#f97316', 'Get found, get leads'],
+    ['/glimmers/', 'Glimmers', 'cam', '#ec4899', 'Faces, backdrops and quick clips'],
     ['/?v=courses', 'Courses', 'book', '#0284c7', 'Learn and teach'],
     ['/?v=board', 'LIFEboard', 'board', '#f59e0b', 'Goals, habits, vision and money'],
     ['/?v=spark', 'LIFEspark', 'smile', '#f59e0b', 'Your daily spark, three tiny wins, two minutes of breath'],
@@ -110,7 +110,7 @@ export const destFor = (href) => DEST[keyOf(href)] || null;
 export function uxTilesHTML(NAV) {
   const t = (attrs, d, label, badge) => `<button ${attrs} style="--c:${d.c};--g:${d.gc}" title="${esc(d.d || label)}">${emb(d.i, d.c, d.gc)}<span class="l">${esc(label)}</span>${badge ? `<b class="badge" data-badge="${badge}" hidden></b>` : ''}</button>`;
   const short = { conn: 'People', brand: 'Brand' };
-  return `<nav class="fl-tiles ux-tiles" aria-label="Main">${NAV.map(([k, n]) => t(`data-v="${k}"`, destFor(k === 'feed' ? '/' : '/?v=' + k) || { c: '#0369a1', gc: '#0369a1', i: 'star' }, short[k] || n, k)).join('')}${t('data-v="board"', destFor('/?v=board'), 'LIFEboard')}<a class="t ux-build" href="/world/?build=1" style="--c:#f59e0b;--g:#8b5cf6" title="Build my house: design it, decorate the yard, then visit it in 3D or VR">${emb('home', '#f59e0b', '#8b5cf6')}<span class="l">Build my house</span></a><a class="t ux-boost" href="/boost/" style="--c:#38f0ff;--g:#f97316" title="LIFEspark Lift: get found, get leads">${emb('rocket', '#38f0ff', '#a855f7')}<span class="l">LIFEspark Lift</span></a><button data-more class="t-more" style="--c:#94a3b8;--g:#64748b" aria-label="More: every page on allofus.one">${emb('more', '#94a3b8', '#64748b')}<span class="l">More</span></button></nav>`;
+  return `<nav class="fl-tiles ux-tiles" aria-label="Main">${NAV.map(([k, n]) => t(`data-v="${k}"`, destFor(k === 'feed' ? '/' : '/?v=' + k) || { c: '#0369a1', gc: '#0369a1', i: 'star' }, short[k] || n, k)).join('')}${t('data-v="board"', destFor('/?v=board'), 'LIFEboard')}<a class="t ux-build" href="/world/?build=1" style="--c:#f59e0b;--g:#8b5cf6" title="Build my house: design it, decorate the yard, then visit it in 3D or VR">${emb('home', '#f59e0b', '#8b5cf6')}<span class="l">Build my house</span></a><a class="t ux-boost" href="/lift/" style="--c:#38f0ff;--g:#f97316" title="LIFEspark Lift: get found, get leads">${emb('rocket', '#38f0ff', '#a855f7')}<span class="l">LIFEspark Lift</span></a><button data-more class="t-more" style="--c:#94a3b8;--g:#64748b" aria-label="More: every page on allofus.one">${emb('more', '#94a3b8', '#64748b')}<span class="l">More</span></button></nav>`;
 }
 
 /* ---------- the home rail: the member's own tiles, grouped ---------- */
@@ -153,7 +153,7 @@ export const skel = (n = 3, kind = 'rows') => kind === 'posts' ? `<div class="ux
 /* ---------- bottom-bar style pieces: a bare icon in its own color (filters, order, quick bubbles) ---------- */
 export const uxChip = (icon, c, label) => `<span class="ux-ci" style="--c:${c}">${uxIcon(icon)}</span>${esc(label)}`;
 /* quick bubbles after the "who posted lately" faces, so the row is never half empty */
-const QUICK = [['/moments/', 'Moment', 'cam', '#ec4899'], ['/?v=grow', 'Grow', 'rocket', '', 'hot'], ['/?v=circles', 'Circles', 'users', '#7c3aed'], ['/?v=events', 'Events', 'cal', '#e11d48'], ['/?v=courses', 'Courses', 'book', '#0284c7'], ['/?v=board', 'LIFEboard', 'board', '#65a30d'], ['/?v=spark', 'Spark', 'smile', '#f59e0b'], ['/?tour=1', 'Tour', 'star', '#0ea5e9']];
+const QUICK = [['/glimmers/', 'Glimmer', 'cam', '#ec4899'], ['/?v=grow', 'Grow', 'rocket', '', 'hot'], ['/?v=circles', 'Rings', 'users', '#7c3aed'], ['/?v=events', 'Events', 'cal', '#e11d48'], ['/?v=courses', 'Courses', 'book', '#0284c7'], ['/?v=board', 'LIFEboard', 'board', '#65a30d'], ['/?v=spark', 'Spark', 'smile', '#f59e0b'], ['/?tour=1', 'Tour', 'star', '#0ea5e9']];
 export function uxQuickHTML() { return `<span class="ux-sep" aria-hidden="true"></span><b class="ux-rowlab q">Quick start</b>${QUICK.map(([h, n, i, c, x]) => `<a class="mo ux-q${x ? ' ' + x : ''}" href="${h}" style="--c:${c || '#4f46e5'}"><span class="ring"><span class="av">${uxIcon(i)}</span></span><small>${esc(n)}</small></a>`).join('')}`; }
 
 export const UX_CSS = `

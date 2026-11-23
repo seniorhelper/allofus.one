@@ -79,13 +79,13 @@ export async function coursesList(host, ctx) {
   ${following.length ? `<div class="fl-card co-sec"><h3>${li('listChecks')} Courses you are following</h3><div class="co-list">${following.map(card).join('')}</div></div>` : ''}
   ${showTpl ? `<div class="fl-card co-sec" id="co-tplsec"><h3>${li('sparkles')} Start from a template</h3><p class="sub">Each one creates a real course in your account with every lesson filled in. Change anything you like afterwards.</p><div class="co-tpls">${tplCards}</div></div>` : ''}
   ${newForm}
-  <div class="fl-card co-sec"><h3>${li('users')} ${space ? 'Courses in this space' : 'Community courses'}</h3>${others.length ? `<div class="co-list">${others.map(card).join('')}</div>` : empty(space ? (canCreate ? 'No courses here yet. Pick a template above and it will belong to this space.' : 'No courses here yet. The space owner can add one.') : 'No one has shared a course yet. Make one and share the link — it shows up here for everyone.')}</div>`;
+  <div class="fl-card co-sec"><h3>${li('users')} ${space ? 'Courses in this Constellation' : 'Community courses'}</h3>${others.length ? `<div class="co-list">${others.map(card).join('')}</div>` : empty(space ? (canCreate ? 'No courses here yet. Pick a template above and it will belong to this Constellation.' : 'No courses here yet. The Constellation owner can add one.') : 'No one has shared a course yet. Make one and share the link — it shows up here for everyone.')}</div>`;
   if (side) { side.innerHTML = guide; }
   wireGuide(side || host, Object.assign({}, COURSE_GUIDE, { examples: [{ run: () => useTpl('spanish30') }, { run: () => useTpl('c25k') }, { run: () => useTpl('guitar') }] }));
   $$('[data-co]').forEach(c => c.onclick = () => go(c.dataset.co));
   let busy = false;
   async function useTpl(id) {
-    const t = COURSE_TEMPLATES.find(x => x.id === id); if (!t) return; if (!needMe()) return; if (space && !canCreate) { toast('Only the space owner can add courses here.'); return; } if (busy) return; busy = true;
+    const t = COURSE_TEMPLATES.find(x => x.id === id); if (!t) return; if (!needMe()) return; if (space && !canCreate) { toast('Only the Constellation owner can add courses here.'); return; } if (busy) return; busy = true;
     try { const { data, error } = await sb.from('courses').insert({ owner: me.id, space_slug: space || null, title: t.title, about: t.about, public: true }).select().single(); if (error || !data) { toast((error && error.message) || 'Could not create the course.'); return; }
       const rows = t.lessons.map((l, i) => ({ course_id: data.id, pos: i, title: l[0].slice(0, 120), body: l[1] || null, video_url: l[2] || null, homework: l[3] ? l[3].slice(0, 500) : null }));
       const { error: e2 } = await sb.from('lessons').insert(rows); if (e2) toast('Course made, but lessons did not save: ' + e2.message); else toast('Your course is ready: ' + t.lessons.length + ' lessons. Check them off as you go.');
