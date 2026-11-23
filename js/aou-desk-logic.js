@@ -12,6 +12,9 @@ export const NOTE_COLORS = ['#ffe873', '#ffb3c7', '#a8e6ff', '#b9f5a6', '#ffd0a1
 export const BOARDS = { front: { a: 0, e: -0.0925, r: 1.0043, k: 1 }, left: { a: -0.8203, e: -0.0925, r: 1.0043, k: 1 }, right: { a: 0.8203, e: -0.0925, r: 1.0043, k: 1 }, cork: { a: 0.8203, e: 0.4678, r: 1.1204, k: 1 } };
 export const BLIM = { a: 2.6, eMin: -0.6, eMax: 1.2, rMin: 0.45, rMax: 2.2, kMin: 0.6, kMax: 1.8 };
 export function cleanBoards(raw) { const o = {}; for (const n in BOARDS) { const b = (raw && typeof raw === 'object' && raw[n]) || {}, d = BOARDS[n]; o[n] = { a: clamp(b.a, -BLIM.a, BLIM.a, d.a), e: clamp(b.e, BLIM.eMin, BLIM.eMax, d.e), r: clamp(b.r, BLIM.rMin, BLIM.rMax, d.r), k: clamp(b.k, BLIM.kMin, BLIM.kMax, d.k) }; } return o; }
+/* extra sheets added by app modules: same placement numbers as boards, plus open or closed. Ids are checked so stored data can not smuggle in odd keys. */
+export const SHEET_ID = /^[a-z][a-z0-9-]{0,23}$/;
+export function cleanSheets(raw) { const o = {}; if (!raw || typeof raw !== 'object') return o; let n = 0; for (const id of Object.keys(raw)) { if (n >= 24 || !SHEET_ID.test(id)) continue; const b = raw[id] || {}; o[id] = { a: clamp(b.a, -BLIM.a, BLIM.a, 0), e: clamp(b.e, BLIM.eMin, BLIM.eMax, 0.3), r: clamp(b.r, BLIM.rMin, BLIM.rMax, 1), k: clamp(b.k, BLIM.kMin, BLIM.kMax, 1), open: b.open === true }; n++; } return o; }
 export const DESK = { wMin: 1.0, wMax: 2.4, dMin: 0.6, dMax: 1.0, hOffMin: -0.15, hOffMax: 0.2 };
 
 /* the gate: a one-way fingerprint of the access code (PBKDF2-SHA256). A 6-digit code can be guessed by trying them all,
@@ -42,7 +45,7 @@ export function defaults() {
     room: 'plain', planets: true, cork: true, dist: 'far', focus: false, tab: 'today', rtab: 'notes', sound: true,
     todos: [{ t: 'Put on the headset and say hello', done: false }],
     notes: [{ t: 'Tap a note to write on it', c: 0 }],
-    links: [], embed: '', boards: cleanBoards(null),
+    links: [], embed: '', boards: cleanBoards(null), sheets: {},
     timer: { len: 1500, left: 1500, endsAt: 0 },
   };
 }
@@ -58,7 +61,7 @@ export function clean(raw) {
     todos: (Array.isArray(raw.todos) ? raw.todos : d.todos).slice(0, LIMITS.todos).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), done: !!(x && x.done) })).filter((x) => x.t),
     notes: (Array.isArray(raw.notes) ? raw.notes : d.notes).slice(0, LIMITS.notes).map((x) => ({ t: str(x && x.t, LIMITS.noteLen), c: clamp(x && x.c, 0, NOTE_COLORS.length - 1, 0) | 0 })),
     links: (Array.isArray(raw.links) ? raw.links : []).slice(0, LIMITS.links).map((x) => ({ label: str(x && x.label, LIMITS.labelLen), url: safeUrl(x && x.url) })).filter((x) => x.url),
-    embed: embedFor(raw.embed) ? safeUrl(raw.embed) : '', boards: cleanBoards(raw.boards),
+    embed: embedFor(raw.embed) ? safeUrl(raw.embed) : '', boards: cleanBoards(raw.boards), sheets: cleanSheets(raw.sheets),
     timer: { len: clamp(t.len, 60, 7200, 1500) | 0, left: clamp(t.left, 0, 7200, 1500) | 0, endsAt: clamp(t.endsAt, 0, 8.64e15, 0) },
   };
   if (s.timer.left > s.timer.len) s.timer.left = s.timer.len;

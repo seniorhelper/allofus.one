@@ -5,6 +5,8 @@ import * as L from './aou-desk-logic.js';
 
 const Q = new URLSearchParams(location.search);
 const DEV = Q.get('dev') === '1', QA = Q.get('qa') === '1';
+/* app modules: each adds one or more sheets to the desk through the small api object passed to its default export */
+const APPS = ['./aou-desk-app-help.js'];
 const $ = (id) => document.getElementById(id);
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -171,8 +173,11 @@ export async function start() {
   const cork = surface('cork', 640, 412, 0.62, 0.4, ring); void A;
   /* every board sits on a ball around the seat and always faces it; each has a grab bar above it (move, push, pull) with - and + to resize */
   const BRD = { front: P.front, left: P.left, right: P.right, cork }, grips = {};
-  function placeBoards() { for (const n in BRD) { const p = BRD[n], b = S.boards[n], ce = Math.cos(b.e), r = b.r * R0; p.mesh.position.set(Math.sin(b.a) * ce * r, Math.sin(b.e) * r, -Math.cos(b.a) * ce * r); p.mesh.rotation.set(b.e, -b.a, 0, 'YXZ'); p.mesh.scale.set(p.w * b.k, p.h * b.k, 1); } }
-  for (const n in BRD) { const p = BRD[n], gs = surface('grip-' + n, 320, 56, 0.26, 0.0455, p.mesh); gs.mesh.scale.set(0.26 / p.w, 0.0455 / p.h, 1); gs.mesh.position.set(0, 0.5 + (0.0455 / 2 + 0.012) / p.h, 0); gs.grip = n; gs.mesh.visible = false; grips[n] = gs; }
+  function placeBoards() { for (const n in BRD) { const p = BRD[n]; let b = S.boards[n] || S.sheets[n]; if (!b) { const a = apps[n]; if (!a) continue; const h = a.def.home || {}; b = S.sheets[n] = { a: h.a || 0, e: h.e === undefined ? 0.3 : h.e, r: h.r || 1, k: h.k || 1, open: !!a.def.open }; } const ce = Math.cos(b.e), r = b.r * R0; p.mesh.position.set(Math.sin(b.a) * ce * r, Math.sin(b.e) * r, -Math.cos(b.a) * ce * r); p.mesh.rotation.set(b.e, -b.a, 0, 'YXZ'); p.mesh.scale.set(p.w * b.k, p.h * b.k, 1); } }
+  const apps = {}, posOf = (n) => S.boards[n] || S.sheets[n];
+  function makeGrip(n) { const p = BRD[n], gs = surface('grip-' + n, 320, 56, 0.26, 0.0455, p.mesh); gs.mesh.scale.set(0.26 / p.w, 0.0455 / p.h, 1); gs.mesh.position.set(0, 0.5 + (0.0455 / 2 + 0.012) / p.h, 0); gs.grip = n; gs.mesh.visible = false; grips[n] = gs; return gs; }
+  for (const n in BRD) makeGrip(n);
+  const dock = surface('dock', 1024, 88, 1.0, 0.086, P.front.mesh); dock.mesh.scale.set(1, 0.086 / 0.625, 1); dock.mesh.position.set(0, 0.5 + (0.012 + 0.0455 + 0.014 + 0.043) / 0.625, 0); dock.mesh.visible = false;
   placeBoards();
   const strip = surface('strip', 512, 96, 0.5, 0.09375, P.front.mesh); strip.mesh.scale.set(0.5 / 1.0, 0.09375 / 0.625, 1); strip.mesh.position.set(0.5 - 0.25 - 0.022, 0.5 - 0.075 - 0.03, 0.002); strip.touch = false;
   const kb = surface('kb', 1000, 600, 0.56, 0.336, rig); kb.mesh.visible = false;
@@ -193,7 +198,12 @@ export async function start() {
   const label = (g, text, x, y, size = 24, col = '#aab3c2', align = 'left', weight = 500, maxW) => { g.fillStyle = col; g.font = `${weight} ${size}px ${FF}`; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(text, x, y, maxW); };
 
   let presenting = false, arOK = false, vrOK = false;
-  Object.values(grips).forEach((gs) => { gs.draw = () => { const g = gs.g; g.clearRect(0, 0, 320, 56); gs.regions.length = 0; rr(g, 2, 2, 316, 52, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent(); g.stroke(); btn(gs, 8, 8, 56, 40, '−', 'bsize', [gs.grip, -1], { size: 30, r: 20 }); btn(gs, 256, 8, 56, 40, '+', 'bsize', [gs.grip, 1], { size: 30, r: 20 }); g.fillStyle = accent(); for (let i = 0; i < 6; i++) { g.beginPath(); g.arc(120 + i * 16, 28, 4, 0, 6.283); g.fill(); } gs.regions.push({ x: 70, y: 2, w: 180, h: 52, act: 'grip', arg: gs.grip }); }; });
+  const gripDraw = (gs) => { gs.draw = () => { const g = gs.g, ap = !!gs.app; g.clearRect(0, 0, 320, 56); gs.regions.length = 0; rr(g, 2, 2, 316, 52, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent(); g.stroke();
+    btn(gs, 8, 8, ap ? 46 : 56, 40, '−', 'bsize', [gs.grip, -1], { size: 30, r: 20 }); btn(gs, ap ? 58 : 256, 8, ap ? 46 : 56, 40, '+', 'bsize', [gs.grip, 1], { size: 30, r: 20 }); if (ap) btn(gs, 266, 8, 46, 40, '×', 'app.close', gs.grip, { size: 30, r: 20, bg: '#2a1f25', fg: '#ff9aa8' });
+    const x0 = ap ? 110 : 70, x1 = ap ? 260 : 250; g.fillStyle = accent(); for (let i = 0; i < 6; i++) { g.beginPath(); g.arc((x0 + x1) / 2 - 40 + i * 16, 28, 4, 0, 6.283); g.fill(); } gs.regions.push({ x: x0, y: 2, w: x1 - x0, h: 52, act: 'grip', arg: gs.grip }); }; };
+  Object.values(grips).forEach(gripDraw);
+  /* the dock: one button per app sheet, above the front board */
+  dock.draw = () => { const g = dock.g, ids = Object.keys(apps); g.clearRect(0, 0, 1024, 88); dock.regions.length = 0; if (!ids.length) return; rr(g, 2, 2, 1020, 84, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent(); g.stroke(); const bw = Math.min(190, (1000 - (ids.length - 1) * 10) / ids.length), x0 = (1024 - (ids.length * bw + (ids.length - 1) * 10)) / 2; ids.forEach((id, i) => btn(dock, x0 + i * (bw + 10), 14, bw, 60, apps[id].def.title, 'app.toggle', id, { on: !!(S.sheets[id] && S.sheets[id].open), size: bw < 130 ? 20 : 24 })); };
   P.front.draw = () => {
     const p = P.front, g = base(p); const h = new Date().getHours(); const hi = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
     label(g, hi + (S.name ? ', ' + S.name : ''), 36, 52, 38, '#ffffff', 'left', 700, 420); label(g, new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }), 36, 96, 24);
@@ -307,8 +317,9 @@ export async function start() {
 
   /* ---------- actions ---------- */
   let saveT = 0; function commit(...dirty) { clearTimeout(saveT); saveT = setTimeout(() => L.save(localStorage, S), 250); (dirty.length ? dirty : [P.front, P.left, P.right]).forEach((p) => { p.dirty = true; }); if (!dirty.length || dirty.includes(P.right)) cork.dirty = true; sheet(); }
-  const all = () => { commit(P.front, P.left, P.right, kb); for (const n in grips) grips[n].dirty = true; };
+  const all = () => { commit(P.front, P.left, P.right, kb); for (const n in grips) grips[n].dirty = true; dock.dirty = true; for (const id in apps) apps[id].p.dirty = true; };
   function act(a, arg, src) {
+    { const k = a.indexOf(':'); if (k > 0) { const app = apps[a.slice(0, k)]; audio(); beep(660); if (app && app.def.act) app.def.act(a.slice(k + 1), arg, src); return; } }
     audio(); beep(660);
     if (src && src.gamepad && src.gamepad.hapticActuators && src.gamepad.hapticActuators[0]) { try { src.gamepad.hapticActuators[0].pulse(0.35, 25); } catch (e) { } }
     const k = S.desk;
@@ -347,8 +358,10 @@ export async function start() {
       case 'xr': toggleXR(); break;
       case 'key': key(arg); break;
       case 'grip': break;
-      case 'bsize': { const b = S.boards[arg[0]]; if (b) { b.k = r2(Math.min(L.BLIM.kMax, Math.max(L.BLIM.kMin, b.k + arg[1] * 0.1))); clearFix(arg[0]); commit(P.left); } break; }
-      case 'boards.reset': S.boards = L.cleanBoards(null); layout(); commit(P.front); say('Boards back to their places'); break;
+      case 'app.toggle': if (apps[arg] && S.sheets[arg]) { S.sheets[arg].open = !S.sheets[arg].open; applyRoom(); layout(); apps[arg].p.dirty = true; dock.dirty = true; commit(P.left); } break;
+      case 'app.close': if (apps[arg] && S.sheets[arg]) { S.sheets[arg].open = false; applyRoom(); layout(); dock.dirty = true; commit(P.left); } break;
+      case 'bsize': { const b = posOf(arg[0]); if (b) { b.k = r2(Math.min(L.BLIM.kMax, Math.max(L.BLIM.kMin, b.k + arg[1] * 0.1))); clearFix(arg[0]); commit(P.left); } break; }
+      case 'boards.reset': S.boards = L.cleanBoards(null); for (const id in apps) { const o = S.sheets[id] && S.sheets[id].open; delete S.sheets[id]; placeBoards(); if (S.sheets[id]) S.sheets[id].open = !!o; } layout(); commit(P.front); say('Boards back to their places'); break;
     }
   }
   function openLink(i) {
@@ -364,6 +377,7 @@ export async function start() {
     dimmable.forEach((m) => { if (m._c === undefined) m._c = m.color.getHex(); m.color.setHex(m._c).multiplyScalar(f); });
     scene.background = presenting && arSession ? null : (bg || (bg = new T.Color(0x0b0d12)));
     for (const n in grips) grips[n].mesh.visible = presenting;
+    for (const id in apps) apps[id].p.mesh.visible = !!(S.sheets[id] && S.sheets[id].open) && !S.focus; dock.mesh.visible = Object.keys(apps).length > 0;
     P.left.mesh.visible = P.right.mesh.visible = !S.focus; cork.mesh.visible = S.cork && !S.focus; ball.visible = presenting; planetG.visible = S.planets;
     if (S.room === 'stars') { loadStars(); skyTurn.rotation.y = -Math.PI / 2 - L.siderealAngle(Date.now(), new Date().getTimezoneOffset()); } if (starPts) starPts.material.uniforms.uK.value = presenting ? 2.4 : R.getPixelRatio() * 1.15;
   }
@@ -385,7 +399,7 @@ export async function start() {
   }
   /* a moved or resized board is nudged up until its lowest edge clears the desk top */
   const cnr = new T.Vector3();
-  function clearFix(n) { const p = BRD[n], b = S.boards[n]; for (let k = 0; k < 5; k++) { layout(); let lo = 1e9; for (let c = 0; c < 2; c++) { cnr.set(c ? 0.5 : -0.5, -0.5, 0).applyMatrix4(p.mesh.matrixWorld); if (cnr.y < lo) lo = cnr.y; } const need = rig.position.y + seat.top + 0.03 - lo; if (need <= 0.001 || b.e >= L.BLIM.eMax) break; b.e = Math.min(L.BLIM.eMax, b.e + need / (b.r * R0 * ring.scale.x) + 0.01); } }
+  function clearFix(n) { const p = BRD[n], b = posOf(n); if (!p || !b) return; for (let k = 0; k < 5; k++) { layout(); let lo = 1e9; for (let c = 0; c < 2; c++) { cnr.set(c ? 0.5 : -0.5, -0.5, 0).applyMatrix4(p.mesh.matrixWorld); if (cnr.y < lo) lo = cnr.y; } const need = rig.position.y + seat.top + 0.03 - lo; if (need <= 0.001 || b.e >= L.BLIM.eMax) break; b.e = Math.min(L.BLIM.eMax, b.e + need / (b.r * R0 * ring.scale.x) + 0.01); } }
   function reseat(headY) { if (headY) seatHead = headY; seat = L.seatFor(seatHead, S.desk.hOff); buildDesk(); layout(); if (!presenting) camera.position.set(0, seat.eye + 0.1, 0.8); }
   let seatHead = 1.2;
 
@@ -413,21 +427,22 @@ export async function start() {
   /* flat screen: drag to look, click or tap to press */
   const PITCH0 = -0.13; let yaw = 0, pitch = PITCH0, down = null; const ndc = new T.Vector2(), rc = new T.Raycaster();
   const flatRay = (e) => { const b = R.domElement.getBoundingClientRect(); ndc.set(((e.clientX - b.left) / b.width) * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1); rc.setFromCamera(ndc, camera); const p = rayHit(rc.ray.origin, rc.ray.direction); return p ? [p, regionAt(p)] : [null, null]; };
-  R.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false }; R.domElement.setPointerCapture(e.pointerId); });
+  R.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false, pt: null }; R.domElement.setPointerCapture(e.pointerId); if (!presenting) { const [p0, r0] = flatRay(e); if (p0 && p0.point && !r0) { down.pt = p0; p0.point(2, p0.hx, p0.hy, true, false); } } });
   R.domElement.addEventListener('pointermove', (e) => {
     if (presenting) return;
+    if (down && down.pt) { const [p1, r1] = flatRay(e); if (p1 === down.pt && !r1) p1.point(2, p1.hx, p1.hy, true, false); return; }
     if (down) { const dx = e.clientX - down.x, dy = e.clientY - down.y; if (Math.abs(dx) + Math.abs(dy) > 8) down.moved = true; if (down.moved) { const k = camera.fov / 60 * 0.0042; yaw = Math.max(-1.6, Math.min(1.6, down.yaw + dx * k)); pitch = Math.max(-0.9, Math.min(0.6, down.pitch + dy * k)); setHover(2, null, null); return; } }
     const [p, r] = flatRay(e); setHover(2, p, r); R.domElement.style.cursor = r ? 'pointer' : 'grab';
   });
-  R.domElement.addEventListener('pointerup', (e) => { const d = down; down = null; if (presenting || !d || d.moved) return; const [p, r] = flatRay(e); if (p && r) { act(r.act, r.arg); setHover(2, null, null); } });
+  R.domElement.addEventListener('pointerup', (e) => { const d = down; down = null; if (d && d.pt) { d.pt.point(2, 0, 0, false, true); return; } if (presenting || !d || d.moved) return; const [p, r] = flatRay(e); if (p && r) { act(r.act, r.arg); setHover(2, null, null); } });
   R.domElement.addEventListener('pointerleave', () => { if (!down) setHover(2, null, null); });
 
   /* headset: controllers and bare hands */
   let drag = null, grab = null, bdrag = null, gazeUp = 0, tipShown = false; const ballW = new T.Vector3(), bl = new T.Vector3();
   const reachOf = (o) => { head.setFromMatrixPosition(camera.matrixWorld); return Math.hypot(o.O.x - head.x, o.O.z - head.z); };
-  function boardStart(i, o, name) { const b = S.boards[name]; if (!b) return; bl.copy(o.O).addScaledVector(o.D, o.hd || 1); ring.worldToLocal(bl); const len = Math.max(0.05, bl.length()); bdrag = { i, name, g0: o.hd || 1, r0: reachOf(o), da: b.a - Math.atan2(bl.x, -bl.z), de: b.e - Math.asin(Math.max(-1, Math.min(1, bl.y / len))), kr: b.r / (len / R0) }; audio(); beep(440, 0.08); }
+  function boardStart(i, o, name) { const b = posOf(name); if (!b) return; bl.copy(o.O).addScaledVector(o.D, o.hd || 1); ring.worldToLocal(bl); const len = Math.max(0.05, bl.length()); bdrag = { i, name, g0: o.hd || 1, r0: reachOf(o), da: b.a - Math.atan2(bl.x, -bl.z), de: b.e - Math.asin(Math.max(-1, Math.min(1, bl.y / len))), kr: b.r / (len / R0) }; audio(); beep(440, 0.08); }
   function boardStep(o) {
-    const b = S.boards[bdrag.name], g = Math.max(0.25, Math.min(3.5, bdrag.g0 + (reachOf(o) - bdrag.r0) * 3)); bl.copy(o.O).addScaledVector(o.D, g); ring.worldToLocal(bl); const len = bl.length(); if (len < 0.1) return;
+    const b = posOf(bdrag.name), g = Math.max(0.25, Math.min(3.5, bdrag.g0 + (reachOf(o) - bdrag.r0) * 3)); bl.copy(o.O).addScaledVector(o.D, g); ring.worldToLocal(bl); const len = bl.length(); if (len < 0.1) return;
     b.a = Math.max(-L.BLIM.a, Math.min(L.BLIM.a, Math.atan2(bl.x, -bl.z) + bdrag.da)); b.e = Math.max(L.BLIM.eMin, Math.min(L.BLIM.eMax, Math.asin(Math.max(-1, Math.min(1, bl.y / len))) + bdrag.de)); b.r = Math.max(L.BLIM.rMin, Math.min(L.BLIM.rMax, len / R0 * bdrag.kr)); placeBoards(); o.line.scale.z = g; o.line.visible = true; o.dot.visible = false;
   }
   function boardEnd() { const n = bdrag.name; bdrag = null; clearFix(n); layout(); commit(P.left); beep(660, 0.08); }
@@ -458,7 +473,7 @@ export async function start() {
   function xrInput() {
     let n = 0; const now = performance.now(); ballW.setFromMatrixPosition(ball.matrixWorld);
     for (let i = 0; i < 2; i++) {
-      const o = ctl[i]; let near = false, grabNear = false;
+      const o = ctl[i]; let near = false, grabNear = false; o.pp = null;
       if (o.on && o.isHand && o.h.joints) {
         for (let j = 0; j < JN; j++) { const jt = o.h.joints[JNAMES[j]]; if (!jt || jt.visible === false) continue; const rad = Math.max(0.005, Math.min(0.012, (jt.jointRadius || 0.008) * 0.8)); tmpM.compose(jt.position, tmpQ.identity(), JS.setScalar(rad)); joints.setMatrixAt(n++, tmpM); }
         const it = o.h.joints['index-finger-tip'];
@@ -480,9 +495,10 @@ export async function start() {
       tip.copy(ballW).sub(o.O); const tb = tip.dot(o.D), miss = Math.sqrt(Math.max(0, tip.lengthSq() - tb * tb)); const p = grabNear ? null : rayHit(o.O, o.D);
       o.ball = !edit && (grabNear || (tb > 0 && miss < 0.05 + tb * 0.035 && (!p || tb < hitDist + 0.05)));
       if (o.ball) { setHover(i, null, null); o.hold = 0; o.line.scale.z = Math.max(0.02, tb); o.dot.position.copy(ballW); o.line.visible = !grabNear; o.dot.visible = true; }
-      else if (p) { o.hold = 0; o.hd = hitDist; setHover(i, p, regionAt(p)); o.line.scale.z = hitDist; o.dot.position.copy(o.O).addScaledVector(o.D, hitDist); o.line.visible = o.dot.visible = true; }
+      else if (p) { o.hold = 0; o.hd = hitDist; const rg = regionAt(p); setHover(i, p, rg); if (p.point && !rg) { o.pp = p; p.point(i, p.hx, p.hy, o.sel, false); } o.line.scale.z = hitDist; o.dot.position.copy(o.O).addScaledVector(o.D, hitDist); o.line.visible = o.dot.visible = true; }
       else { setHover(i, null, null); o.line.scale.z = 0.6; o.line.visible = !o.isHand; o.dot.visible = false; if (o.hold && now - o.hold > 1100) { o.hold = 0; placeSeat(); beep(520, 0.2); say('Desk brought to you'); } }
     }
+    for (let i = 0; i < 2; i++) { const o = ctl[i]; if (o.ppWas && o.ppWas !== o.pp) o.ppWas.point(i, 0, 0, false, true); o.ppWas = o.pp; }
     /* two-hand grab: pinch both hands on nothing, then pull, push, lift or spread. The whole desk follows (2.5x), spreading the hands changes its width. */
     const a = ctl[0], b = ctl[1], both = a.sel && b.sel && a.on && b.on && !drag && !bdrag && !edit;
     if (both && (grab || (a.free && b.free))) {
@@ -559,6 +575,17 @@ export async function start() {
   $('dk-sheet-btn').addEventListener('click', () => { const s = $('dk-sheet'); s.hidden = !s.hidden; $('dk-sheet-btn').setAttribute('aria-expanded', String(!s.hidden)); sheet.force = true; sheet(); resize(); });
   $('dk-vr-btn').addEventListener('click', () => toggleXR()); $('dk-go-x').addEventListener('click', () => { $('dk-go').hidden = true; });
 
+  /* ---------- apps: what a module may use ---------- */
+  const frameHooks = [];
+  const api = { T, L, FF, rr, btn, label, base, accent, say, askText, beep, commit: () => commit(P.left), get S() { return S; }, get presenting() { return presenting; }, get seat() { return seat; }, rig, ring, scene,
+    sound: () => { audio(); return ac; }, onFrame: (fn) => { if (typeof fn === 'function' && frameHooks.length < 16) frameHooks.push(fn); }, redraw: (p) => { if (p) p.dirty = true; }, touch: (p) => { if (p) p.t.needsUpdate = true; },
+    store: { get: (id) => { try { return L.SHEET_ID.test(id) ? localStorage.getItem('aou_desk_app_' + id) : null; } catch (e) { return null; } }, set: (id, text) => { try { if (L.SHEET_ID.test(id) && typeof text === 'string' && text.length < 1500000) { localStorage.setItem('aou_desk_app_' + id, text); return true; } } catch (e) { } return false; } },
+    addSheet(def) {
+      if (!def || !L.SHEET_ID.test(def.id) || apps[def.id] || BRD[def.id] || typeof def.draw !== 'function' || Object.keys(apps).length >= 12) return null;
+      const p = surface(def.id, def.W | 0, def.H | 0, +def.w, +def.h, ring); BRD[def.id] = p; apps[def.id] = { def, p }; p.draw = () => def.draw(p, p.g); if (typeof def.point === 'function') p.point = (i, x, y, dn, end) => def.point(p, i, x, y, dn, end);
+      const gs = makeGrip(def.id); gs.app = true; gripDraw(gs); placeBoards(); dock.dirty = true; return p;
+    } };
+
   /* ---------- frame loop ---------- */
   function resize() { const w = host.clientWidth, h = host.clientHeight; if (!w || !h || presenting) return; R.setSize(w, h); camera.aspect = w / h; const want = (camera.aspect < 0.8 ? 40 : camera.aspect < 1.2 ? 52 : 64) * Math.PI / 180; camera.fov = Math.min(100, Math.max(52, 2 * Math.atan(Math.tan(want / 2) / camera.aspect) * 180 / Math.PI)); camera.updateProjectionMatrix(); }
   addEventListener('resize', resize); new ResizeObserver(resize).observe(host);
@@ -582,6 +609,7 @@ export async function start() {
       if (DEV) { const d = $('dk-dev'); if (d) { d.hidden = false; d.textContent = presenting ? '' : `${(1000 * flatN / Math.max(1, flatSum)).toFixed(0)} fps · worst ${flatWorst.toFixed(1)} ms · ${lastCalls} calls · ${lastTris} tris`; } flatN = 0; flatSum = 0; flatWorst = 0; }
     }
     for (let i = 0; i < surfaces.length; i++) { const p = surfaces[i]; if (p.dirty && (shown(p) || p === kbTop || !presenting)) { p.dirty = false; p.draw(); p.t.needsUpdate = true; break; } }
+    for (let i = 0; i < frameHooks.length; i++) frameHooks[i](t0, dt);
     R.render(scene, camera); lastCalls = R.info.render.calls; lastTris = R.info.render.triangles;
     if (presenting && seated) { const cpu = performance.now() - t0; if (cpu > stat.cpuMax && t0 - sessT0 > 3000) stat.cpuMax = cpu; }
   }
@@ -595,12 +623,14 @@ export async function start() {
   reseat(1.2); applyRoom(); resize(); sheet.force = true; sheet(); surfaces.forEach((p) => { p.draw(); p.t.needsUpdate = true; p.dirty = false; R.initTexture(p.t); }); Object.values(TX).forEach((t) => R.initTexture(t));
   { const vis = {}; Object.keys(rooms).forEach((id) => { vis[id] = rooms[id].visible; rooms[id].visible = true; }); const dk = S.desk.style; const extra = new T.Group(); [DM.woodTop, DM.woodLeg, DM.metalTop, DM.metalLeg, DM.steelTop, DM.steelLeg, DM.blackTop, DM.blackLeg, ball.material, DM.neonTop, DM.neonSide, DM.neonEdge, DM.glow].forEach((m) => put(extra, box, m, 0.01, 0.01, 0.01, 0, -5, 0)); scene.add(extra); kb.mesh.visible = true; joints.count = 1;
     try { await R.compileAsync(scene, camera); } catch (e) { } R.render(scene, camera); scene.remove(extra); kb.mesh.visible = false; joints.count = 0; Object.keys(rooms).forEach((id) => { rooms[id].visible = vis[id]; }); void dk; }
+  for (const m of APPS) { try { const mod = await import(m); mod.default(api); } catch (e) { console.error('desk app did not load', m, e); } }
+  surfaces.forEach((p) => { if (p.dirty && p.draw) { p.draw(); p.t.needsUpdate = true; p.dirty = false; R.initTexture(p.t); } }); applyRoom(); layout();
   R.setAnimationLoop(frame); $('dk-load').hidden = true; setTimeout(() => { const h = $('dk-hint'); if (h) h.hidden = true; }, 9000);
   if (QA) window.__desk = { get S() { return S; }, act, P, surfaces, stat, info: () => ({ calls: lastCalls, tris: lastTris, programs: R.info.programs.length, textures: R.info.memory.textures, geometries: R.info.memory.geometries }), look: (y, p) => { yaw = y; pitch = p; }, key, get edit() { return edit; },
     dragTest: (o3, d3, steps) => { const o = ctl[0]; scene.updateMatrixWorld(true); ballW.setFromMatrixPosition(ball.matrixWorld); o.O.set(o3[0], o3[1], o3[2]); o.D.set(d3[0], d3[1], d3[2]).normalize(); head.setFromMatrixPosition(camera.matrixWorld); const g0 = ballW.distanceTo(o.O); drag = { i: 0, g0, r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; for (let k = 0; k < steps; k++) dragStep(o); drag = null; o.line.visible = false; layout(); ballW.setFromMatrixPosition(ball.matrixWorld); const c = new T.Vector3(0, 0, FRONT - S.desk.d / 2).applyMatrix4(rig.matrixWorld); return { want: [o.O.x + o.D.x * g0, o.O.z + o.D.z * g0], ball: [ballW.x, ballW.z], centre: [c.x, c.z], head: [head.x, head.z], yaw: rig.rotation.y }; },
     dbg: () => ({ presenting, arSession, seated, drag: !!drag, grab: !!grab, gazeUp: r2(gazeUp), lift: r2(rig.position.y), sel: ctl.map((o) => o.sel), free: ctl.map((o) => o.free), edit: !!edit, fps: fpsNow, room: S.room, head: head.toArray().map(r2), ball: ballW.toArray().map(r2), ballVisible: ball.visible, rig: [r2(rig.position.x), r2(rig.position.z), r2(rig.rotation.y)], top: r2(seat.top), ctl: ctl.map((o) => ({ on: o.on, hand: o.isHand, vis: o.c.visible, ball: o.ball, near: o.near, hold: !!o.hold, O: o.O.toArray().map(r2), D: o.D.toArray().map(r2) })) }),
     boardTest: (name, o3, d3, to3, steps) => { const o = ctl[0]; layout(); o.O.set(o3[0], o3[1], o3[2]); o.D.set(d3[0], d3[1], d3[2]).normalize(); const h = rayHit(o.O, o.D); o.hd = hitDist; const reg = h ? regionAt(h) : null; if (!h || !reg || reg.act !== 'grip') return { miss: h ? h.name : null, region: reg && reg.act }; boardStart(0, o, reg.arg); o.D.set(to3[0], to3[1], to3[2]).normalize(); for (let k = 0; k < (steps || 1); k++) boardStep(o); boardEnd(); o.line.visible = false; return { name: reg.arg, b: S.boards[reg.arg] }; },
-    grips, BRD, clearFix,
+    grips, BRD, clearFix, apps, dock, api,
     home: () => { rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); layout(); },
     sim: (headY) => { presenting = true; edit = null; reseat(headY || 1.18); applyRoom(); all(); return seat; }, unsim: () => { presenting = false; reseat(1.2); all(); },
     poke: (name, px, py, z) => { const p = surfaces.find((s) => s.name === name); p.hx = px; p.hy = py; const r = regionAt(p); const f = L.pokeStep(p.poke[0], z, true); if (f && r) act(r.act, r.arg); return { fired: f, region: r && r.act }; },
