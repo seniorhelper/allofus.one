@@ -128,7 +128,7 @@ export async function circlesView(body, F3) {
   css(); const sb = F3.sb, me = F3.getMe && F3.getMe(), toast = F3.toast || (() => { });
   body.innerHTML = `<div class="ci-wrap"><div class="ci-card"><h2>Audiences</h2><p>Your own sharing groups. Family sees family things, work sees work things, and they never mix. Put connections in an audience, then pick "Who sees this" when you post. An audience post is visible only to you and that audience. Nobody is told which audiences they are in or not in.</p></div><div id="ci-body"><div class="ci-card">Loading…</div></div></div>`;
   const host = $('#ci-body', body);
-  if (!me) { host.innerHTML = `<div class="ci-card"><p>Sign in to set up your circles.</p><a class="fl-btn p" href="/?auth=in">Sign in</a> <a class="fl-btn" href="/?auth=join">Join free</a></div>`; return; }
+  if (!me) { host.innerHTML = `<div class="ci-card"><p>Sign in to set up your audiences.</p><a class="fl-btn p" href="/?auth=in">Sign in</a> <a class="fl-btn" href="/?auth=join">Join free</a></div>`; return; }
   if (!F3.live || !(await circlesReady(sb))) { host.innerHTML = `<div class="ci-card"><h3>Audiences are turning on soon</h3><p>This part needs a quick server update (v26). Until then your posts work exactly as before: public, or connections only.</p></div>`; return; }
   const draw = async () => {
     const list = await seedDefaults(sb, me); const mem = await members(sb, list.map(c => c.id)); const cs = await loadConns(sb, me); const nm = {}; cs.forEach(c => nm[c.id] = c);
