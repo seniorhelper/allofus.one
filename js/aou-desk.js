@@ -6,7 +6,7 @@ import * as L from './aou-desk-logic.js';
 const Q = new URLSearchParams(location.search);
 const DEV = Q.get('dev') === '1', QA = Q.get('qa') === '1';
 /* app modules: each adds one or more sheets to the desk through the small api object passed to its default export */
-const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js'];
+const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js', './aou-desk-app-paper.js'];
 const $ = (id) => document.getElementById(id);
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -427,7 +427,7 @@ export async function start() {
   /* flat screen: drag to look, click or tap to press */
   const PITCH0 = -0.13; let yaw = 0, pitch = PITCH0, down = null; const ndc = new T.Vector2(), rc = new T.Raycaster();
   const flatRay = (e) => { const b = R.domElement.getBoundingClientRect(); ndc.set(((e.clientX - b.left) / b.width) * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1); rc.setFromCamera(ndc, camera); const p = rayHit(rc.ray.origin, rc.ray.direction); return p ? [p, regionAt(p)] : [null, null]; };
-  R.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false, pt: null }; R.domElement.setPointerCapture(e.pointerId); if (!presenting) { const [p0, r0] = flatRay(e); if (p0 && p0.point && !r0) { down.pt = p0; p0.point(2, p0.hx, p0.hy, true, false); } } });
+  R.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false, pt: null }; try { R.domElement.setPointerCapture(e.pointerId); } catch (err) { } if (!presenting) { const [p0, r0] = flatRay(e); if (p0 && p0.point && !r0) { down.pt = p0; p0.point(2, p0.hx, p0.hy, true, false); } } });
   R.domElement.addEventListener('pointermove', (e) => {
     if (presenting) return;
     if (down && down.pt) { const [p1, r1] = flatRay(e); if (p1 === down.pt && !r1) p1.point(2, p1.hx, p1.hy, true, false); return; }
@@ -463,7 +463,7 @@ export async function start() {
     c.addEventListener('selectstart', () => {
       o.sel = true; o.free = false;
       if (o.ball && !drag) { head.setFromMatrixPosition(camera.matrixWorld); drag = { i, g0: Math.max(0.05, ballW.distanceTo(o.O)), r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; audio(); beep(440, 0.08); return; }
-      if (!o.near && hov[i] && hovP[i]) { const r = hov[i]; if (r.act === 'grip') { if (!bdrag && !drag && !grab) boardStart(i, o, r.arg); } else act(r.act, r.arg, o.src); } else if (!o.near && !edit && seated) { o.hold = performance.now(); o.free = true; }
+      if (!o.near && hov[i] && hovP[i]) { const r = hov[i]; if (r.act === 'grip') { if (!bdrag && !drag && !grab) boardStart(i, o, r.arg); } else act(r.act, r.arg, o.src); } else if (!o.near && !edit && seated && !o.pp) { o.hold = performance.now(); o.free = true; }
     });
     c.addEventListener('selectend', () => { o.hold = 0; o.sel = false; if (bdrag && bdrag.i === i) boardEnd(); if (drag && drag.i === i) { drag = null; layout(); beep(660, 0.08); } });
     return o;
@@ -481,7 +481,7 @@ export async function start() {
           grabNear = it.position.distanceTo(ballW) < 0.075;
           for (let s = 0; s < surfaces.length; s++) {
             const p = surfaces[s]; if (drag || !p.touch || !shown(p) || (edit && p !== kb && p !== kbTop)) continue; tip.copy(it.position).applyMatrix4(p.inv); const z = tip.z * p.sc - 0.006, inside = tip.x > -0.5 && tip.x < 0.5 && tip.y > -0.5 && tip.y < 0.5;
-            if (inside && z < 0.1 && z > L.POKE.deep) { near = true; p.hx = (tip.x + 0.5) * p.W; p.hy = (0.5 - tip.y) * p.H; const r = regionAt(p); setHover(i, p, r); if (L.pokeStep(p.poke[i], z, true) && r) act(r.act, r.arg, o.src); } else L.pokeStep(p.poke[i], z, false);
+            if (inside && z < 0.1 && z > L.POKE.deep) { near = true; p.hx = (tip.x + 0.5) * p.W; p.hy = (0.5 - tip.y) * p.H; const r = regionAt(p); setHover(i, p, r); if (p.point && !r) { o.pp = p; p.point(i, p.hx, p.hy, z <= 0.012, false); } if (L.pokeStep(p.poke[i], z, true) && r) act(r.act, r.arg, o.src); } else L.pokeStep(p.poke[i], z, false);
           }
         }
       }
