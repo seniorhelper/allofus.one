@@ -6,7 +6,7 @@ import * as L from './aou-desk-logic.js';
 const Q = new URLSearchParams(location.search);
 const DEV = Q.get('dev') === '1', QA = Q.get('qa') === '1';
 /* app modules: each adds one or more sheets to the desk through the small api object passed to its default export */
-const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js'];
+const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js'];
 const $ = (id) => document.getElementById(id);
 const r2 = (v) => Math.round(v * 100) / 100;
 
