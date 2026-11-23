@@ -6,7 +6,7 @@
 <link rel="modulepreload" href="/js/aou-constellations.js"><link rel="modulepreload" href="/js/aou-config.js"><link rel="preconnect" href="https://izfccjaznlcffvjxawya.supabase.co" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=VT323&display=swap" rel="stylesheet">
 <meta property="og:type" content="website"><meta property="og:title" content="Constellations · allofus.one"><meta property="og:description" content="Every star is a person. Every shape is a Constellation. Find yours, or light a new one."><meta property="og:url" content="https://allofus.one/constellations/"><meta property="og:image" content="https://allofus.one/images/allofus-share-logo.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="allofus.one logo: All of us. One world."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://allofus.one/images/allofus-share-logo.jpg">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","name":"Constellations","url":"https://allofus.one/constellations/","inLanguage":"en-US","dateModified":"2026-10-25","isPartOf":{"@type":"WebSite","name":"allofus.one","url":"https://allofus.one/"},"description":"Communities on allofus.one, drawn as constellations of members."},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a Constellation?","acceptedAnswer":{"@type":"Answer","text":"A community on allofus.one. Each one has a genre, its own title, a live chat room, a guestbook and its own feed. Members are the stars that draw its shape."}},{"@type":"Question","name":"Can I start one?","acceptedAnswer":{"@type":"Answer","text":"Yes. Pick a genre, give it a title and a few words, and submit it. A person at allofus reviews every new Constellation before it lights up."}}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","name":"Constellations","url":"https://allofus.one/constellations/","inLanguage":"en-US","dateModified":"2026-11-22","isPartOf":{"@type":"WebSite","name":"allofus.one","url":"https://allofus.one/"},"description":"Communities on allofus.one, drawn as constellations of members."},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is a Constellation?","acceptedAnswer":{"@type":"Answer","text":"A community on allofus.one. Each one has a genre, its own title, a live chat room, a guestbook and its own feed. Members are the stars that draw its shape."}},{"@type":"Question","name":"Can I start one?","acceptedAnswer":{"@type":"Answer","text":"Yes. Pick a genre, give it a title and a few words, and submit it. A person at allofus reviews every new Constellation before it lights up."}},{"@type":"Question","name":"How long does review take?","acceptedAnswer":{"@type":"Answer","text":"Usually within a day. Until then your new Constellation shows under Yours as pending. When it is approved, its Room opens too."}}]},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"allofus.one","item":"https://allofus.one/"},{"@type":"ListItem","position":2,"name":"Constellations","item":"https://allofus.one/constellations/"}]}]}</script>
 <style>
 :root{--ink:#14183a;--mut:#5d6285;--paper:#fbfaf6;--line:#e6e0d3;--coral:#f0526e;--teal:#0fb39a;--gold:#f0b429;--r:10px;--fd:Unbounded,"Bricolage Grotesque",Arial,sans-serif;--fu:"Bricolage Grotesque","Segoe UI",Arial,sans-serif;--px:VT323,ui-monospace,monospace}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font:500 16px/1.55 var(--fu);color:var(--ink);background:var(--paper)}a{color:#2453c9}
@@ -50,6 +50,7 @@ label.f{display:grid;gap:5px;font:700 12px var(--fu);letter-spacing:.12em;text-t
 .badge88{image-rendering:pixelated;border:1px solid #000}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font:700 14px var(--fu);z-index:60;max-width:92vw}
 .q{display:grid;gap:10px}.q .win{cursor:default}
+.guide{max-width:880px}.guide h2{margin-top:1.4em}.guide h3{font:700 18px/1.3 var(--fd);margin:1.1em 0 .2em}.guide p{max-width:780px}.gl{padding-left:1.2em;columns:2 300px;column-gap:28px}.gl li{margin:.25em 0;break-inside:avoid}
 footer{border-top:1px solid #ebe5da;padding:22px 16px 14px;text-align:center;font-size:14px;color:#5b5f7c}footer nav{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
 @media (max-width:760px){header.top nav{display:none}.brand img{height:50px}.sky{height:auto;min-height:620px}.sky .counter{left:16px;right:auto}.dhead{grid-template-columns:auto 1fr}.dhead .act{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){.marquee span{animation:none;padding-left:0}}
@@ -77,6 +78,53 @@ footer{border-top:1px solid #ebe5da;padding:22px 16px 14px;text-align:center;fon
 
 <section class="band" id="mine-band" hidden aria-labelledby="h-mine"><h2 id="h-mine">Yours</h2><p class="lead">Constellations you started or joined. New ones light up after a person at allofus reviews them, usually within a day.</p><div class="grid" id="mine"></div></section>
 <section class="band" id="queue-band" hidden aria-labelledby="h-q"><h2 id="h-q">Review queue (admins)</h2><p class="lead">Approve, pause or turn down each new Constellation. Approving one also opens its Room.</p><div class="q" id="queue"></div></section>
+
+<section class="band guide" id="guide" aria-labelledby="h-guide">
+<h2 id="h-guide">What a Constellation is</h2>
+<p class="lead">A Constellation is a community on allofus.one, the free social network for adults 18+. On this page the whole sky is a live map: every star is a member, and the members of one community join up into its shape. The more people join, the more stars the shape gets.</p>
+<p>Inside every Constellation you get its own feed of posts, a live chat Room (at <a href="/chat/">/chat/</a>), a guestbook where visitors can leave a short note, a scrolling marquee and a flip counter, a webring that hops you to the next Constellation, and a tiny 88x31 badge you can put on your own website or profile. Guestbook notes go through the same safety Shield as the rest of allofus.one, so slurs and harassment are blocked before they post.</p>
+
+<h2>The twelve genres</h2>
+<p>Each Constellation picks one genre, and each genre has its own region of the sky, its own color and its own hand-drawn sign.</p>
+<ul class="gl">
+<li><b>Gathering</b>: meetups and good company.</li>
+<li><b>Party</b>: celebrations and nights out.</li>
+<li><b>Guild</b>: crafts, trades and skills.</li>
+<li><b>Salon</b>: ideas, books and big talk.</li>
+<li><b>Jam</b>: music, art and making things.</li>
+<li><b>Summit</b>: business, goals and big plans.</li>
+<li><b>Market</b>: buy, sell, swap and give.</li>
+<li><b>Quest</b>: outdoors, travel and adventure.</li>
+<li><b>Haven</b>: support, recovery and comfort.</li>
+<li><b>Kin</b>: family, parents and caregivers.</li>
+<li><b>Lab</b>: tech, science and makers.</li>
+<li><b>Arena</b>: games, sports and play.</li>
+</ul>
+
+<h2>The ten buy, sell, trade and free boards</h2>
+<p>Ten boards are always open in the feed for trading with people near you or across the country. There are no fees, no ranking games and no ads you did not ask for: open one, tap Join and post. <a href="/?v=groups">See them in the feed</a>.</p>
+<ul class="gl">
+<li><b>Trading Post</b>: anything you want to buy, sell or trade.</li>
+<li><b>Wheels</b>: cars, trucks, bikes and other vehicles.</li>
+<li><b>Home + Nest</b>: furniture and things for the home.</li>
+<li><b>Gadget Bench</b>: phones, computers and electronics.</li>
+<li><b>The Workshop</b>: tools and gear.</li>
+<li><b>Little Ones</b>: kids' clothes, toys and gear.</li>
+<li><b>Free Table</b>: things you are giving away.</li>
+<li><b>Skills + Pros</b>: services you offer or need.</li>
+<li><b>Main Street</b>: local businesses and what they offer.</li>
+<li><b>Lantern Wishes</b>: wishes you send up as sky lanterns so people can cheer you on.</li>
+</ul>
+
+<h2>Questions about Constellations</h2>
+<h3>What is a Constellation?</h3>
+<p>A community on allofus.one. Each one has a genre, its own title, a live chat room, a guestbook and its own feed. Members are the stars that draw its shape.</p>
+<h3>Can I start one?</h3>
+<p>Yes. Pick a genre, give it a title and a few words, and submit it. A person at allofus reviews every new Constellation before it lights up.</p>
+<h3>How long does review take?</h3>
+<p>Usually within a day. Until then your new Constellation shows under Yours as pending. When it is approved, its Room opens too.</p>
+<p>New to allofus.one? Read <a href="/about/">what allofus.one is</a> or the <a href="/community-rules/">community rules</a>.</p>
+</section>
 
 <footer><nav aria-label="Footer"><a href="/">Feed</a><a href="/match/">Global Match</a><a href="/chat/">Rooms</a><a href="/constellations/">Constellations</a><a href="/community-rules/">Rules</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/report-bug/?from=/constellations/">Report a bug</a></nav><p>© 2026 allofus.one · Denver, Colorado, open to the whole world · <a href="tel:18004818638">1-800-481-8638</a></p></footer>
 <script type="module">import { bootConstellations } from '/js/aou-constellations.js'; bootConstellations();</script>
