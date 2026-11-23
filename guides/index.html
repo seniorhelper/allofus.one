@@ -18,7 +18,7 @@
 <script>(function(){try{var t=localStorage.getItem('guides-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <!-- GA4 (G-XS9QVQFTYM): same tag pattern as the live worldvrmall.com pages. -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XS9QVQFTYM"></script>
-<script>window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.push(arguments)};gtag("js",new Date());gtag("config","G-XS9QVQFTYM");document.addEventListener("click",function(t){var e=t.target&&t.target.closest&&t.target.closest('a[href^="tel:"]');e&&gtag("event","phone_click",{link_text:(e.textContent||"").trim().slice(0,60),page_path:location.pathname})},!0);</script>
+<script>window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.push(arguments)};gtag("js",new Date());gtag("config","G-XS9QVQFTYM",{page_location:location.origin+location.pathname,allow_google_signals:false,allow_ad_personalization_signals:false});document.addEventListener("click",function(t){var e=t.target&&t.target.closest&&t.target.closest('a[href^="tel:"]');e&&gtag("event","phone_click",{link_text:(e.textContent||"").trim().slice(0,60),page_path:location.pathname})},!0);</script>
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
