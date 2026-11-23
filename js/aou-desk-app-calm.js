@@ -60,7 +60,7 @@ export default function (desk) {
 
   function set(k, v) { if (!build()) { desk.say('Turn Sound on first (front board)'); return; } if (ac.state === 'suspended') ac.resume().catch(() => { }); if (k === 'master') st.master = v; else st.v[k] = v; apply(true); save(); desk.redraw(sheet); }
   sheet = desk.addSheet({
-    id, title: 'Calm', W: 640, H: 640, w: 0.62, h: 0.62, home: { a: 0, e: 0.56, r: 1.15, k: 1 }, open: false,
+    id, title: 'Calm', W: 640, H: 640, w: 0.62, h: 0.62, home: { a: -1.6, e: 0.42, r: 1.1, k: 1 }, open: false,
     draw(p, c) {
       desk.base(p, 'Calm sounds'); desk.label(c, 'Made in code. Mix your own.', 604, 58, 20, '#aab3c2', 'right');
       const row = (y, name, key, val) => { desk.label(c, name, 36, y + 22, 24, '#f1f4f9'); desk.btn(p, 212, y, 56, 44, '−', id + ':vol', [key, -1], { size: 32 }); for (let i = 0; i < 10; i++) { desk.rr(c, 280 + i * 25, y + 8, 20, 28, 5); c.fillStyle = i < val ? desk.accent() : '#222a38'; c.fill(); } desk.btn(p, 540, y, 56, 44, '+', id + ':vol', [key, 1], { size: 32 }); };
