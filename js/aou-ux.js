@@ -215,9 +215,9 @@ export const UX_CSS = `
 .mo-sec{margin-top:6px}.mo-sec+.mo-sec{margin-top:14px}
 .mo-sec h4{display:flex;align-items:center;gap:8px;margin:0 2px 8px;font:800 11px/1 Poppins,Arial;letter-spacing:.09em;text-transform:uppercase;color:#334155}
 .mo-sec h4::before{content:"";width:8px;height:8px;border-radius:3px;background:var(--g)}
-.mo-sec .mo-grid{grid-template-columns:repeat(4,1fr);gap:8px}
-@media(min-width:700px){.mo-sec .mo-grid{grid-template-columns:repeat(5,1fr)}}
-.mo-sec .mo-t{gap:7px;min-height:84px;padding:10px 4px 8px;border-color:#e8edf4;font:700 11.5px/1.2 Poppins,Arial;color:#0f172a;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease}
+.mo-sec .mo-grid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
+@media(min-width:700px){.mo-sec .mo-grid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}}
+.mo-sec .mo-t .ux-em{width:32px;height:32px}.mo-sec+.mo-sec{margin-top:10px}.mo-sec h4{margin-bottom:6px}.mo-sec .mo-t{gap:4px;min-height:62px;padding:7px 4px 6px;border-color:#e8edf4;font:700 11.5px/1.2 Poppins,Arial;color:#0f172a;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease}
 .mo-sec .mo-t:hover{border-color:var(--c);transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.08)}
 .mo-sec .mo-t:focus-visible{outline:2px solid #0369a1;outline-offset:2px}
 .mo-sec .mo-t svg{width:20px;height:20px;color:inherit}
