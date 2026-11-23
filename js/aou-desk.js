@@ -155,7 +155,7 @@ export async function start() {
   }
   const accent = () => ({ wood: '#f2b45e', metal: '#8fc4ff', steel: '#bfe0ff', black: '#e8ecf2' }[S.desk.style] || S.desk.neon);
   /* the move ball: grab it (pinch or trigger) and the whole desk follows your hand, always turned to face you */
-  const ball = new T.Mesh(new T.SphereGeometry(0.032, 20, 14), M({ color: 0xffffff, roughness: 0.25, metalness: 0.2, emissive: 0x2a6cff, emissiveIntensity: 0.9 })); ball.visible = false; rig.add(ball);
+  const ball = new T.Mesh(new T.SphereGeometry(0.04, 20, 14), M({ color: 0xffffff, roughness: 0.25, metalness: 0.2, emissive: 0x2a6cff, emissiveIntensity: 0.9 })); ball.visible = false; rig.add(ball);
 
   /* ---------- panels: each is one canvas, redrawn only when its content changes ---------- */
   const R0 = 0.97, ring = new T.Group(); rig.add(ring);
@@ -168,9 +168,12 @@ export async function start() {
   }
   const P = { front: surface('front', 1024, 640, 1.0, 0.625, ring), left: surface('left', 640, 640, 0.62, 0.62, ring), right: surface('right', 640, 640, 0.62, 0.62, ring) };
   const A = 47 * Math.PI / 180;
-  P.front.mesh.position.set(0, -0.09, -R0); P.left.mesh.position.set(-Math.sin(A) * R0, -0.09, -Math.cos(A) * R0); P.right.mesh.position.set(Math.sin(A) * R0, -0.09, -Math.cos(A) * R0);
-  [P.front, P.left, P.right].forEach((p) => p.mesh.lookAt(0, 0, 0));
-  const cork = surface('cork', 640, 412, 0.62, 0.4, ring); cork.mesh.position.set(Math.sin(A) * R0, 0.45, -Math.cos(A) * R0); cork.mesh.lookAt(0, 0.2, 0);
+  const cork = surface('cork', 640, 412, 0.62, 0.4, ring); void A;
+  /* every board sits on a ball around the seat and always faces it; each has a grab bar above it (move, push, pull) with - and + to resize */
+  const BRD = { front: P.front, left: P.left, right: P.right, cork }, grips = {};
+  function placeBoards() { for (const n in BRD) { const p = BRD[n], b = S.boards[n], ce = Math.cos(b.e), r = b.r * R0; p.mesh.position.set(Math.sin(b.a) * ce * r, Math.sin(b.e) * r, -Math.cos(b.a) * ce * r); p.mesh.rotation.set(b.e, -b.a, 0, 'YXZ'); p.mesh.scale.set(p.w * b.k, p.h * b.k, 1); } }
+  for (const n in BRD) { const p = BRD[n], gs = surface('grip-' + n, 320, 56, 0.26, 0.0455, p.mesh); gs.mesh.scale.set(0.26 / p.w, 0.0455 / p.h, 1); gs.mesh.position.set(0, 0.5 + (0.0455 / 2 + 0.012) / p.h, 0); gs.grip = n; gs.mesh.visible = false; grips[n] = gs; }
+  placeBoards();
   const strip = surface('strip', 512, 96, 0.5, 0.09375, P.front.mesh); strip.mesh.scale.set(0.5 / 1.0, 0.09375 / 0.625, 1); strip.mesh.position.set(0.5 - 0.25 - 0.022, 0.5 - 0.075 - 0.03, 0.002); strip.touch = false;
   const kb = surface('kb', 1000, 600, 0.56, 0.336, rig); kb.mesh.visible = false;
   const kbTop = surface('kbtop', 1000, 110, 0.56, 0.0616, kb.mesh); kbTop.mesh.scale.set(1, 0.0616 / 0.336, 1); kbTop.mesh.position.set(0, 0.5 + 0.11, 0);
@@ -190,6 +193,7 @@ export async function start() {
   const label = (g, text, x, y, size = 24, col = '#aab3c2', align = 'left', weight = 500, maxW) => { g.fillStyle = col; g.font = `${weight} ${size}px ${FF}`; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(text, x, y, maxW); };
 
   let presenting = false, arOK = false, vrOK = false;
+  Object.values(grips).forEach((gs) => { gs.draw = () => { const g = gs.g; g.clearRect(0, 0, 320, 56); gs.regions.length = 0; rr(g, 2, 2, 316, 52, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent(); g.stroke(); btn(gs, 8, 8, 56, 40, '−', 'bsize', [gs.grip, -1], { size: 30, r: 20 }); btn(gs, 256, 8, 56, 40, '+', 'bsize', [gs.grip, 1], { size: 30, r: 20 }); g.fillStyle = accent(); for (let i = 0; i < 6; i++) { g.beginPath(); g.arc(120 + i * 16, 28, 4, 0, 6.283); g.fill(); } gs.regions.push({ x: 70, y: 2, w: 180, h: 52, act: 'grip', arg: gs.grip }); }; });
   P.front.draw = () => {
     const p = P.front, g = base(p); const h = new Date().getHours(); const hi = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
     label(g, hi + (S.name ? ', ' + S.name : ''), 36, 52, 38, '#ffffff', 'left', 700, 420); label(g, new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }), 36, 96, 24);
@@ -216,7 +220,7 @@ export async function start() {
     }
     btn(p, 36, 580, 190, 44, 'Recenter', 'recenter', null, { size: 22 }); btn(p, 238, 580, 190, 44, S.sound ? 'Sound: on' : 'Sound: off', 'sound', null, { size: 22 });
     if (presenting) btn(p, 440, 580, 190, 44, 'Leave VR', 'xr', null, { size: 22 }); else if (vrOK) btn(p, 440, 580, 190, 44, 'Enter VR', 'xr', null, { size: 22, line: accent() });
-    label(g, 'Saved on this device only', 988, 602, 20, '#7c8798', 'right');
+    if (presenting) btn(p, 798, 580, 190, 44, 'Reset boards', 'boards.reset', null, { size: 22 }); else label(g, 'Saved on this device only', 988, 602, 20, '#7c8798', 'right');
     void h;
   };
   P.left.draw = () => {
@@ -248,6 +252,9 @@ export async function start() {
       if (!S.links.length) label(g, 'Pin your sites and socials here.', 40, 130, 25);
       if (S.links.length < L.LIMITS.links) btn(p, 36, 104 + Math.max(1, S.links.length) * 58 + (S.links.length ? 0 : 10), 240, 50, '+ Add a link', 'link.add', null, { bg: '#141a24', line: accent() });
       label(g, presenting ? 'A link opens in the browser and pauses VR.' : 'A link opens in a new tab.', 36, 606, 20, '#7c8798');
+      /* in the headset a link never leaves VR without asking first */
+      if (presenting && pendLink !== null && S.links[pendLink]) { const l = S.links[pendLink]; p.regions.length = 0; rr(g, 30, 180, 580, 290, 22); g.fillStyle = '#0b0e14'; g.fill(); g.lineWidth = 4; g.strokeStyle = accent(); g.stroke(); label(g, 'Open ' + l.label + '?', 320, 232, 30, '#ffffff', 'center', 700, 540); label(g, L.hostOf(l.url), 320, 274, 22, '#aab3c2', 'center', 500, 540); label(g, 'This pauses VR and opens the browser.', 320, 312, 22, '#ffcf7a', 'center');
+        btn(p, 60, 360, 250, 80, 'Stay here', 'link.stay', null, { size: 28, on: true }); btn(p, 330, 360, 250, 80, 'Open', 'link.go', null, { size: 28, line: accent() }); }
     }
   };
   const corkBg = (() => { seed = 71; const c = cv(640, 412), g = c.getContext('2d'); g.fillStyle = '#b98a57'; g.fillRect(0, 0, 640, 412); for (let i = 0; i < 5200; i++) { g.fillStyle = rnd() < 0.5 ? `rgba(90,58,28,${0.08 + rnd() * 0.25})` : `rgba(235,200,150,${0.06 + rnd() * 0.2})`; const r = 1 + rnd() * 2.6; g.beginPath(); g.ellipse(rnd() * 640, rnd() * 412, r, r * (0.5 + rnd() * 0.6), rnd() * 3, 0, 6.283); g.fill(); } g.lineWidth = 18; g.strokeStyle = '#5a3d22'; g.strokeRect(9, 9, 622, 394); g.lineWidth = 3; g.strokeStyle = 'rgba(255,220,170,0.25)'; g.strokeRect(19, 19, 602, 374); return c; })();
@@ -271,7 +278,7 @@ export async function start() {
   function say(msg, ms = 3200) { stripMsg = msg; stripUntil = Date.now() + ms; const t = $('dk-toast'); if (t) { t.textContent = msg; t.hidden = false; clearTimeout(say.t); say.t = setTimeout(() => { t.hidden = true; }, ms); } }
 
   /* ---------- desk keyboard (headset typing) ---------- */
-  const KROWS = ['1234567890', 'qwertyuiop', "asdfghjkl'", '^zxcvbnm,.', '-/:@_!?&+#']; let shift = false, edit = null, kbPos = null, fpsNow = 0; const HINT = 'Tap a note to write on it';
+  const KROWS = ['1234567890', 'qwertyuiop', "asdfghjkl'", '^zxcvbnm,.', '-/:@_!?&+#']; let shift = false, edit = null, kbPos = null, fpsNow = 0; const HINT = 'Tap a note to write on it'; let pendLink = null;
   kb.draw = () => {
     const p = kb, g = p.g; g.clearRect(0, 0, p.W, p.H); p.regions.length = 0; rr(g, 2, 2, p.W - 4, p.H - 4, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 4; g.strokeStyle = accent(); g.stroke();
     KROWS.forEach((row, r) => [...row].forEach((ch, c) => { const isShift = ch === '^'; const k = isShift ? '⇧' : (shift ? ch.toUpperCase() : ch); btn(p, 8 + c * 90, 10 + r * 97, 84, 89, k, 'key', isShift ? 'SHIFT' : k, { size: 40, on: isShift && shift, bg: '#222a38' }); }));
@@ -300,14 +307,14 @@ export async function start() {
 
   /* ---------- actions ---------- */
   let saveT = 0; function commit(...dirty) { clearTimeout(saveT); saveT = setTimeout(() => L.save(localStorage, S), 250); (dirty.length ? dirty : [P.front, P.left, P.right]).forEach((p) => { p.dirty = true; }); if (!dirty.length || dirty.includes(P.right)) cork.dirty = true; sheet(); }
-  const all = () => { commit(P.front, P.left, P.right, kb); };
+  const all = () => { commit(P.front, P.left, P.right, kb); for (const n in grips) grips[n].dirty = true; };
   function act(a, arg, src) {
     audio(); beep(660);
     if (src && src.gamepad && src.gamepad.hapticActuators && src.gamepad.hapticActuators[0]) { try { src.gamepad.hapticActuators[0].pulse(0.35, 25); } catch (e) { } }
     const k = S.desk;
     switch (a) {
       case 'tab': S.tab = arg; commit(P.front); break;
-      case 'rtab': S.rtab = arg; commit(P.right); break;
+      case 'rtab': S.rtab = arg; pendLink = null; commit(P.right); break;
       case 'focus': S.focus = !S.focus; applyRoom(); commit(P.front); break;
       case 'sound': S.sound = !S.sound; audio(); commit(P.front); break;
       case 'todo.toggle': if (S.todos[arg]) { S.todos[arg].done = !S.todos[arg].done; commit(P.front); } break;
@@ -333,10 +340,15 @@ export async function start() {
       case 'note.color': if (S.notes[arg]) { S.notes[arg].c = (S.notes[arg].c + 1) % L.NOTE_COLORS.length; commit(P.right); } break;
       case 'link.add': askText('Web address (for example yoursite.com)', '', L.LIMITS.urlLen, (t) => { const url = L.safeUrl(t); if (!url) { if (t) say('That is not a web address'); return; } setTimeout(() => askText('Name for this link', L.hostOf(url), L.LIMITS.labelLen, (n) => { if (S.links.length < L.LIMITS.links) { S.links.push({ label: n || L.hostOf(url), url }); S.rtab = 'links'; commit(P.right); } }), 60); }); break;
       case 'link.del': S.links.splice(arg, 1); commit(P.right); break;
-      case 'link.open': openLink(arg); break;
+      case 'link.open': if (presenting) { pendLink = arg; commit(P.right); } else openLink(arg); break;
+      case 'link.go': { const i = pendLink; pendLink = null; commit(P.right); if (i !== null) openLink(i); break; }
+      case 'link.stay': pendLink = null; commit(P.right); break;
       case 'recenter': if (presenting) { recenterAt = performance.now() + 3000; say('Sit back. Look straight ahead.', 3000); } else { yaw = 0; pitch = PITCH0; } break;
       case 'xr': toggleXR(); break;
       case 'key': key(arg); break;
+      case 'grip': break;
+      case 'bsize': { const b = S.boards[arg[0]]; if (b) { b.k = r2(Math.min(L.BLIM.kMax, Math.max(L.BLIM.kMin, b.k + arg[1] * 0.1))); clearFix(arg[0]); commit(P.left); } break; }
+      case 'boards.reset': S.boards = L.cleanBoards(null); layout(); commit(P.front); say('Boards back to their places'); break;
     }
   }
   function openLink(i) {
@@ -350,26 +362,30 @@ export async function start() {
     Object.keys(rooms).forEach((id) => { rooms[id].visible = id === S.room; }); const l = LIGHT[S.room], f = S.focus ? 0.45 : 1;
     hemi.color.set(l[0]); hemi.groundColor.set(l[1]); hemi.intensity = l[2] * (S.focus ? 0.7 : 1); sun.color.set(l[3]); sun.intensity = l[4] * (S.focus ? 0.7 : 1);
     dimmable.forEach((m) => { if (m._c === undefined) m._c = m.color.getHex(); m.color.setHex(m._c).multiplyScalar(f); });
-    const ar = presenting && S.room === 'real'; scene.background = ar ? null : (bg || (bg = new T.Color(0x0b0d12)));
+    scene.background = presenting && arSession ? null : (bg || (bg = new T.Color(0x0b0d12)));
+    for (const n in grips) grips[n].mesh.visible = presenting;
     P.left.mesh.visible = P.right.mesh.visible = !S.focus; cork.mesh.visible = S.cork && !S.focus; ball.visible = presenting; planetG.visible = S.planets;
     if (S.room === 'stars') { loadStars(); skyTurn.rotation.y = -Math.PI / 2 - L.siderealAngle(Date.now(), new Date().getTimezoneOffset()); } if (starPts) starPts.material.uniforms.uK.value = presenting ? 2.4 : R.getPixelRatio() * 1.15;
   }
-  let bg = null;
+  let bg = null, arSession = false;
   function setRoom(id) {
     if (!L.ROOMS.includes(id) || (id === 'real' && !arOK)) return;
     if (id === 'stars' && S.room === 'stars') { S.planets = !S.planets; applyRoom(); commit(P.left); say(S.planets ? 'Planets: on' : 'Planets: off'); return; }
-    if (id === 'real') say('My room is a prototype'); const was = S.room; S.room = id; applyRoom(); commit(P.left);
-    if (presenting && (was === 'real') !== (id === 'real')) { $('dk-go').hidden = true; resume = true; say('Switching rooms. Tap Enter VR again.'); const s = R.xr.getSession(); if (s) s.end().catch(() => { }); }
+    if (id === 'real' && presenting && !arSession) { say('My room needs a fresh start: leave VR, then enter again'); return; }
+    S.room = id; applyRoom(); commit(P.left);
   }
   let resume = false;
   function layout() {
-    const near = S.dist === 'near', Rr = near ? 0.46 : 0.27 + S.desk.d, s = Rr / R0;
+    placeBoards(); const near = S.dist === 'near', Rr = near ? 0.46 : 0.27 + S.desk.d, s = Rr / R0;
     /* the boards never dip into the desk: the ring rises until their lowest edge clears the desk top */
-    ring.position.set(0, Math.max(seat.eye, seat.top + 0.03 + 0.4025 * s), 0); ring.scale.setScalar(s);
+    ring.position.set(0, Math.max(seat.eye, seat.top + 0.03 + 0.4025 * s), 0); ring.scale.setScalar(s); ring.rotation.x = presenting ? gazeUp : 0;
     if (kbPos) kb.mesh.position.copy(kbPos); else kb.mesh.position.set(0, L.kbY(seat.top, seat.eye), -0.33); kb.mesh.rotation.set(-Math.PI / 2 + L.KB.tilt, 0, 0);
-    ball.position.set(S.desk.w / 2 - 0.12, seat.top + 0.05, FRONT - 0.1);
+    ball.position.set(Math.min(S.desk.w / 2 - 0.12, 0.34), seat.top + 0.06, FRONT - 0.12);
     scene.updateMatrixWorld(true); surfaces.forEach((p) => { p.inv.copy(p.mesh.matrixWorld).invert(); const e = p.mesh.matrixWorld.elements; p.wx = Math.hypot(e[0], e[1], e[2]); p.wy = Math.hypot(e[4], e[5], e[6]); p.sc = Math.hypot(e[8], e[9], e[10]); });
   }
+  /* a moved or resized board is nudged up until its lowest edge clears the desk top */
+  const cnr = new T.Vector3();
+  function clearFix(n) { const p = BRD[n], b = S.boards[n]; for (let k = 0; k < 5; k++) { layout(); let lo = 1e9; for (let c = 0; c < 2; c++) { cnr.set(c ? 0.5 : -0.5, -0.5, 0).applyMatrix4(p.mesh.matrixWorld); if (cnr.y < lo) lo = cnr.y; } const need = rig.position.y + seat.top + 0.03 - lo; if (need <= 0.001 || b.e >= L.BLIM.eMax) break; b.e = Math.min(L.BLIM.eMax, b.e + need / (b.r * R0 * ring.scale.x) + 0.01); } }
   function reseat(headY) { if (headY) seatHead = headY; seat = L.seatFor(seatHead, S.desk.hOff); buildDesk(); layout(); if (!presenting) camera.position.set(0, seat.eye + 0.1, 0.8); }
   let seatHead = 1.2;
 
@@ -407,7 +423,14 @@ export async function start() {
   R.domElement.addEventListener('pointerleave', () => { if (!down) setHover(2, null, null); });
 
   /* headset: controllers and bare hands */
-  let drag = null; const ballW = new T.Vector3();
+  let drag = null, grab = null, bdrag = null, gazeUp = 0, tipShown = false; const ballW = new T.Vector3(), bl = new T.Vector3();
+  const reachOf = (o) => { head.setFromMatrixPosition(camera.matrixWorld); return Math.hypot(o.O.x - head.x, o.O.z - head.z); };
+  function boardStart(i, o, name) { const b = S.boards[name]; if (!b) return; bl.copy(o.O).addScaledVector(o.D, o.hd || 1); ring.worldToLocal(bl); const len = Math.max(0.05, bl.length()); bdrag = { i, name, g0: o.hd || 1, r0: reachOf(o), da: b.a - Math.atan2(bl.x, -bl.z), de: b.e - Math.asin(Math.max(-1, Math.min(1, bl.y / len))), kr: b.r / (len / R0) }; audio(); beep(440, 0.08); }
+  function boardStep(o) {
+    const b = S.boards[bdrag.name], g = Math.max(0.25, Math.min(3.5, bdrag.g0 + (reachOf(o) - bdrag.r0) * 3)); bl.copy(o.O).addScaledVector(o.D, g); ring.worldToLocal(bl); const len = bl.length(); if (len < 0.1) return;
+    b.a = Math.max(-L.BLIM.a, Math.min(L.BLIM.a, Math.atan2(bl.x, -bl.z) + bdrag.da)); b.e = Math.max(L.BLIM.eMin, Math.min(L.BLIM.eMax, Math.asin(Math.max(-1, Math.min(1, bl.y / len))) + bdrag.de)); b.r = Math.max(L.BLIM.rMin, Math.min(L.BLIM.rMax, len / R0 * bdrag.kr)); placeBoards(); o.line.scale.z = g; o.line.visible = true; o.dot.visible = false;
+  }
+  function boardEnd() { const n = bdrag.name; bdrag = null; clearFix(n); layout(); commit(P.left); beep(660, 0.08); }
   function dragStep(o) {
     head.setFromMatrixPosition(camera.matrixWorld); const reach = Math.hypot(o.O.x - head.x, o.O.z - head.z), g = Math.max(0.05, Math.min(3.5, drag.g0 + (reach - drag.r0) * 3));
     const bx = o.O.x + o.D.x * g, bz = o.O.z + o.D.z * g, y = rig.rotation.y, sn = Math.sin(y), cs = Math.cos(y), lx = ball.position.x, lz = ball.position.z, zc = FRONT - S.desk.d / 2;
@@ -417,16 +440,17 @@ export async function start() {
     o.line.scale.z = g; o.line.visible = true; o.dot.visible = false;
   }
   const ctl = [0, 1].map((i) => {
-    const c = R.xr.getController(i), h = R.xr.getHand(i); scene.add(c, h); const o = { c, h, src: null, isHand: false, on: false, near: false, O: new T.Vector3(), D: new T.Vector3(), ball: false, hold: 0 };
+    const c = R.xr.getController(i), h = R.xr.getHand(i); scene.add(c, h); const o = { c, h, src: null, isHand: false, on: false, near: false, O: new T.Vector3(), D: new T.Vector3(), ball: false, hold: 0, sel: false, free: false };
     const line = new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0, 0, 0), new T.Vector3(0, 0, -1)]), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })); const dot = new T.Mesh(new T.SphereGeometry(0.006, 10, 8), new T.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
     line.visible = dot.visible = false; c.add(line); scene.add(dot); o.line = line; o.dot = dot;
     c.addEventListener('connected', (e) => { o.src = e.data; o.isHand = !!(e.data && e.data.hand); o.on = true; });
-    c.addEventListener('disconnected', () => { o.src = null; o.on = false; o.ball = false; o.hold = 0; if (drag && drag.i === i) { drag = null; layout(); } line.visible = dot.visible = false; setHover(i, null, null); });
+    c.addEventListener('disconnected', () => { o.src = null; o.on = false; o.ball = false; o.hold = 0; o.sel = false; if (drag && drag.i === i) { drag = null; layout(); } line.visible = dot.visible = false; setHover(i, null, null); });
     c.addEventListener('selectstart', () => {
+      o.sel = true; o.free = false;
       if (o.ball && !drag) { head.setFromMatrixPosition(camera.matrixWorld); drag = { i, g0: Math.max(0.05, ballW.distanceTo(o.O)), r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; audio(); beep(440, 0.08); return; }
-      if (!o.near && hov[i] && hovP[i]) { const r = hov[i]; act(r.act, r.arg, o.src); } else if (!o.near && !edit && seated) o.hold = performance.now();
+      if (!o.near && hov[i] && hovP[i]) { const r = hov[i]; if (r.act === 'grip') { if (!bdrag && !drag && !grab) boardStart(i, o, r.arg); } else act(r.act, r.arg, o.src); } else if (!o.near && !edit && seated) { o.hold = performance.now(); o.free = true; }
     });
-    c.addEventListener('selectend', () => { o.hold = 0; if (drag && drag.i === i) { drag = null; layout(); beep(660, 0.08); } });
+    c.addEventListener('selectend', () => { o.hold = 0; o.sel = false; if (bdrag && bdrag.i === i) boardEnd(); if (drag && drag.i === i) { drag = null; layout(); beep(660, 0.08); } });
     return o;
   });
   const JN = 25, joints = new T.InstancedMesh(new T.SphereGeometry(1, 8, 6), new T.MeshStandardMaterial({ color: 0xdfe6f2, roughness: 0.5, metalness: 0.1 }), JN * 2); joints.frustumCulled = false; joints.count = 0; scene.add(joints); joints.instanceMatrix.setUsage(T.DynamicDrawUsage);
@@ -449,15 +473,25 @@ export async function start() {
       o.near = near; const live = o.on && o.c.visible !== false;
       if (!live) { o.line.visible = o.dot.visible = false; o.ball = false; o.hold = 0; setHover(i, null, null); continue; }
       tmpM.identity().extractRotation(o.c.matrixWorld); o.O.setFromMatrixPosition(o.c.matrixWorld); o.D.set(0, 0, -1).applyMatrix4(tmpM);
+      if (grab) { setHover(i, null, null); o.ball = false; o.hold = 0; o.line.visible = o.dot.visible = false; continue; }
+      if (bdrag) { setHover(i, null, null); o.ball = false; o.hold = 0; if (bdrag.i === i) boardStep(o); else o.line.visible = o.dot.visible = false; continue; }
       if (drag) { setHover(i, null, null); o.ball = false; if (drag.i === i) dragStep(o); else o.line.visible = o.dot.visible = false; continue; }
       if (near && !grabNear) { o.line.visible = o.dot.visible = false; o.ball = false; o.hold = 0; continue; }
       tip.copy(ballW).sub(o.O); const tb = tip.dot(o.D), miss = Math.sqrt(Math.max(0, tip.lengthSq() - tb * tb)); const p = grabNear ? null : rayHit(o.O, o.D);
       o.ball = !edit && (grabNear || (tb > 0 && miss < 0.05 + tb * 0.035 && (!p || tb < hitDist + 0.05)));
       if (o.ball) { setHover(i, null, null); o.hold = 0; o.line.scale.z = Math.max(0.02, tb); o.dot.position.copy(ballW); o.line.visible = !grabNear; o.dot.visible = true; }
-      else if (p) { o.hold = 0; setHover(i, p, regionAt(p)); o.line.scale.z = hitDist; o.dot.position.copy(o.O).addScaledVector(o.D, hitDist); o.line.visible = o.dot.visible = true; }
+      else if (p) { o.hold = 0; o.hd = hitDist; setHover(i, p, regionAt(p)); o.line.scale.z = hitDist; o.dot.position.copy(o.O).addScaledVector(o.D, hitDist); o.line.visible = o.dot.visible = true; }
       else { setHover(i, null, null); o.line.scale.z = 0.6; o.line.visible = !o.isHand; o.dot.visible = false; if (o.hold && now - o.hold > 1100) { o.hold = 0; placeSeat(); beep(520, 0.2); say('Desk brought to you'); } }
     }
-    ball.scale.setScalar(drag || ctl[0].ball || ctl[1].ball ? 1.4 : 1);
+    /* two-hand grab: pinch both hands on nothing, then pull, push, lift or spread. The whole desk follows (2.5x), spreading the hands changes its width. */
+    const a = ctl[0], b = ctl[1], both = a.sel && b.sel && a.on && b.on && !drag && !bdrag && !edit;
+    if (both && (grab || (a.free && b.free))) {
+      const mx = (a.O.x + b.O.x) / 2, my = (a.O.y + b.O.y) / 2, mz = (a.O.z + b.O.z) / 2, dist = Math.max(0.05, a.O.distanceTo(b.O));
+      if (!grab) { grab = { mx, my, mz, dist, rx: rig.position.x, ry: rig.position.y, rz: rig.position.z, w: S.desk.w }; a.hold = b.hold = 0; beep(440, 0.08); }
+      rig.position.set(grab.rx + (mx - grab.mx) * 2.5, Math.max(-0.45, Math.min(0.5, grab.ry + (my - grab.my) * 1.5)), grab.rz + (mz - grab.mz) * 2.5);
+      const w = Math.min(L.DESK.wMax, Math.max(L.DESK.wMin, Math.round(grab.w * dist / grab.dist * 10) / 10)); if (w !== S.desk.w) { S.desk.w = w; buildDesk(); ball.position.x = Math.min(w / 2 - 0.12, 0.34); beep(880, 0.02, 0.03); }
+    } else if (grab) { grab = null; layout(); commit(P.left); beep(660, 0.08); }
+    ball.scale.setScalar(drag || grab || ctl[0].ball || ctl[1].ball ? 1.4 : 1);
     if (joints.count !== n || n) { joints.count = n; joints.instanceMatrix.needsUpdate = true; }
   }
 
@@ -466,7 +500,9 @@ export async function start() {
   function placeSeat() {
     /* in front of the face: the desk is aimed along where the head points, flattened to the floor (safe even when looking down) */
     head.setFromMatrixPosition(camera.matrixWorld); D.set(0, 0, -1).transformDirection(camera.matrixWorld); if (Math.hypot(D.x, D.z) > 0.25) rig.rotation.set(0, Math.atan2(-D.x, -D.z), 0);
-    rig.position.set(head.x, 0, head.z); kbPos = null; drag = null;
+    /* leaning back: the boards swing up to meet the eyes (never down into the desk) */
+    gazeUp = Math.max(0, Math.min(0.6, Math.asin(Math.max(-1, Math.min(1, D.y))))); grab = null;
+    rig.position.set(head.x, 0, head.z); kbPos = null; drag = null; bdrag = null; if (!tipShown) { tipShown = true; say('Pinch both hands and pull to move the desk', 7000); }
     reseat(Math.min(2.1, Math.max(0.8, head.y))); seated = true; rig.visible = true;
   }
 
@@ -475,8 +511,11 @@ export async function start() {
   async function toggleXR() {
     const cur = R.xr.getSession(); if (cur) { cur.end().catch(() => { }); return; }
     if (!navigator.xr) { say('This browser has no VR mode. Open this page in a headset browser.'); return; }
-    const mode = S.room === 'real' && arOK ? 'immersive-ar' : 'immersive-vr';
-    try { audio(); const s = await navigator.xr.requestSession(mode, { requiredFeatures: ['local-floor'], optionalFeatures: ['hand-tracking'] }); await R.xr.setSession(s); } catch (e) { say('VR could not start: ' + (e && e.name || 'error')); }
+    /* one see-through-capable session for every room (the rooms are closed boxes and domes that cover the real room), so changing rooms never leaves VR */
+    const init = { requiredFeatures: ['local-floor'], optionalFeatures: ['hand-tracking'] }; audio(); let s = null;
+    if (arOK) { try { s = await navigator.xr.requestSession('immersive-ar', init); arSession = true; } catch (e) { s = null; } }
+    if (!s) { try { s = await navigator.xr.requestSession('immersive-vr', init); arSession = false; } catch (e) { say('VR could not start: ' + (e && e.name || 'error')); return; } }
+    try { await R.xr.setSession(s); } catch (e) { say('VR could not start: ' + (e && e.name || 'error')); }
   }
   R.xr.addEventListener('sessionstart', () => {
     presenting = true; seated = false; still = 0; drag = null; rig.visible = false; sessT0 = performance.now(); Object.assign(stat, { n: 0, slow: 0, worst: 0, sum: 0, t0: sessT0, cpuMax: 0 }); setHover(2, null, null); $('dk-go').hidden = true; document.body.classList.add('dk-xr');
@@ -484,8 +523,8 @@ export async function start() {
     applyRoom(); all();
   });
   R.xr.addEventListener('sessionend', () => {
-    presenting = false; drag = null; kbPos = null; rig.visible = true; rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); ball.scale.setScalar(1); if (edit) key('CANCEL'); ctl.forEach((o, i) => { o.line.visible = o.dot.visible = false; setHover(i, null, null); }); joints.count = 0; document.body.classList.remove('dk-xr');
-    if (stat.n > 30) { const secs = (performance.now() - stat.t0) / 1000; const run = { when: new Date().toISOString(), secs: Math.round(secs), fps: +(stat.n / secs).toFixed(1), slow: stat.slow, worstMs: +stat.worst.toFixed(1), cpuMaxMs: +stat.cpuMax.toFixed(1), calls: lastCalls, tris: lastTris }; try { localStorage.setItem('aou_desk_lastrun', JSON.stringify(run)); } catch (e) { } }
+    presenting = false; drag = null; grab = null; bdrag = null; gazeUp = 0; tipShown = false; kbPos = null; pendLink = null; rig.visible = true; rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); ball.scale.setScalar(1); if (edit) key('CANCEL'); ctl.forEach((o, i) => { o.line.visible = o.dot.visible = false; setHover(i, null, null); }); joints.count = 0; document.body.classList.remove('dk-xr');
+    if (stat.n > 30) { const secs = (performance.now() - stat.t0 - 3000) / 1000; const run = { when: new Date().toISOString(), secs: Math.round(secs), fps: +(stat.n / secs).toFixed(1), slow: stat.slow, worstMs: +stat.worst.toFixed(1), cpuMaxMs: +stat.cpuMax.toFixed(1), calls: lastCalls, tris: lastTris }; try { localStorage.setItem('aou_desk_lastrun', JSON.stringify(run)); } catch (e) { } }
     reseat(1.2); applyRoom(); resize(); all(); if (resume) { resume = false; }
   });
 
@@ -559,6 +598,9 @@ export async function start() {
   R.setAnimationLoop(frame); $('dk-load').hidden = true; setTimeout(() => { const h = $('dk-hint'); if (h) h.hidden = true; }, 9000);
   if (QA) window.__desk = { get S() { return S; }, act, P, surfaces, stat, info: () => ({ calls: lastCalls, tris: lastTris, programs: R.info.programs.length, textures: R.info.memory.textures, geometries: R.info.memory.geometries }), look: (y, p) => { yaw = y; pitch = p; }, key, get edit() { return edit; },
     dragTest: (o3, d3, steps) => { const o = ctl[0]; scene.updateMatrixWorld(true); ballW.setFromMatrixPosition(ball.matrixWorld); o.O.set(o3[0], o3[1], o3[2]); o.D.set(d3[0], d3[1], d3[2]).normalize(); head.setFromMatrixPosition(camera.matrixWorld); const g0 = ballW.distanceTo(o.O); drag = { i: 0, g0, r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; for (let k = 0; k < steps; k++) dragStep(o); drag = null; o.line.visible = false; layout(); ballW.setFromMatrixPosition(ball.matrixWorld); const c = new T.Vector3(0, 0, FRONT - S.desk.d / 2).applyMatrix4(rig.matrixWorld); return { want: [o.O.x + o.D.x * g0, o.O.z + o.D.z * g0], ball: [ballW.x, ballW.z], centre: [c.x, c.z], head: [head.x, head.z], yaw: rig.rotation.y }; },
+    dbg: () => ({ presenting, arSession, seated, drag: !!drag, grab: !!grab, gazeUp: r2(gazeUp), lift: r2(rig.position.y), sel: ctl.map((o) => o.sel), free: ctl.map((o) => o.free), edit: !!edit, fps: fpsNow, room: S.room, head: head.toArray().map(r2), ball: ballW.toArray().map(r2), ballVisible: ball.visible, rig: [r2(rig.position.x), r2(rig.position.z), r2(rig.rotation.y)], top: r2(seat.top), ctl: ctl.map((o) => ({ on: o.on, hand: o.isHand, vis: o.c.visible, ball: o.ball, near: o.near, hold: !!o.hold, O: o.O.toArray().map(r2), D: o.D.toArray().map(r2) })) }),
+    boardTest: (name, o3, d3, to3, steps) => { const o = ctl[0]; layout(); o.O.set(o3[0], o3[1], o3[2]); o.D.set(d3[0], d3[1], d3[2]).normalize(); const h = rayHit(o.O, o.D); o.hd = hitDist; const reg = h ? regionAt(h) : null; if (!h || !reg || reg.act !== 'grip') return { miss: h ? h.name : null, region: reg && reg.act }; boardStart(0, o, reg.arg); o.D.set(to3[0], to3[1], to3[2]).normalize(); for (let k = 0; k < (steps || 1); k++) boardStep(o); boardEnd(); o.line.visible = false; return { name: reg.arg, b: S.boards[reg.arg] }; },
+    grips, BRD, clearFix,
     home: () => { rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); layout(); },
     sim: (headY) => { presenting = true; edit = null; reseat(headY || 1.18); applyRoom(); all(); return seat; }, unsim: () => { presenting = false; reseat(1.2); all(); },
     poke: (name, px, py, z) => { const p = surfaces.find((s) => s.name === name); p.hx = px; p.hy = py; const r = regionAt(p); const f = L.pokeStep(p.poke[0], z, true); if (f && r) act(r.act, r.arg); return { fired: f, region: r && r.act }; },
