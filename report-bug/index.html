@@ -76,6 +76,8 @@
     e.preventDefault(); msg.className = 'msg'; msg.textContent = '';
     var text = note.value.trim(), area = document.getElementById('b-area').value, email = document.getElementById('b-email').value.trim();
     if (document.getElementById('b-web').value) { msg.className = 'msg ok'; msg.textContent = 'Thank you. Your report was sent.'; f.reset(); return; } /* a bot filled the hidden field */
+    if (Date.now() - (window.__bugT0 || (window.__bugT0 = performance.timing ? performance.timing.navigationStart : Date.now())) < 3000) { msg.className = 'msg err'; msg.textContent = 'One moment, then press Send again.'; return; } /* nobody types a report in under 3 seconds */
+    if (text.length > 4000) { msg.className = 'msg err'; msg.textContent = 'Please keep it under 4,000 characters.'; note.focus(); return; }
     if (text.length < 4) { msg.className = 'msg err'; msg.textContent = 'Please write a few words about what happened.'; note.focus(); return; }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.className = 'msg err'; msg.textContent = 'That email address looks incomplete. Fix it or leave it empty.'; document.getElementById('b-email').focus(); return; }
     var row = { kind: 'bug', note: (text + (email ? ' · reply to ' + email : '')).slice(0, 1150), page: (from || '/report-bug/').slice(0, 300), ua: navigator.userAgent.slice(0, 160), extra: { site: location.hostname, form: 'report-bug', area: area || null, viewport: innerWidth + 'x' + innerHeight } };

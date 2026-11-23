@@ -340,7 +340,7 @@ app.start(async (a) => {
   buildLife(W);
   const lumi = initLumi(a, W);
   // one login across our worlds: arriving from World VR Mall signed in
-  if (/aou_sso=/.test(location.hash)) { try { const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'); await ssoReceive(createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY)); } catch (e) { } }
+  if (/aou_sso=/.test(location.hash)) { try { const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm'); await ssoReceive(createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY)); } catch (e) { } }
   const UI = await initSocial(a, W, lumi);
   let P = null, C = null; // the plus layer answers ownership + fingerprint questions for the estates
   const eapi = { isNight: () => !!a.isNight, isOwner: (s) => !!(P && P.isOwner(s)), deviceUnlock: (s) => P ? P.deviceUnlock(s) : Promise.resolve(false), openLifeboard: (t) => W.api.openLifeboard(t), openRoom: (id) => W.api.openRoom(id), openCollab: () => W.api.openCollab(), openWorlds: () => P && P.openWorlds(), openConference: () => C && C.openConference(), joinVoice: (r) => P && P.joinVoice(r), setNight: (n) => { a.setSky(n ? SKIES.night : SKIES.day, { night: !!n }); } };

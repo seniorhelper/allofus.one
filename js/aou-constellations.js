@@ -184,7 +184,7 @@ export async function bootConstellations() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.win[data-open]')) openDetail(e.target.dataset.open); });
   const bump = (slug, d) => { const c = COUNTS.get(slug) || { members: 0 }; c.members = Math.max(0, Number(c.members) + d); COUNTS.set(slug, c); };
   try {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm');
     sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); try { (await import('./aou-safety.js')).guardClient(sb); } catch (e) { }
     const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {

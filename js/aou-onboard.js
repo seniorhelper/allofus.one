@@ -124,11 +124,12 @@ const isFounderEmail = (e) => { const x = String(e || '').toLowerCase(); return 
 export const SLUG_ALIAS = { 'raised-in-a-barn-furniture': 'raised-in-a-barn' };
 export const canonSlug = (s) => SLUG_ALIAS[s] || s;
 export const VIP = {
-  'wasraisedinabarn@gmail.com': { name: 'Ritchie', full: 'Ritchie', slugs: ['raised-in-a-barn'], style: 'simple', vrHome: 'art', mallStore: 'https://worldvrmall.com/mall/?to=raised-in-a-barn',
+  /* keyed by a one-way fingerprint of the member's sign-in address: no personal address ships in public code */
+  'nv2t90.1hr2fyo': { name: 'Ritchie', full: 'Ritchie', slugs: ['raised-in-a-barn'], style: 'simple', vrHome: 'art', mallStore: 'https://worldvrmall.com/mall/?to=raised-in-a-barn',
     welcome: 'We will go one small step at a time. Nothing here can break, and you can change anything later.',
     bio: 'I build furniture by hand from reclaimed Colorado barnwood. Every piece is made to order.' }
 };
-export const vipFor = (me) => { try { return (me && me.email && VIP[String(me.email).toLowerCase().trim()]) || null; } catch (e) { return null; } };
+export const vipFor = (me) => { try { return (me && me.email && VIP[_oh(String(me.email).toLowerCase().trim())]) || null; } catch (e) { return null; } };
 export const vipCanEdit = (me, slug) => { const v = vipFor(me); return !!(v && slug && v.slugs.includes(canonSlug(slug))); };
 const CL = { dueCalled: false, opened: false, last: {} };
 const remember = (ctx) => { if (!ctx) return; for (const k of ['sb', 'me', 'toast', 'upload']) if (ctx[k]) CL.last[k] = ctx[k]; };
@@ -171,7 +172,7 @@ let SBP = null;
 async function getSB() {
   if (CL.last.sb && CL.last.sb.from && CL.last.sb.auth) return CL.last.sb;
   if (window.__aouLateSB) return window.__aouLateSB;
-  if (!SBP) SBP = (async () => { const [{ createClient }, { CONFIG }] = await Promise.all([import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'), import('./aou-config.js')]); if (!CONFIG.SUPABASE_URL) return null; const c0 = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { detectSessionInUrl: false } }); try { (await import('./aou-safety.js')).guardClient(c0); } catch (e) { } return c0; })().catch(() => null);
+  if (!SBP) SBP = (async () => { const [{ createClient }, { CONFIG }] = await Promise.all([import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm'), import('./aou-config.js')]); if (!CONFIG.SUPABASE_URL) return null; const c0 = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, { auth: { detectSessionInUrl: false } }); try { (await import('./aou-safety.js')).guardClient(c0); } catch (e) { } return c0; })().catch(() => null);
   return SBP;
 }
 export async function founderConnect(me) {

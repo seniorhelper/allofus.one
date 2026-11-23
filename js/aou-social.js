@@ -83,7 +83,7 @@ function demoDB() {
 
 function shrinkFace(src) { return new Promise((res) => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = 128; c.height = 160; c.getContext('2d').drawImage(im, 0, 0, 128, 160); let u = ''; try { u = c.toDataURL('image/webp', 0.82); } catch (e) { } if (!u || !u.startsWith('data:image/webp')) u = c.toDataURL('image/png'); res(u); }; im.onerror = () => res(null); im.src = src; }); }
 async function liveDB(app, W) {
-  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm');
   const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); try { (await import('./aou-safety.js')).guardClient(sb); } catch (e) { }
   let me = null; const listeners = []; let conns = {}; const threads = {}; const rooms = {};
   const fire = (e) => listeners.forEach(f => f(e));

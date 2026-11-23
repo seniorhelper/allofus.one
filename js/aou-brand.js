@@ -23,7 +23,8 @@ export const NETWORK_ADMINS = [];
 export const FOUNDER_ID = '320bf5d4-2d2d-482e-8633-87ced55e4155';
 /* default VR home spot per network brand (matches the v17 seed) and the emails pre-linked as managers */
 export const VR_HOME = { 'eye-to-ad-media': 'gate', 'search-converts': 'city', 'aging-safely-baths': 'city', 'showers4less': 'city', 'bighorn-painting': 'city', 'painting-brighton': 'city', 'raised-in-a-barn': 'art', 'bear-creek-auto-glass': 'city', 'my-sales-help': 'library', 'world-vr-mall': 'starport', 'gnomad-promotions': 'plaza' };
-export const PRELINK = { 'raised-in-a-barn': ['wasraisedinabarn@gmail.com'] };
+/* pre-links live in the private page_prelinks table (server side); no member address ships in public code */
+export const PRELINK = {};
 /* v31 (Nov 3 2026): deleted pages stay deleted. Built-in network brands used to re-render from this file even after their
    database row was deleted (why "Delete" on Bighorn Painting looked like it did nothing). A retired slug is dropped from
    BRANDS everywhere: the code list below (owner asked), this device (until the SQL is run) and public.page_retired (v31 SQL). */

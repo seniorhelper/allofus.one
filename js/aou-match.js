@@ -244,7 +244,7 @@ export async function bootMatch() {
   drawBoard();
   // Supabase (same origin as the feed, so the member's session is shared)
   try {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/+esm');
     sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); try { (await import('./aou-safety.js')).guardClient(sb); } catch (e) { }
     const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {
