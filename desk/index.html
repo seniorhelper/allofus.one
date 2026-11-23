@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Desk · early test | allofus.one</title>
+<meta name="description" content="An early test of a VR desk on allofus.one. Not open yet.">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#0b0d12"><link rel="icon" href="/images/favicon-192.png">
+<style>
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;font:500 16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#eef1f6;background:#0b0d12;overflow:hidden}
+button,input,select,textarea{font:inherit}button{cursor:pointer}:focus-visible{outline:3px solid #8fc4ff;outline-offset:2px}
+[hidden]{display:none!important}
+#dk-gate{position:fixed;inset:0;display:grid;place-items:center;padding:16px;overflow:auto}
+.gate{width:min(360px,100%);text-align:center}.gate h1{font-size:26px;margin:0 0 4px}.gate p{color:#aab3c2;margin:0 0 14px;font-size:15px}
+#dk-dots{display:flex;justify-content:center;gap:10px;height:22px;margin:10px 0 14px}#dk-dots i{width:14px;height:14px;border-radius:50%;border:2px solid #7c8798}#dk-dots i.f{background:#f2b45e;border-color:#f2b45e}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.pad button{height:68px;font-size:26px;font-weight:700;border-radius:14px;border:0;background:#222a38;color:#fff}.pad button:active{background:#33405a}.pad .go{background:#f2b45e;color:#0b0d12}
+#dk-gate-msg{min-height:24px;margin-top:12px;color:#ffb3bd}
+.gate small{display:block;margin-top:14px;color:#7c8798}
+#dk-app{position:fixed;inset:0;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#10141c;border-bottom:1px solid #222a38;flex-wrap:wrap}
+header strong{font-size:18px}header .tag{font-size:12px;color:#0b0d12;background:#f2b45e;border-radius:99px;padding:2px 9px;font-weight:700}header .sp{flex:1}
+.b{min-height:44px;padding:8px 16px;border-radius:12px;border:0;background:#222a38;color:#fff;font-weight:700}.b.pri{background:#f2b45e;color:#0b0d12}
+#dk-vr-none{font-size:13px;color:#aab3c2}
+#dk-main{flex:1;display:flex;min-height:0}#dk-stage{flex:1;min-width:0;min-height:0;overflow:hidden;position:relative;touch-action:none}#dk-stage canvas{display:block;position:absolute;left:0;top:0}
+#dk-sheet{width:min(400px,100%);overflow:auto;background:#10141c;border-left:1px solid #222a38;padding:6px 14px 30px}
+#dk-sheet h2{font-size:15px;margin:18px 0 8px;color:#f2b45e;text-transform:uppercase;letter-spacing:.06em}
+.dk-row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}.dk-grow{flex:1;min-width:140px}.dk-lab{width:130px;color:#cfd6e2}
+#dk-sheet button{min-height:40px;padding:6px 12px;border-radius:10px;border:0;background:#222a38;color:#fff;font-weight:600}#dk-sheet button.dk-x{background:#2a1f25;color:#ffb3bd}#dk-sheet button.dk-on{background:#f2b45e;color:#0b0d12}
+#dk-sheet input[type=text],#dk-sheet select,#dk-sheet textarea,#dk-ask-in{min-height:40px;padding:6px 10px;border-radius:10px;border:1px solid #3a4456;background:#0b0d12;color:#fff;flex:1;min-width:120px}
+#dk-sheet textarea{color:#20222a;font-weight:600}#dk-sheet a{color:#8fc4ff;overflow-wrap:anywhere}#dk-sheet strong{font-size:24px;min-width:74px}
+.dk-note{color:#aab3c2;font-size:14px;margin:4px 0}.dk-frame{width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#000}
+#dk-toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:#f2b45e;color:#0b0d12;font-weight:700;padding:10px 16px;border-radius:12px;max-width:90%;text-align:center}
+#dk-load{position:absolute;inset:0;display:grid;place-items:center;color:#aab3c2;background:#0b0d12}
+#dk-dev{position:absolute;left:8px;top:8px;font:12px ui-monospace,monospace;background:#000a;padding:3px 7px;border-radius:6px}
+#dk-hint{position:absolute;right:10px;top:10px;font-size:13px;color:#aab3c2;background:#0b0d12cc;padding:4px 9px;border-radius:8px;pointer-events:none}
+#dk-go{position:absolute;inset:0;display:grid;place-items:center;background:#0b0d12ee;padding:16px;text-align:center}#dk-go a{display:inline-block;margin:10px 0;padding:14px 22px;border-radius:14px;background:#f2b45e;color:#0b0d12;font-weight:800;font-size:20px;text-decoration:none}
+dialog{border:0;border-radius:16px;background:#10141c;color:#fff;width:min(440px,92vw);padding:18px}dialog::backdrop{background:#000a}dialog h2{margin:0 0 10px;font-size:18px}dialog .dk-row{justify-content:flex-end}
+@media (max-width:760px){#dk-main{flex-direction:column}#dk-sheet{width:100%;height:56%;flex:none;border-left:0;border-top:1px solid #222a38}#dk-hint{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+<main id="dk-gate">
+  <div class="gate">
+    <h1>The Desk</h1>
+    <p>An early test. Enter the access code to try it.</p>
+    <div id="dk-dots" aria-hidden="true"></div>
+    <div class="pad" id="dk-pad" role="group" aria-label="Access code keypad"></div>
+    <div id="dk-gate-msg" role="status" aria-live="polite"></div>
+    <small>The code only keeps this page unlisted while it is tested. Nothing private is stored here. <a href="/" style="color:#8fc4ff">Back to allofus.one</a></small>
+    <noscript><p>This page needs JavaScript.</p></noscript>
+  </div>
+</main>
+<div id="dk-app" hidden>
+  <header>
+    <strong>The Desk</strong><span class="tag">early test</span><span class="sp"></span>
+    <span id="dk-vr-none" hidden>No headset found. You can still use it on this screen.</span>
+    <button class="b pri" id="dk-vr-btn" type="button" hidden>Enter VR</button>
+    <button class="b" id="dk-sheet-btn" type="button" aria-expanded="false" aria-controls="dk-sheet">Text view</button>
+  </header>
+  <div id="dk-main">
+    <div id="dk-stage">
+      <div id="dk-load">Setting up your desk…</div>
+      <div id="dk-dev" hidden></div>
+      <div id="dk-hint">Drag to look around. Click a button to press it.</div>
+      <div id="dk-toast" role="status" aria-live="polite" hidden></div>
+      <div id="dk-go" hidden><div><p>VR is paused.</p><a id="dk-go-a" href="/" target="_blank" rel="noopener noreferrer">Open link</a><p class="dk-note" id="dk-go-host"></p><button class="b" id="dk-go-x" type="button">Back to the desk</button></div></div>
+    </div>
+    <aside id="dk-sheet" hidden aria-label="Text view of your desk"><div id="dk-sheet-body"></div></aside>
+  </div>
+</div>
+<dialog id="dk-ask" aria-labelledby="dk-ask-title"><form id="dk-ask-form"><h2 id="dk-ask-title">Text</h2><div class="dk-row"><input id="dk-ask-in" type="text" autocomplete="off"></div><div class="dk-row"><button class="b" type="button" id="dk-ask-no">Cancel</button><button class="b pri" type="submit">Save</button></div></form></dialog>
+<script type="module" src="/js/aou-desk-gate.js"></script>
+</body></html>
