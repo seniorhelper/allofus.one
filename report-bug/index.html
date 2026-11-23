@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; object-src 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com; worker-src 'self' blob:"><meta name="referrer" content="strict-origin-when-cross-origin">
+<head><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; object-src 'none'; base-uri 'self'; form-action 'self' https://formsubmit.co; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://challenges.cloudflare.com https://www.googletagmanager.com; worker-src 'self' blob:"><meta name="referrer" content="strict-origin-when-cross-origin">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Report a Bug | allofus.one</title>
@@ -31,7 +31,7 @@
   .small{font-size:14px;color:#9fb3d9;margin-top:22px}
   footer{border-top:1px solid rgba(255,255,255,.1);margin-top:40px;padding-top:18px;font-size:14px;color:#9fb3d9} footer a{text-decoration:underline}
 </style>
-</head>
+<!-- GA4 G-XS9QVQFTYM --><script async src="https://www.googletagmanager.com/gtag/js?id=G-XS9QVQFTYM"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());if(!/(^|\.)allofus\.one$/.test(location.hostname))window['ga-disable-G-XS9QVQFTYM']=true;gtag('config','G-XS9QVQFTYM');(function(){var LEAD=/formsubmit\.co|clients\.eyetoad\.com/i;function pt(){return location.pathname==='/'?'app':'page';}function lead(){try{gtag('event','generate_lead',{form_id:location.pathname,page_type:pt()});}catch(e){}}document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('a[href^="tel:"]');if(a){try{gtag('event','phone_click',{page_type:pt()});}catch(x){}}},true);document.addEventListener('submit',function(e){var f=e.target;if(f&&f.action&&LEAD.test(f.action))lead();},true);var of=window.fetch;if(of){window.fetch=function(u,o){var p=of.apply(this,arguments);try{var url=typeof u==='string'?u:(u&&u.url)||'';var m=(o&&o.method)||(u&&u.method)||'GET';if(LEAD.test(url)&&/post/i.test(m)){p.then(function(r){if(r&&r.ok)lead();},function(){});}}catch(e){}return p;};}})();</script></head>
 <body>
 <header>
   <a href="/"><img src="/images/allofus-lockup.png" alt="allofus.one" width="163" height="40"></a>
