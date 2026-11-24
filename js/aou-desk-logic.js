@@ -14,7 +14,7 @@ export const BLIM = { a: 2.6, eMin: -0.6, eMax: 1.2, rMin: 0.45, rMax: 2.2, kMin
 export function cleanBoards(raw) { const o = {}; for (const n in BOARDS) { const b = (raw && typeof raw === 'object' && raw[n]) || {}, d = BOARDS[n]; o[n] = { a: clamp(b.a, -BLIM.a, BLIM.a, d.a), e: clamp(b.e, BLIM.eMin, BLIM.eMax, d.e), r: clamp(b.r, BLIM.rMin, BLIM.rMax, d.r), k: clamp(b.k, BLIM.kMin, BLIM.kMax, d.k) }; } return o; }
 /* extra sheets added by app modules: same placement numbers as boards, plus open or closed. Ids are checked so stored data can not smuggle in odd keys. */
 export const SHEET_ID = /^[a-z][a-z0-9-]{0,23}$/;
-export function cleanSheets(raw) { const o = {}; if (!raw || typeof raw !== 'object') return o; let n = 0; for (const id of Object.keys(raw)) { if (n >= 24 || !SHEET_ID.test(id)) continue; const b = raw[id] || {}; o[id] = { a: clamp(b.a, -BLIM.a, BLIM.a, 0), e: clamp(b.e, BLIM.eMin, BLIM.eMax, 0.3), r: clamp(b.r, BLIM.rMin, BLIM.rMax, 1), k: clamp(b.k, BLIM.kMin, BLIM.kMax, 1), open: b.open === true }; n++; } return o; }
+export function cleanSheets(raw) { const o = {}; if (!raw || typeof raw !== 'object') return o; let n = 0; for (const id of Object.keys(raw)) { if (n >= 24 || !SHEET_ID.test(id)) continue; const b = raw[id] || {}; o[id] = { a: clamp(b.a, -BLIM.a, BLIM.a, 0), e: clamp(b.e, BLIM.eMin, BLIM.eMax, 0.3), r: clamp(b.r, BLIM.rMin, BLIM.rMax, 1), k: clamp(b.k, BLIM.kMin, BLIM.kMax, 1), open: b.open === true, flat: b.flat === true }; n++; } return o; }
 export const DESK = { wMin: 1.0, wMax: 2.4, dMin: 0.6, dMax: 1.0, hOffMin: -0.15, hOffMax: 0.2 };
 
 /* the gate: a one-way fingerprint of the access code (PBKDF2-SHA256). A 6-digit code can be guessed by trying them all,
@@ -42,7 +42,7 @@ export function defaults() {
   return {
     v: 1, name: '',
     desk: { style: 'wood', finish: 'matte', w: 1.6, d: 0.8, hOff: 0, neon: NEONS[0] },
-    room: 'plain', planets: true, cork: true, dist: 'far', focus: false, tab: 'today', rtab: 'notes', sound: true,
+    room: 'plain', planets: true, cork: true, dist: 'far', light: 4, focus: false, tab: 'today', rtab: 'notes', sound: true,
     todos: [{ t: 'Put on the headset and say hello', done: false }],
     notes: [{ t: 'Tap a note to write on it', c: 0 }],
     links: [], embed: '', boards: cleanBoards(null), sheets: {},
@@ -56,7 +56,7 @@ export function clean(raw) {
   const s = {
     v: 1, name: str(raw.name, LIMITS.nameLen),
     desk: { style: pick(k.style, STYLES, 'wood'), finish: pick(k.finish, FINISHES, 'matte'), w: clamp(k.w, DESK.wMin, DESK.wMax, 1.6), d: clamp(k.d, DESK.dMin, DESK.dMax, 0.8), hOff: clamp(k.hOff, DESK.hOffMin, DESK.hOffMax, 0), neon: pick(k.neon, NEONS, NEONS[0]) },
-    room: pick(raw.room, ROOMS, 'plain'), planets: raw.planets !== false, cork: raw.cork !== false, dist: pick(raw.dist, ['far', 'near'], 'far'), focus: raw.focus === true,
+    room: pick(raw.room, ROOMS, 'plain'), planets: raw.planets !== false, cork: raw.cork !== false, dist: pick(raw.dist, ['far', 'near'], 'far'), focus: raw.focus === true, light: Math.round(clamp(raw.light, 0, 4, 4)),
     tab: pick(raw.tab, ['today', 'focus'], 'today'), rtab: pick(raw.rtab, ['notes', 'links'], 'notes'), sound: raw.sound !== false,
     todos: (Array.isArray(raw.todos) ? raw.todos : d.todos).slice(0, LIMITS.todos).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), done: !!(x && x.done) })).filter((x) => x.t),
     notes: (Array.isArray(raw.notes) ? raw.notes : d.notes).slice(0, LIMITS.notes).map((x) => ({ t: str(x && x.t, LIMITS.noteLen), c: clamp(x && x.c, 0, NOTE_COLORS.length - 1, 0) | 0 })),

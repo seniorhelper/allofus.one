@@ -4,10 +4,10 @@ export default function (desk) {
   const TIPS = [
     ['Press', 'Point at a button and pinch. With controllers, pull the trigger.'],
     ['Move the desk', 'Pinch both hands on empty space, then pull it to you or push it away.'],
-    ['Lift or widen', 'Still pinching both hands: raise or lower to lift, spread apart to widen.'],
-    ['Move a board', 'Pinch the bar above it and drag. Push your hand out to send it away, pull in to bring it close.'],
+    ['Lift the desk', 'Still pinching both hands: raise or lower them.'],
+    ['Move a board', 'Pinch it anywhere that is not a button and drag. Push your hand out to send it away, pull in to bring it close.'],
     ['Resize a board', 'Tap − or + on its bar.'],
-    ['Bring the desk back', 'Hold a pinch on empty space for one second.'],
+    ['Lost or jumbled?', 'Tap Reset all on the bar above the front board. If the desk drifts out of reach it comes back by itself.'],
     ['Close a sheet', 'Tap × on its bar. Open it again from the row above the front board.'],
   ];
   desk.addSheet({

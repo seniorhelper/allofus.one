@@ -36,11 +36,11 @@ export default function (desk) {
   }
 
   sheet = desk.addSheet({
-    id, title: 'Paper', W, H: TOP + H, w: 1.0, h: (TOP + H) / W, home: { a: 1.72, e: 0, r: 1.05, k: 1 }, open: false,
+    id, title: 'Paper', W, H: TOP + H, w: 1.0, h: (TOP + H) / W, home: { a: 1.2, e: 0, r: 1.05, k: 1, flat: true }, open: true,
     draw(p, g) {
       desk.base(p); const b = (x, y, w, label, act, arg, on, size) => desk.btn(p, x, y, w, 50, label, id + ':' + act, arg, { on, size: size || 19 });
       ['pencil', 'pen', 'marker', 'highlighter', 'eraser', 'hand', 'link'].forEach((t, i) => b(10 + i * 90, 10, 84, NAMES[t], 'tool', t, tool === t, 18));
-      b(644, 10, 70, 'Undo', 'undo', null, false, 18); b(718, 10, 70, 'Redo', 'redo', null, false, 18); b(792, 10, 104, 'Tidy shape', 'tidy', null, false, 17); b(900, 10, 114, 'Print', 'print', null, false, 19);
+      b(644, 10, 70, 'Undo', 'undo', null, false, 18); b(718, 10, 70, 'Redo', 'redo', null, false, 18); b(792, 10, 62, 'Tidy', 'tidy', null, false, 17); b(858, 10, 62, 'Print', 'print', null, false, 17); b(924, 10, 90, desk.isFlat(id) ? 'Stand up' : 'Lay flat', 'flat', null, desk.isFlat(id), 16);
       I.COLORS.forEach((c, i) => { const x = 10 + i * 43; desk.rr(g, x, 70, 38, 50, 10); g.fillStyle = c; g.fill(); g.lineWidth = color === c ? 5 : 2; g.strokeStyle = color === c ? '#ffffff' : '#3a4456'; g.stroke(); p.regions.push({ x, y: 70, w: 38, h: 50, act: id + ':color', arg: i }); });
       [['box', 'Box'], ['round', 'Round'], ['diamond', 'Choice'], ['note', 'Sticky']].forEach(([t, n], i) => b(446 + i * 76, 70, 70, n, 'shape', t, false, 17));
       b(752, 70, 130, PAPER_NAMES[page().paper], 'paper', null, false, 17); b(888, 70, 36, '‹', 'page', -1, false, 26); desk.label(g, (doc.page + 1) + '/' + doc.pages.length, 949, 96, 19, '#ffffff', 'center', 700); b(974, 70, 40, doc.page === doc.pages.length - 1 ? '+' : '›', 'page', 1, false, 26);
@@ -54,6 +54,7 @@ export default function (desk) {
       else if (name === 'redo') { if (!hist.redo(doc)) desk.say('Nothing to redo'); changed(); }
       else if (name === 'tidy') { tidy(); return; }
       else if (name === 'print') { print(); return; }
+      else if (name === 'flat') { desk.flat(id); }
       else if (name === 'shape') { addShape(arg); return; }
       else if (name === 'paper') { hist.push(doc); const k = I.PAPERS; I.setPaper(page(), k[(k.indexOf(page().paper) + 1) % k.length]); changed(); }
       else if (name === 'page') { if (arg > 0 && doc.page === doc.pages.length - 1) { if (I.addPage(doc, page().paper) < 0) desk.say('The notebook holds ' + I.LIMITS.pages + ' pages'); else { hist.clear(); changed(); } } else I.gotoPage(doc, doc.page + arg); linkFrom = null; }
