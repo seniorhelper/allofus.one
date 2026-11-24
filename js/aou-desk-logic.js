@@ -5,6 +5,7 @@ export const KEY = 'aou_desk_v1';
 export const LIMITS = { doneLog: 40, todos: 10, todoLen: 48, notes: 8, noteLen: 110, links: 8, labelLen: 22, urlLen: 300, nameLen: 18 };
 export const STYLES = ['wood', 'metal', 'steel', 'black', 'neon'];
 export const FINISHES = ['matte', 'gloss'];
+export const HANDS = ['soft', 'glove', 'neon', 'dots'];
 export const ROOMS = ['plain', 'loft', 'sky', 'stars', 'real'];
 export const NEONS = ['#22e6ff', '#ff3df0', '#7dff5a', '#ffb020', '#8b7bff'];
 export const NOTE_COLORS = ['#ffe873', '#ffb3c7', '#a8e6ff', '#b9f5a6', '#ffd0a1'];
@@ -46,7 +47,7 @@ export function defaults() {
   return {
     v: 1, name: '',
     desk: { style: 'wood', finish: 'matte', w: 1.6, d: 0.8, hOff: 0, neon: NEONS[0] },
-    room: 'plain', planets: true, cork: true, dist: 'far', light: 4, focus: false, tab: 'today', rtab: 'notes', sound: true,
+    room: 'plain', planets: true, cork: true, dist: 'far', light: 4, hands: 'soft', guided: false, focus: false, tab: 'today', rtab: 'notes', sound: true,
     todos: [{ t: 'Put on the headset and say hello', done: false, at: 0 }], done: [],
     notes: [{ t: 'Tap a note to write on it', c: 0 }],
     links: [], embed: '', boards: cleanBoards(null), sheets: {},
@@ -61,7 +62,7 @@ export function clean(raw) {
     v: 1, name: str(raw.name, LIMITS.nameLen),
     desk: { style: pick(k.style, STYLES, 'wood'), finish: pick(k.finish, FINISHES, 'matte'), w: clamp(k.w, DESK.wMin, DESK.wMax, 1.6), d: clamp(k.d, DESK.dMin, DESK.dMax, 0.8), hOff: clamp(k.hOff, DESK.hOffMin, DESK.hOffMax, 0), neon: pick(k.neon, NEONS, NEONS[0]) },
     room: pick(raw.room, ROOMS, 'plain'), planets: raw.planets !== false, cork: raw.cork !== false, dist: pick(raw.dist, ['far', 'near'], 'far'), focus: raw.focus === true, light: Math.round(clamp(raw.light, 0, 4, 4)),
-    tab: pick(raw.tab, ['today', 'focus', 'log'], 'today'), rtab: pick(raw.rtab, ['notes', 'links'], 'notes'), sound: raw.sound !== false,
+    tab: pick(raw.tab, ['today', 'focus', 'log'], 'today'), rtab: pick(raw.rtab, ['notes', 'links'], 'notes'), sound: raw.sound !== false, hands: pick(raw.hands, HANDS, 'soft'), guided: raw.guided === true,
     todos: (Array.isArray(raw.todos) ? raw.todos : d.todos).slice(0, LIMITS.todos).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), done: !!(x && x.done), at: x && x.done ? clamp(x.at, 0, 4e12, 0) : 0 })).filter((x) => x.t),
     done: (Array.isArray(raw.done) ? raw.done : []).slice(0, LIMITS.doneLog).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), at: clamp(x && x.at, 0, 4e12, 0) })).filter((x) => x.t),
     notes: (Array.isArray(raw.notes) ? raw.notes : d.notes).slice(0, LIMITS.notes).map((x) => ({ t: str(x && x.t, LIMITS.noteLen), c: clamp(x && x.c, 0, NOTE_COLORS.length - 1, 0) | 0 })),

@@ -6,7 +6,7 @@ import * as L from './aou-desk-logic.js';
 const Q = new URLSearchParams(location.search);
 const DEV = Q.get('dev') === '1', QA = Q.get('qa') === '1';
 /* app modules: each adds one or more sheets to the desk through the small api object passed to its default export */
-const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js', './aou-desk-app-paper.js', './aou-desk-app-quote.js', './aou-desk-app-plan.js', './aou-desk-app-breathe.js', './aou-desk-app-room.js'];
+const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js', './aou-desk-app-paper.js', './aou-desk-app-quote.js', './aou-desk-app-plan.js', './aou-desk-app-breathe.js', './aou-desk-app-room.js', './aou-desk-app-tv.js'];
 const $ = (id) => document.getElementById(id);
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -207,7 +207,7 @@ export async function start() {
   Object.values(grips).forEach(gripDraw);
   /* the dock: one button per app sheet, above the front board */
   dock.draw = () => { const g = dock.g, ids = Object.keys(apps); g.clearRect(0, 0, 1024, 160); dock.regions.length = 0; if (!ids.length) return; rr(g, 2, 2, 1020, 156, 30); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = '#2a3446'; g.stroke();
-    btn(dock, 12, 14, 100, 62, 'Dim', 'light', -1, { size: 22 }); btn(dock, 12, 84, 100, 62, 'Bright', 'light', 1, { size: 22 }); btn(dock, 896, 14, 116, 132, 'Reset', 'tidy', null, { size: 22, bg: '#2a1f25', fg: '#ffd0d6' });
+    btn(dock, 12, 14, 100, 62, 'Dim', 'light', -1, { size: 22 }); btn(dock, 12, 84, 100, 62, 'Bright', 'light', 1, { size: 22 }); btn(dock, 896, 14, 116, 62, 'Menu', 'menu', null, { size: 22, on: true }); btn(dock, 896, 84, 116, 62, 'Reset', 'tidy', null, { size: 22, bg: '#2a1f25', fg: '#ffd0d6' });
     const per = Math.max(1, Math.ceil(ids.length / 2)), rowsN = ids.length > 5 ? 2 : 1, n1 = rowsN === 2 ? per : ids.length, bw = Math.min(170, (760 - (n1 - 1) * 8) / n1);
     ids.forEach((id, i) => { const row = rowsN === 2 && i >= per ? 1 : 0, k = row ? i - per : i, nr = row ? ids.length - per : n1, x0 = 124 + (760 - (nr * bw + (nr - 1) * 8)) / 2; btn(dock, x0 + k * (bw + 8), rowsN === 2 ? 14 + row * 70 : 49, bw, 62, apps[id].def.title, 'app.toggle', id, { on: !!(S.sheets[id] && S.sheets[id].open), size: bw < 130 ? 20 : 23 }); }); };
   P.front.draw = () => {
@@ -338,8 +338,22 @@ export async function start() {
   /* ---------- actions ---------- */
   let saveT = 0; function commit(...dirty) { clearTimeout(saveT); saveT = setTimeout(() => L.save(localStorage, S), 250); (dirty.length ? dirty : [P.front, P.left, P.right]).forEach((p) => { p.dirty = true; }); if (!dirty.length || dirty.includes(P.right)) cork.dirty = true; sheet(); }
   const all = () => { commit(P.front, P.left, P.right, kb); for (const n in grips) grips[n].dirty = true; dock.dirty = true; for (const id in apps) apps[id].p.dirty = true; };
+  /* the menu: tap one wrist with the other hand's finger (or use Menu on the bar). It opens in front of you. */
+  const menu = surface('menu', 800, 760, 0.5, 0.475, rig); menu.mesh.visible = false; let wristOn = false, wristT = 0;
+  const MODES = [['work', 'Work', ['plan', 'paper', 'quote']], ['money', 'Money', ['tools', 'life', 'quote']], ['plan', 'Plan my life', ['plan', 'life', 'quote']], ['calm', 'Calm', ['breathe', 'calm', 'room', 'quote']], ['play', 'Play', ['games', 'tv']], ['clear', 'Clear desk', []]];
+  const ROOMN = { plain: 'Plain', loft: 'Loft', sky: 'Sky', stars: 'Stars', real: 'My room', beach: 'Beach', float: 'Space float' }, HANDN = { soft: 'Soft hands', glove: 'Gloves', neon: 'Neon', dots: 'Dots' };
+  menu.draw = () => {
+    const p = menu, g = base(p, 'Menu'); label(g, 'Workflow to Optimize Your Life', 764, 58, 22, accent(), 'right', 700, 440);
+    label(g, 'Modes', 36, 116, 22); MODES.forEach((m, i) => btn(p, 36 + (i % 3) * 246, 134 + ((i / 3) | 0) * 66, 236, 56, m[1], 'mode', m[0], { size: 24 }));
+    label(g, 'Hands', 36, 290, 22); L.HANDS.forEach((h, i) => btn(p, 36 + i * 184, 308, 176, 56, HANDN[h], 'hands', h, { on: S.hands === h, size: 22 }));
+    label(g, 'Room', 36, 396, 22); const rs = L.ROOMS, rw = Math.floor((728 - (Math.min(rs.length, 4) - 1) * 8) / Math.min(rs.length, 4)); rs.forEach((r, i) => btn(p, 36 + (i % 4) * (rw + 8), 414 + ((i / 4) | 0) * 60, rw, 52, ROOMN[r] || r, 'room', r, { on: S.room === r, size: 21 }));
+    label(g, 'Light and sound', 36, 560, 22); btn(p, 36, 578, 150, 56, 'Dim', 'light', -1, { size: 22 }); btn(p, 194, 578, 150, 56, 'Bright', 'light', 1, { size: 22 }); for (let i = 0; i < 5; i++) { rr(g, 360 + i * 22, 592, 16, 28, 5); g.fillStyle = i <= (S.light === undefined ? 4 : S.light) ? accent() : '#222a38'; g.fill(); } btn(p, 490, 578, 274, 56, S.sound ? 'Sound: on' : 'Sound: off', 'sound', null, { on: S.sound, size: 22 });
+    btn(p, 36, 670, 176, 62, 'Reset all', 'tidy', null, { size: 22, bg: '#2a1f25', fg: '#ffd0d6' }); btn(p, 220, 670, 176, 62, 'Recenter', 'recenter', null, { size: 22 }); if (presenting) btn(p, 404, 670, 176, 62, 'Leave VR', 'leave', null, { size: 22 }); btn(p, 588, 670, 176, 62, 'Close', 'menu', null, { size: 22, on: true });
+  };
+  function menuPlace() { head.setFromMatrixPosition(camera.matrixWorld); D.set(0, 0, -1).transformDirection(camera.matrixWorld); D.y = 0; if (D.lengthSq() < 0.01) D.set(0, 0, -1); D.normalize(); pv1.copy(head).addScaledVector(D, 0.62); pv1.y = head.y - 0.1; rig.worldToLocal(pv1); menu.mesh.position.copy(pv1); menu.mesh.lookAt(head); }
   let emptyAsk = 0;
   function act(a, arg, src) {
+    menu.dirty = true;
     { const k = a.indexOf(':'); if (k > 0) { const app = apps[a.slice(0, k)]; audio(); beep(660); if (app && app.def.act) app.def.act(a.slice(k + 1), arg, src); return; } }
     audio(); beep(660);
     if (src && src.gamepad && src.gamepad.hapticActuators && src.gamepad.hapticActuators[0]) { try { src.gamepad.hapticActuators[0].pulse(0.35, 25); } catch (e) { } }
@@ -366,7 +380,7 @@ export async function start() {
       case 'desk.w': k.w = r2(Math.min(L.DESK.wMax, Math.max(L.DESK.wMin, k.w + arg * 0.1))); buildDesk(); layout(); commit(P.left); break;
       case 'desk.d': k.d = r2(Math.min(L.DESK.dMax, Math.max(L.DESK.dMin, k.d + arg * 0.05))); buildDesk(); layout(); commit(P.left); break;
       case 'desk.h': k.hOff = r2(Math.min(L.DESK.hOffMax, Math.max(L.DESK.hOffMin, k.hOff + arg * 0.01))); reseat(); commit(P.left); break;
-      case 'neon': k.neon = L.NEONS[arg]; DM.neonEdge.color.set(k.neon); DM.glow.color.set(k.neon); all(); break;
+      case 'neon': k.neon = L.NEONS[arg]; DM.neonEdge.color.set(k.neon); DM.glow.color.set(k.neon); handStyle(); all(); break;
       case 'room': setRoom(arg); break;
       case 'dist': S.dist = arg; layout(); commit(P.left); break;
       case 'name': askText('Your first name (shown on the desk only)', S.name, L.LIMITS.nameLen, (t) => { S.name = t; commit(P.front, P.left); }); break;
@@ -384,6 +398,10 @@ export async function start() {
       case 'key': key(arg); break;
       case 'grip': break;
       case 'app.toggle': if (apps[arg] && S.sheets[arg]) { S.sheets[arg].open = !S.sheets[arg].open; applyRoom(); layout(); apps[arg].p.dirty = true; dock.dirty = true; commit(P.left); } break;
+      case 'menu': menu.mesh.visible = !menu.mesh.visible; if (menu.mesh.visible) { menuPlace(); beep(700, 0.06, 0.04); } layout(); break;
+      case 'mode': { const m = MODES.find((x) => x[0] === arg); if (!m) break; for (const id in apps) if (S.sheets[id]) S.sheets[id].open = m[2].indexOf(id) >= 0; if (arg === 'calm') S.light = Math.min(S.light === undefined ? 4 : S.light, 2); applyRoom(); layout(); Object.keys(BRD).forEach(clearFix); dock.dirty = true; for (const id in apps) apps[id].p.dirty = true; commit(P.left); say(m[1] + ' mode'); break; }
+      case 'hands': if (L.HANDS.indexOf(arg) >= 0) { S.hands = arg; handStyle(); commit(P.left); } break;
+      case 'leave': if (presenting) toggleXR(); break;
       case 'light': { const v = Math.max(0, Math.min(4, (S.light === undefined ? 4 : S.light) + (arg < 0 ? -1 : 1))); if (v === S.light) say(v ? 'Brightest' : 'Dimmest'); S.light = v; applyRoom(); commit(P.left); break; }
       case 'app.flat': if (apps[arg] && S.sheets[arg]) { S.sheets[arg].flat = !S.sheets[arg].flat; layout(); commit(P.left); } break;
       case 'app.close': if (apps[arg] && S.sheets[arg]) { S.sheets[arg].open = false; applyRoom(); layout(); dock.dirty = true; commit(P.left); } break;
@@ -494,7 +512,7 @@ export async function start() {
     const c = R.xr.getController(i), h = R.xr.getHand(i); scene.add(c, h); const o = { c, h, src: null, isHand: false, on: false, near: false, O: new T.Vector3(), D: new T.Vector3(), ball: false, hold: 0, sel: false, free: false };
     const line = new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0, 0, 0), new T.Vector3(0, 0, -1)]), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })); const dot = new T.Mesh(new T.SphereGeometry(0.006, 10, 8), new T.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
     line.visible = dot.visible = false; c.add(line); scene.add(dot); o.line = line; o.dot = dot;
-    { const pen = mkPen(); pen.visible = false; scene.add(pen); o.pen = pen; o.tip = new T.Vector3(); o.hasTip = false; o.heldPen = false; }
+    { const pen = mkPen(); pen.visible = false; scene.add(pen); o.pen = pen; o.tip = new T.Vector3(); o.wr = new T.Vector3(); o.hasWr = false; o.hasTip = false; o.heldPen = false; }
     c.addEventListener('connected', (e) => { o.src = e.data; o.isHand = !!(e.data && e.data.hand); o.on = true; });
     c.addEventListener('disconnected', () => { o.src = null; o.on = false; o.pen.visible = false; o.ball = false; o.hold = 0; o.sel = false; if (drag && drag.i === i) { drag = null; layout(); } line.visible = dot.visible = false; setHover(i, null, null); });
     o.start = () => {
@@ -513,14 +531,23 @@ export async function start() {
     return o;
   });
   const pv1 = new T.Vector3(), pv2 = new T.Vector3(), UP = new T.Vector3(0, 1, 0);
+  const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [8, 9], [0, 10], [10, 11], [11, 12], [12, 13], [13, 14], [0, 15], [15, 16], [16, 17], [17, 18], [18, 19], [0, 20], [20, 21], [21, 22], [22, 23], [23, 24], [1, 5], [5, 10], [10, 15], [15, 20]], JL = [], JR = [];
   const JN = 25, joints = new T.InstancedMesh(new T.SphereGeometry(1, 8, 6), new T.MeshStandardMaterial({ color: 0xdfe6f2, roughness: 0.5, metalness: 0.1 }), JN * 2); joints.frustumCulled = false; joints.count = 0; scene.add(joints); joints.instanceMatrix.setUsage(T.DynamicDrawUsage);
+  const bones = new T.InstancedMesh(new T.CylinderGeometry(1, 1, 1, 8, 1), joints.material, 60); bones.frustumCulled = false; bones.count = 0; scene.add(bones); bones.instanceMatrix.setUsage(T.DynamicDrawUsage);
+  /* hand looks: soft skin tone, dark leather gloves, glowing neon sticks, or plain dots */
+  function handStyle() { const m = joints.material, h = S.hands; m.color.setHex(h === 'glove' ? 0x2e2118 : h === 'neon' ? 0x05070a : h === 'dots' ? 0xdfe6f2 : 0xd9a98a); m.emissive.set(h === 'neon' ? S.desk.neon : '#000000'); m.emissiveIntensity = h === 'neon' ? 1.5 : 0; m.roughness = h === 'glove' ? 0.42 : 0.7; m.metalness = 0.05; }
+  handStyle();
   const JS = new T.Vector3(), JNAMES = ['wrist', 'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip', 'index-finger-metacarpal', 'index-finger-phalanx-proximal', 'index-finger-phalanx-intermediate', 'index-finger-phalanx-distal', 'index-finger-tip', 'middle-finger-metacarpal', 'middle-finger-phalanx-proximal', 'middle-finger-phalanx-intermediate', 'middle-finger-phalanx-distal', 'middle-finger-tip', 'ring-finger-metacarpal', 'ring-finger-phalanx-proximal', 'ring-finger-phalanx-intermediate', 'ring-finger-phalanx-distal', 'ring-finger-tip', 'pinky-finger-metacarpal', 'pinky-finger-phalanx-proximal', 'pinky-finger-phalanx-intermediate', 'pinky-finger-phalanx-distal', 'pinky-finger-tip'];
   function xrInput() {
-    let n = 0; const now = performance.now(); ballW.setFromMatrixPosition(ball.matrixWorld);
+    let n = 0, nb = 0; const now = performance.now(); ballW.setFromMatrixPosition(ball.matrixWorld);
     for (let i = 0; i < 2; i++) {
-      const o = ctl[i]; let near = false, grabNear = false; o.pp = null; o.pen.visible = false;
+      const o = ctl[i]; let near = false, grabNear = false; o.pp = null; o.pen.visible = false; o.hasWr = false; if (!(o.on && o.isHand)) o.hasTip = false;
       if (o.on && o.isHand && o.h.joints) {
-        for (let j = 0; j < JN; j++) { const jt = o.h.joints[JNAMES[j]]; if (!jt || jt.visible === false) continue; const rad = Math.max(0.005, Math.min(0.012, (jt.jointRadius || 0.008) * 0.8)); tmpM.compose(jt.position, tmpQ.identity(), JS.setScalar(rad)); joints.setMatrixAt(n++, tmpM); }
+        const hs = S.hands, thick = hs === 'soft' || hs === 'glove';
+        for (let j = 0; j < JN; j++) { const jt = o.h.joints[JNAMES[j]]; JL[j] = jt && jt.visible !== false ? jt : null; if (!JL[j]) continue; const jr = jt.jointRadius || 0.008, rad = hs === 'neon' ? 0.0042 : thick ? Math.max(0.0075, Math.min(0.013, jr)) : Math.max(0.005, Math.min(0.012, jr * 0.8)); JR[j] = rad; tmpM.compose(jt.position, tmpQ.identity(), JS.setScalar(rad)); joints.setMatrixAt(n++, tmpM); }
+        /* fingers and palm: one stretched tube between each pair of joints */
+        if (hs !== 'dots') for (let k = 0; k < BONES.length; k++) { const A = JL[BONES[k][0]], B = JL[BONES[k][1]]; if (!A || !B) continue; pv1.copy(B.position).sub(A.position); const len = pv1.length(); if (len < 1e-4) continue; const r = hs === 'neon' ? 0.0026 : Math.min(JR[BONES[k][0]], JR[BONES[k][1]]) * 0.98; tmpQ.setFromUnitVectors(UP, pv1.divideScalar(len)); pv2.copy(A.position).addScaledVector(pv1, len / 2); tmpM.compose(pv2, tmpQ, JS.set(r, len, r)); bones.setMatrixAt(nb++, tmpM); }
+        o.hasWr = !!JL[0]; if (o.hasWr) o.wr.copy(JL[0].position);
         const it = o.h.joints['index-finger-tip'], tt = o.h.joints['thumb-tip'], wr = o.h.joints['wrist'], mt = o.h.joints['middle-finger-tip'], mk = o.h.joints['middle-finger-phalanx-proximal'];
         /* our own pinch: thumb tip to index tip, with a gap between press and release so it cannot flicker; a closed fist does not count */
         o.pd = it && tt && it.visible !== false && tt.visible !== false ? it.position.distanceTo(tt.position) : 9;
@@ -564,7 +591,9 @@ export async function start() {
       const w = Math.min(L.DESK.wMax, Math.max(L.DESK.wMin, Math.round(grab.w * dist / grab.dist * 10) / 10)); if (false && w !== S.desk.w) { S.desk.w = w; buildDesk(); ball.position.x = Math.min(w / 2 - 0.12, 0.34); beep(880, 0.02, 0.03); }
     } else if (grab) { grab = null; layout(); commit(P.left); beep(660, 0.08); }
     ball.scale.setScalar(drag || grab || ctl[0].ball || ctl[1].ball ? 1.4 : 1);
-    if (joints.count !== n || n) { joints.count = n; joints.instanceMatrix.needsUpdate = true; }
+    if (joints.count !== n || n) { joints.count = n; joints.instanceMatrix.needsUpdate = true; } if (bones.count !== nb || nb) { bones.count = nb; bones.instanceMatrix.needsUpdate = true; }
+    /* wrist tap: one fingertip on the other wrist opens or closes the menu */
+    { const a = ctl[0], b = ctl[1], t = (a.hasTip && b.hasWr && a.pd > 0.03 && a.tip.distanceTo(b.wr) < 0.05) || (b.hasTip && a.hasWr && b.pd > 0.03 && b.tip.distanceTo(a.wr) < 0.05); if (t && !wristOn && now - wristT > 900 && !edit && !grab && !bdrag) { wristT = now; act('menu'); } wristOn = !!t; }
   }
 
   /* seat: placed once after tracking settles; never follows the head; recenter only when asked */
@@ -574,7 +603,7 @@ export async function start() {
     head.setFromMatrixPosition(camera.matrixWorld); D.set(0, 0, -1).transformDirection(camera.matrixWorld); if (Math.hypot(D.x, D.z) > 0.25) rig.rotation.set(0, Math.atan2(-D.x, -D.z), 0);
     /* leaning back: the boards swing up to meet the eyes (never down into the desk) */
     gazeUp = Math.max(0, Math.min(0.6, Math.asin(Math.max(-1, Math.min(1, D.y))))); grab = null;
-    rig.position.set(head.x, 0, head.z); seatAt.copy(head); seatYaw = rig.rotation.y; awayT = 0; kbPos = null; drag = null; bdrag = null; if (!tipShown) { tipShown = true; say('Pinch both hands and pull to move the desk', 7000); }
+    rig.position.set(head.x, 0, head.z); seatAt.copy(head); seatYaw = rig.rotation.y; awayT = 0; kbPos = null; drag = null; bdrag = null; if (!tipShown) { tipShown = true; if (!S.guided) { S.guided = true; commit(P.left); say('Welcome. Point at a button and pinch thumb to finger to press it.', 7000); setTimeout(() => { if (presenting) say('To arrange: point at a teal MOVE box, pinch and drag.', 7000); }, 8000); setTimeout(() => { if (presenting) say('Tap your wrist for the menu. The pencil on the desk writes on the paper.', 8000); }, 16500); } else say('Tap your wrist for the menu', 5000); }
     reseat(Math.min(2.1, Math.max(0.8, head.y))); seated = true; rig.visible = true;
   }
 
