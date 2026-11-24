@@ -84,16 +84,16 @@ export default function (desk) {
     draw(p, g) {
       desk.base(p, 'Breathe');
       /* rows: 100-148 pattern 1, 156-204 pattern 2 */
-      PATS.forEach((x, i) => desk.btn(p, 36 + (i % 2) * 290, 100 + Math.floor(i / 2) * 56, 278, 48, x.name, running ? null : id + ':pat', i, { on: st.pat === i, size: 22, fg: running && st.pat !== i ? '#7c8798' : undefined }));
+      if (!why) PATS.forEach((x, i) => desk.btn(p, 36 + (i % 2) * 290, 100 + Math.floor(i / 2) * 56, 278, 48, x.name, running ? null : id + ':pat', i, { on: st.pat === i, size: 22, fg: running && st.pat !== i ? '#7c8798' : undefined }));
       if (why) {
         /* panel 214-452 */
-        desk.rr(g, 36, 214, 568, 238, 14); g.fillStyle = '#131924'; g.fill();
-        desk.label(g, 'Why it works', 52, 236, 24, '#ffffff', 'left', 700);
-        let y = 270;
+        desk.rr(g, 36, 100, 568, 352, 14); g.fillStyle = '#131924'; g.fill();
+        desk.label(g, 'Why it works', 52, 128, 26, '#ffffff', 'left', 700);
+        let y = 172;
         FACTS.forEach(([t, src]) => {
-          g.font = `500 20px ${desk.FF}`; const ls = desk.L.wrap(t, 536, (s) => g.measureText(s).width, 3);
-          ls.forEach((ln, k) => desk.label(g, ln, 52, y + k * 24, 20, '#f1f4f9', 'left', 500, 540)); y += ls.length * 24 + 4;
-          desk.label(g, src, 52, y, 20, desk.accent(), 'left', 500, 540); y += 36;
+          g.font = `500 22px ${desk.FF}`; const ls = desk.L.wrap(t, 536, (s) => g.measureText(s).width, 4);
+          ls.forEach((ln, k) => desk.label(g, ln, 52, y + k * 27, 22, '#f1f4f9', 'left', 500, 540)); y += ls.length * 27 + 4;
+          desk.label(g, src, 52, y, 20, desk.accent(), 'left', 500, 540); y += 46;
         });
       } else {
         /* ring 214-394 (centre 304, radius 60..90), word 412, count 440 */

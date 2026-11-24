@@ -12,7 +12,7 @@ export default function (desk) {
   }).catch(() => { state = 'none'; desk.redraw(sheet); });
   desk.onFrame((now) => { if (nextAt && now > nextAt && list.length && desk.S.sheets[id] && desk.S.sheets[id].open) show(i + 1); });
   sheet = desk.addSheet({
-    id, title: 'Quote', W: 768, H: 288, w: 0.74, h: 0.2775, home: { a: 0, e: 0.34, r: 1.4, k: 1 }, open: true,
+    id, title: 'Quote', W: 768, H: 288, w: 0.74, h: 0.2775, home: { a: 0, e: 0.6, r: 1.45, k: 1 }, open: true,
     draw(p, g) {
       desk.base(p); if (state !== 'ok') { desk.label(g, state === 'loading' ? 'Finding a good line…' : 'Quotes could not load. Check the connection.', 384, 144, 24, '#aab3c2', 'center'); return; }
       const x = list[i]; let size = 30; g.font = `600 ${size}px ${desk.FF}`; let lines = desk.L.wrap('“' + x.q + '”', 700, (s) => g.measureText(s).width, 9);

@@ -6,7 +6,7 @@ import * as L from './aou-desk-logic.js';
 const Q = new URLSearchParams(location.search);
 const DEV = Q.get('dev') === '1', QA = Q.get('qa') === '1';
 /* app modules: each adds one or more sheets to the desk through the small api object passed to its default export */
-const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js', './aou-desk-app-paper.js', './aou-desk-app-quote.js', './aou-desk-app-plan.js', './aou-desk-app-breathe.js'];
+const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js', './aou-desk-app-paper.js', './aou-desk-app-quote.js', './aou-desk-app-plan.js', './aou-desk-app-breathe.js', './aou-desk-app-room.js'];
 const $ = (id) => document.getElementById(id);
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -388,7 +388,7 @@ export async function start() {
       case 'app.flat': if (apps[arg] && S.sheets[arg]) { S.sheets[arg].flat = !S.sheets[arg].flat; layout(); commit(P.left); } break;
       case 'app.close': if (apps[arg] && S.sheets[arg]) { S.sheets[arg].open = false; applyRoom(); layout(); dock.dirty = true; commit(P.left); } break;
       case 'bsize': { const b = posOf(arg[0]); if (b) { b.k = r2(Math.min(L.BLIM.kMax, Math.max(L.BLIM.kMin, b.k + arg[1] * 0.1))); clearFix(arg[0]); commit(P.left); } break; }
-      case 'tidy': S.boards = L.cleanBoards(null); for (const id in apps) { const o = S.sheets[id] && S.sheets[id].open; delete S.sheets[id]; placeBoards(); if (S.sheets[id]) S.sheets[id].open = !!o; } if (presenting && seated) placeSeat(); applyRoom(); layout(); commit(P.front); say('Everything is back in its place'); break;
+      case 'tidy': S.boards = L.cleanBoards(null); for (const id in apps) { const o = S.sheets[id] && S.sheets[id].open; delete S.sheets[id]; placeBoards(); if (S.sheets[id]) S.sheets[id].open = !!o; } if (presenting && seated) placeSeat(); applyRoom(); layout(); Object.keys(BRD).forEach(clearFix); commit(P.front); say('Everything is back in its place'); break;
       case 'boards.reset': S.boards = L.cleanBoards(null); for (const id in apps) { const o = S.sheets[id] && S.sheets[id].open; delete S.sheets[id]; placeBoards(); if (S.sheets[id]) S.sheets[id].open = !!o; } layout(); commit(P.front); say('Boards back to their places'); break;
     }
   }
@@ -690,6 +690,7 @@ export async function start() {
   { const vis = {}; Object.keys(rooms).forEach((id) => { vis[id] = rooms[id].visible; rooms[id].visible = true; }); const dk = S.desk.style; const extra = new T.Group(); [DM.woodTop, DM.woodLeg, DM.metalTop, DM.metalLeg, DM.steelTop, DM.steelLeg, DM.blackTop, DM.blackLeg, ball.material, DM.neonTop, DM.neonSide, DM.neonEdge, DM.glow].forEach((m) => put(extra, box, m, 0.01, 0.01, 0.01, 0, -5, 0)); scene.add(extra); kb.mesh.visible = true; joints.count = 1;
     try { await R.compileAsync(scene, camera); } catch (e) { } R.render(scene, camera); scene.remove(extra); kb.mesh.visible = false; joints.count = 0; Object.keys(rooms).forEach((id) => { rooms[id].visible = vis[id]; }); void dk; }
   for (const m of APPS) { try { const mod = await import(m); mod.default(api); } catch (e) { console.error('desk app did not load', m, e); } }
+  Object.keys(BRD).forEach(clearFix); /* no board starts with its lower edge inside the desk */
   surfaces.forEach((p) => { if (p.dirty && p.draw) { p.draw(); p.t.needsUpdate = true; p.dirty = false; R.initTexture(p.t); } }); applyRoom(); layout();
   R.setAnimationLoop(frame); $('dk-load').hidden = true; setTimeout(() => { const h = $('dk-hint'); if (h) h.hidden = true; }, 9000);
   if (QA) window.__desk = { get S() { return S; }, act, P, surfaces, stat, info: () => ({ calls: lastCalls, tris: lastTris, programs: R.info.programs.length, textures: R.info.memory.textures, geometries: R.info.memory.geometries }), look: (y, p) => { yaw = y; pitch = p; }, key, get edit() { return edit; },
