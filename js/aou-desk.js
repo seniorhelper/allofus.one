@@ -6,7 +6,7 @@ import * as L from './aou-desk-logic.js';
 const Q = new URLSearchParams(location.search);
 const DEV = Q.get('dev') === '1', QA = Q.get('qa') === '1';
 /* app modules: each adds one or more sheets to the desk through the small api object passed to its default export */
-const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js', './aou-desk-app-paper.js', './aou-desk-app-quote.js', './aou-desk-app-plan.js', './aou-desk-app-breathe.js', './aou-desk-app-room.js', './aou-desk-app-tv.js'];
+const APPS = ['./aou-desk-app-help.js', './aou-desk-app-calm.js', './aou-desk-app-tools.js', './aou-desk-app-paper.js', './aou-desk-app-quote.js', './aou-desk-app-plan.js', './aou-desk-app-breathe.js', './aou-desk-app-room.js', './aou-desk-app-tv.js', './aou-desk-app-life.js', './aou-desk-app-games.js'];
 const $ = (id) => document.getElementById(id);
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -419,7 +419,8 @@ export async function start() {
   /* ---------- rooms, seat, layout ---------- */
   const LV = [0.22, 0.38, 0.56, 0.78, 1];
   function applyRoom() {
-    Object.keys(rooms).forEach((id) => { rooms[id].visible = id === S.room; }); const lv = LV[S.light === undefined ? 4 : S.light] || 1, l = LIGHT[S.room], f = (S.focus ? 0.45 : 1) * lv;
+    if ((S.room === 'beach' || S.room === 'float') && !rooms[S.room]) loadScene(S.room);
+    Object.keys(rooms).forEach((id) => { rooms[id].visible = id === S.room; }); const lv = LV[S.light === undefined ? 4 : S.light] || 1, l = LIGHT[S.room] || LIGHT.loft, f = (S.focus ? 0.45 : 1) * lv;
     hemi.color.set(l[0]); hemi.groundColor.set(l[1]); hemi.intensity = l[2] * (S.focus ? 0.7 : 1) * lv; sun.color.set(l[3]); sun.intensity = l[4] * (S.focus ? 0.7 : 1) * lv; surfaces.forEach((p) => p.mesh.material.color.setScalar(0.25 + 0.75 * lv));
     dimmable.forEach((m) => { if (m._c === undefined) m._c = m.color.getHex(); m.color.setHex(m._c).multiplyScalar(f); });
     scene.background = presenting && arSession ? null : (bg || (bg = new T.Color(0x0b0d12)));
@@ -429,6 +430,13 @@ export async function start() {
     if (S.room === 'stars') { loadStars(); skyTurn.rotation.y = -Math.PI / 2 - L.siderealAngle(Date.now(), new Date().getTimezoneOffset()); } if (starPts) starPts.material.uniforms.uK.value = presenting ? 2.4 : R.getPixelRatio() * 1.15;
   }
   let bg = null, arSession = false;
+  /* the two relax scenes (beach, space float) are built the first time they are chosen */
+  const sceneFx = {}; let scenesMod = null;
+  async function loadScene(id) {
+    if (rooms[id] || sceneFx[id]) return; sceneFx[id] = 'loading';
+    try { scenesMod = scenesMod || await import('./aou-desk-scenes.js'); const sc = scenesMod.makeScene(T, id); if (!sc || !sc.object) throw new Error('scene'); sc.object.visible = false; rig.add(sc.object); rooms[id] = sc.object; if (Array.isArray(sc.light) && sc.light.length === 5) LIGHT[id] = sc.light; (sc.mats || []).forEach((m) => { if (m && m.color) dimmable.push(m); }); sceneFx[id] = sc; applyRoom(); }
+    catch (e) { sceneFx[id] = null; console.error('desk scene did not load', id, e); say('That room could not load'); }
+  }
   function setRoom(id) {
     if (!L.ROOMS.includes(id) || (id === 'real' && !arOK)) return;
     if (id === 'stars' && S.room === 'stars') { S.planets = !S.planets; applyRoom(); commit(P.left); say(S.planets ? 'Planets: on' : 'Planets: off'); return; }
@@ -673,7 +681,7 @@ export async function start() {
   /* ---------- apps: what a module may use ---------- */
   const frameHooks = [];
   const api = { T, L, FF, rr, btn, label, base, accent, say, askText, beep, commit: () => commit(P.left), get S() { return S; }, dim: (m) => { if (m && m.color && dimmable.indexOf(m) < 0) { dimmable.push(m); applyRoom(); } }, flat: (id) => act('app.flat', id), isFlat: (id) => !!(S.sheets[id] && S.sheets[id].flat), get presenting() { return presenting; }, get seat() { return seat; }, rig, ring, scene,
-    sound: () => { audio(); return ac; }, onFrame: (fn) => { if (typeof fn === 'function' && frameHooks.length < 16) frameHooks.push(fn); }, redraw: (p) => { if (p) p.dirty = true; }, touch: (p) => { if (p) p.t.needsUpdate = true; },
+    sound: () => { audio(); return ac; }, onFrame: (fn) => { if (typeof fn === 'function' && frameHooks.length < 32) frameHooks.push(fn); }, redraw: (p) => { if (p) p.dirty = true; }, touch: (p) => { if (p) p.t.needsUpdate = true; },
     store: { get: (id) => { try { return L.SHEET_ID.test(id) ? localStorage.getItem('aou_desk_app_' + id) : null; } catch (e) { return null; } }, set: (id, text) => { try { if (L.SHEET_ID.test(id) && typeof text === 'string' && text.length < 1500000) { localStorage.setItem('aou_desk_app_' + id, text); return true; } } catch (e) { } return false; } },
     addSheet(def) {
       if (!def || !L.SHEET_ID.test(def.id) || apps[def.id] || BRD[def.id] || typeof def.draw !== 'function' || Object.keys(apps).length >= 12) return null;
@@ -705,6 +713,7 @@ export async function start() {
     }
     for (let i = 0; i < surfaces.length; i++) { const p = surfaces[i]; if (p.dirty && (shown(p) || p === kbTop || !presenting)) { p.dirty = false; p.draw(); p.t.needsUpdate = true; break; } }
     for (let i = 0; i < frameHooks.length; i++) frameHooks[i](t0, dt);
+    { const fx = sceneFx[S.room]; if (fx && fx.update) fx.update(t0); }
     R.render(scene, camera); lastCalls = R.info.render.calls; lastTris = R.info.render.triangles;
     if (presenting && seated) { const cpu = performance.now() - t0; if (cpu > stat.cpuMax && t0 - sessT0 > 3000) stat.cpuMax = cpu; }
   }

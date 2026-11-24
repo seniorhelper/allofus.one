@@ -6,7 +6,7 @@ export const LIMITS = { doneLog: 40, todos: 10, todoLen: 48, notes: 8, noteLen: 
 export const STYLES = ['wood', 'metal', 'steel', 'black', 'neon'];
 export const FINISHES = ['matte', 'gloss'];
 export const HANDS = ['soft', 'glove', 'neon', 'dots'];
-export const ROOMS = ['plain', 'loft', 'sky', 'stars', 'real'];
+export const ROOMS = ['plain', 'loft', 'sky', 'stars', 'beach', 'float', 'real'];
 export const NEONS = ['#22e6ff', '#ff3df0', '#7dff5a', '#ffb020', '#8b7bff'];
 export const NOTE_COLORS = ['#ffe873', '#ffb3c7', '#a8e6ff', '#b9f5a6', '#ffd0a1'];
 /* boards: where each one sits around the seat. a = angle to the side, e = angle up, r = distance (1 = standard), k = size. */
