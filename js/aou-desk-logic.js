@@ -2,7 +2,7 @@
    Everything read from storage is clamped here before any other code sees it. */
 
 export const KEY = 'aou_desk_v1';
-export const LIMITS = { todos: 10, todoLen: 48, notes: 8, noteLen: 110, links: 8, labelLen: 22, urlLen: 300, nameLen: 18 };
+export const LIMITS = { doneLog: 40, todos: 10, todoLen: 48, notes: 8, noteLen: 110, links: 8, labelLen: 22, urlLen: 300, nameLen: 18 };
 export const STYLES = ['wood', 'metal', 'steel', 'black', 'neon'];
 export const FINISHES = ['matte', 'gloss'];
 export const ROOMS = ['plain', 'loft', 'sky', 'stars', 'real'];
@@ -11,6 +11,9 @@ export const NOTE_COLORS = ['#ffe873', '#ffb3c7', '#a8e6ff', '#b9f5a6', '#ffd0a1
 /* boards: where each one sits around the seat. a = angle to the side, e = angle up, r = distance (1 = standard), k = size. */
 /* starting places: further out and spread wide, the way the first headset tester arranged them by hand */
 export const BOARDS = { front: { a: 0, e: -0.2, r: 1.45, k: 1.1 }, left: { a: -0.9, e: -0.12, r: 1.55, k: 1 }, right: { a: 0.78, e: -0.11, r: 1.5, k: 1 }, cork: { a: 0.82, e: 0.47, r: 1.3, k: 1 } };
+/* to-do: finished items are filed into a done log (newest first, capped). Returns how many were filed. onlyOld = file only those finished before today. */
+export function fileDone(S, now, onlyOld) { const day = (ms) => { const d = new Date(ms); return d.getFullYear() * 400 + d.getMonth() * 32 + d.getDate(); }; const keep = [], out = []; for (const t of S.todos) { if (t.done && (!onlyOld || (t.at && day(t.at) !== day(now)))) out.push({ t: t.t, at: t.at || now }); else keep.push(t); } if (!out.length) return 0; S.todos = keep; S.done = out.reverse().concat(S.done || []).slice(0, LIMITS.doneLog); return out.length; }
+export function doneToday(S, now) { const d0 = new Date(now); d0.setHours(0, 0, 0, 0); const t0 = d0.getTime(); return (S.done || []).filter((x) => x.at >= t0).length + S.todos.filter((x) => x.done && x.at >= t0).length; }
 export const BLIM = { a: 2.6, eMin: -0.6, eMax: 1.2, rMin: 0.45, rMax: 2.2, kMin: 0.6, kMax: 1.8 };
 export function cleanBoards(raw) { const o = {}; for (const n in BOARDS) { const b = (raw && typeof raw === 'object' && raw[n]) || {}, d = BOARDS[n]; o[n] = { a: clamp(b.a, -BLIM.a, BLIM.a, d.a), e: clamp(b.e, BLIM.eMin, BLIM.eMax, d.e), r: clamp(b.r, BLIM.rMin, BLIM.rMax, d.r), k: clamp(b.k, BLIM.kMin, BLIM.kMax, d.k) }; } return o; }
 /* extra sheets added by app modules: same placement numbers as boards, plus open or closed. Ids are checked so stored data can not smuggle in odd keys. */
@@ -44,7 +47,7 @@ export function defaults() {
     v: 1, name: '',
     desk: { style: 'wood', finish: 'matte', w: 1.6, d: 0.8, hOff: 0, neon: NEONS[0] },
     room: 'plain', planets: true, cork: true, dist: 'far', light: 4, focus: false, tab: 'today', rtab: 'notes', sound: true,
-    todos: [{ t: 'Put on the headset and say hello', done: false }],
+    todos: [{ t: 'Put on the headset and say hello', done: false, at: 0 }], done: [],
     notes: [{ t: 'Tap a note to write on it', c: 0 }],
     links: [], embed: '', boards: cleanBoards(null), sheets: {},
     timer: { len: 1500, left: 1500, endsAt: 0 },
@@ -58,8 +61,9 @@ export function clean(raw) {
     v: 1, name: str(raw.name, LIMITS.nameLen),
     desk: { style: pick(k.style, STYLES, 'wood'), finish: pick(k.finish, FINISHES, 'matte'), w: clamp(k.w, DESK.wMin, DESK.wMax, 1.6), d: clamp(k.d, DESK.dMin, DESK.dMax, 0.8), hOff: clamp(k.hOff, DESK.hOffMin, DESK.hOffMax, 0), neon: pick(k.neon, NEONS, NEONS[0]) },
     room: pick(raw.room, ROOMS, 'plain'), planets: raw.planets !== false, cork: raw.cork !== false, dist: pick(raw.dist, ['far', 'near'], 'far'), focus: raw.focus === true, light: Math.round(clamp(raw.light, 0, 4, 4)),
-    tab: pick(raw.tab, ['today', 'focus'], 'today'), rtab: pick(raw.rtab, ['notes', 'links'], 'notes'), sound: raw.sound !== false,
-    todos: (Array.isArray(raw.todos) ? raw.todos : d.todos).slice(0, LIMITS.todos).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), done: !!(x && x.done) })).filter((x) => x.t),
+    tab: pick(raw.tab, ['today', 'focus', 'log'], 'today'), rtab: pick(raw.rtab, ['notes', 'links'], 'notes'), sound: raw.sound !== false,
+    todos: (Array.isArray(raw.todos) ? raw.todos : d.todos).slice(0, LIMITS.todos).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), done: !!(x && x.done), at: x && x.done ? clamp(x.at, 0, 4e12, 0) : 0 })).filter((x) => x.t),
+    done: (Array.isArray(raw.done) ? raw.done : []).slice(0, LIMITS.doneLog).map((x) => ({ t: str(x && x.t, LIMITS.todoLen), at: clamp(x && x.at, 0, 4e12, 0) })).filter((x) => x.t),
     notes: (Array.isArray(raw.notes) ? raw.notes : d.notes).slice(0, LIMITS.notes).map((x) => ({ t: str(x && x.t, LIMITS.noteLen), c: clamp(x && x.c, 0, NOTE_COLORS.length - 1, 0) | 0 })),
     links: (Array.isArray(raw.links) ? raw.links : []).slice(0, LIMITS.links).map((x) => ({ label: str(x && x.label, LIMITS.labelLen), url: safeUrl(x && x.url) })).filter((x) => x.url),
     embed: embedFor(raw.embed) ? safeUrl(raw.embed) : '', boards: cleanBoards(raw.boards), sheets: cleanSheets(raw.sheets),

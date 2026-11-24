@@ -177,7 +177,7 @@ export async function start() {
   const apps = {}, posOf = (n) => S.boards[n] || S.sheets[n];
   function makeGrip(n) { const p = BRD[n], gs = surface('grip-' + n, 400, 72, 0.38, 0.0684, p.mesh); gs.mesh.scale.set(0.38 / p.w, 0.0684 / p.h, 1); gs.mesh.position.set(0, 0.5 + (0.0684 / 2 + 0.012) / p.h, 0); gs.grip = n; gs.mesh.visible = false; grips[n] = gs; return gs; }
   for (const n in BRD) makeGrip(n);
-  const dock = surface('dock', 1024, 88, 1.0, 0.086, P.front.mesh); dock.mesh.scale.set(1, 0.086 / 0.625, 1); dock.mesh.position.set(0, 0.5 + (0.012 + 0.0455 + 0.014 + 0.043) / 0.625, 0); dock.mesh.visible = false;
+  const dock = surface('dock', 1024, 160, 1.0, 0.156, P.front.mesh); dock.mesh.scale.set(1, 0.156 / 0.625, 1); dock.mesh.position.set(0, 0.5 + (0.012 + 0.0684 + 0.014 + 0.078) / 0.625, 0); dock.mesh.visible = false;
   placeBoards();
   const strip = surface('strip', 512, 96, 0.5, 0.09375, P.front.mesh); strip.mesh.scale.set(0.5 / 1.0, 0.09375 / 0.625, 1); strip.mesh.position.set(0.5 - 0.25 - 0.022, 0.5 - 0.075 - 0.03, 0.002); strip.touch = false;
   const kb = surface('kb', 1000, 600, 0.56, 0.336, rig); kb.mesh.visible = false;
@@ -206,23 +206,40 @@ export async function start() {
     label(g, 'MOVE', (cx + 26 + x1) / 2, 37, 30, '#06281f', 'center', 800); gs.regions.push({ x: x0, y: 2, w: x1 - x0, h: 68, act: 'grip', arg: gs.grip }); }; };
   Object.values(grips).forEach(gripDraw);
   /* the dock: one button per app sheet, above the front board */
-  dock.draw = () => { const g = dock.g, ids = Object.keys(apps); g.clearRect(0, 0, 1024, 88); dock.regions.length = 0; if (!ids.length) return; rr(g, 2, 2, 1020, 84, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent(); g.stroke(); const bw = Math.min(150, (640 - (ids.length - 1) * 8) / ids.length), x0 = 216 + (648 - (ids.length * bw + (ids.length - 1) * 8)) / 2; btn(dock, 12, 14, 92, 60, 'Dim', 'light', -1, { size: 22 }); btn(dock, 110, 14, 96, 60, 'Bright', 'light', 1, { size: 22 }); btn(dock, 872, 14, 140, 60, 'Reset all', 'tidy', null, { size: 22, bg: '#2a1f25', fg: '#ffd0d6' }); ids.forEach((id, i) => btn(dock, x0 + i * (bw + 8), 14, bw, 60, apps[id].def.title, 'app.toggle', id, { on: !!(S.sheets[id] && S.sheets[id].open), size: bw < 130 ? 20 : 24 })); };
+  dock.draw = () => { const g = dock.g, ids = Object.keys(apps); g.clearRect(0, 0, 1024, 160); dock.regions.length = 0; if (!ids.length) return; rr(g, 2, 2, 1020, 156, 30); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = '#2a3446'; g.stroke();
+    btn(dock, 12, 14, 100, 62, 'Dim', 'light', -1, { size: 22 }); btn(dock, 12, 84, 100, 62, 'Bright', 'light', 1, { size: 22 }); btn(dock, 896, 14, 116, 132, 'Reset', 'tidy', null, { size: 22, bg: '#2a1f25', fg: '#ffd0d6' });
+    const per = Math.max(1, Math.ceil(ids.length / 2)), rowsN = ids.length > 5 ? 2 : 1, n1 = rowsN === 2 ? per : ids.length, bw = Math.min(170, (760 - (n1 - 1) * 8) / n1);
+    ids.forEach((id, i) => { const row = rowsN === 2 && i >= per ? 1 : 0, k = row ? i - per : i, nr = row ? ids.length - per : n1, x0 = 124 + (760 - (nr * bw + (nr - 1) * 8)) / 2; btn(dock, x0 + k * (bw + 8), rowsN === 2 ? 14 + row * 70 : 49, bw, 62, apps[id].def.title, 'app.toggle', id, { on: !!(S.sheets[id] && S.sheets[id].open), size: bw < 130 ? 20 : 23 }); }); };
   P.front.draw = () => {
     const p = P.front, g = base(p); const h = new Date().getHours(); const hi = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
     label(g, hi + (S.name ? ', ' + S.name : ''), 36, 52, 38, '#ffffff', 'left', 700, 420); label(g, new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }), 36, 96, 24);
-    btn(p, 36, 130, 170, 58, 'To-do', 'tab', 'today', { on: S.tab === 'today' }); btn(p, 218, 130, 170, 58, 'Timer', 'tab', 'focus', { on: S.tab === 'focus' });
+    btn(p, 36, 130, 170, 58, 'To-do', 'tab', 'today', { on: S.tab === 'today' || S.tab === 'log' }); btn(p, 218, 130, 170, 58, 'Timer', 'tab', 'focus', { on: S.tab === 'focus' });
     btn(p, 708, 130, 280, 58, S.focus ? 'Focus mode: on' : 'Focus mode: off', 'focus', null, { on: S.focus });
     if (S.tab === 'today') {
       const rows = S.todos.slice(0, 6); rows.forEach((t, i) => {
         const y = 206 + i * 52; rr(g, 36, y, 952, 46, 10); g.fillStyle = '#171d28'; g.fill();
         rr(g, 46, y + 7, 32, 32, 8); g.fillStyle = t.done ? accent() : '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = t.done ? accent() : '#7c8798'; g.stroke();
         if (t.done) { g.strokeStyle = '#0b0d12'; g.lineWidth = 5; g.beginPath(); g.moveTo(53, y + 24); g.lineTo(60, y + 31); g.lineTo(72, y + 15); g.stroke(); }
-        label(g, t.t, 94, y + 24, 26, t.done ? '#7c8798' : '#f1f4f9', 'left', 500, 800); p.regions.push({ x: 36, y, w: 880, h: 46, act: 'todo.toggle', arg: i });
+        label(g, t.t, 94, y + 24, 26, t.done ? '#7c8798' : '#f1f4f9', 'left', 500, 800); if (t.done) { g.font = `500 26px ${FF}`; const tw = Math.min(800, g.measureText(t.t).width); g.strokeStyle = '#7c8798'; g.lineWidth = 2; g.beginPath(); g.moveTo(94, y + 25); g.lineTo(94 + tw, y + 25); g.stroke(); } p.regions.push({ x: 36, y, w: 880, h: 46, act: 'todo.toggle', arg: i });
         btn(p, 930, y + 3, 52, 40, '×', 'todo.del', i, { bg: '#2a1f25', fg: '#ff9aa8', size: 30 });
       });
-      if (!rows.length) label(g, 'Nothing on the list. Add the one thing that matters today.', 40, 240, 26);
-      if (S.todos.length > 6) label(g, '+' + (S.todos.length - 6) + ' more in Text view', 600, 547, 22, '#aab3c2');
-      if (S.todos.length < L.LIMITS.todos) btn(p, 36, 522, 260, 50, '+ Add a to-do', 'todo.add', null, { line: accent(), bg: '#141a24' });
+      if (!rows.length) label(g, S.done.length ? 'All clear. Nice work. Add the next thing that matters.' : 'Nothing on the list. Add the one thing that matters today.', 40, 240, 26);
+      if (S.todos.length > 6) label(g, '+' + (S.todos.length - 6) + ' more', 36, 596, 20, '#aab3c2');
+      const nd = S.todos.filter((t) => t.done).length, today = L.doneToday(S, Date.now());
+      if (S.todos.length < L.LIMITS.todos) btn(p, 36, 522, 230, 50, '+ Add a to-do', 'todo.add', null, { line: accent(), bg: '#141a24' });
+      if (nd) btn(p, 278, 522, 250, 50, 'File ' + nd + ' done', 'todo.file', null, { on: true, size: 22 });
+      btn(p, 540, 522, 210, 50, 'Done log (' + S.done.length + ')', 'todo.view', 'log', { size: 22, bg: '#141a24', line: '#3a4456' });
+      label(g, today ? 'Done today: ' + today : 'Tap an item when it is finished', 988, 547, 22, today ? accent() : '#aab3c2', 'right', 700, 230);
+    } else if (S.tab === 'log') {
+      const rows = S.done.slice(0, 6); rows.forEach((t, i) => {
+        const y = 206 + i * 52; rr(g, 36, y, 952, 46, 10); g.fillStyle = '#131924'; g.fill(); g.strokeStyle = accent(); g.lineWidth = 5; g.beginPath(); g.moveTo(53, y + 24); g.lineTo(60, y + 31); g.lineTo(72, y + 15); g.stroke();
+        label(g, t.t, 94, y + 24, 24, '#c9d1dc', 'left', 500, 560); label(g, new Date(t.at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }), 800, y + 24, 20, '#7c8798', 'right');
+        btn(p, 816, y + 3, 166, 40, 'Put back', 'todo.back', i, { size: 20, bg: '#141a24', line: '#3a4456' });
+      });
+      if (!rows.length) label(g, 'Finished items are kept here. Nothing filed yet.', 40, 240, 26);
+      if (S.done.length > 6) label(g, '+' + (S.done.length - 6) + ' older', 36, 596, 20, '#aab3c2');
+      btn(p, 36, 522, 230, 50, '‹ Back to list', 'todo.view', 'today', { line: accent(), bg: '#141a24' }); if (S.done.length) btn(p, 278, 522, 250, 50, 'Empty the log', 'todo.empty', null, { size: 22, bg: '#2a1f25', fg: '#ff9aa8' });
+      label(g, 'Done today: ' + L.doneToday(S, Date.now()), 988, 547, 22, accent(), 'right', 700, 230);
     } else {
       const left = L.timerLeft(S.timer, Date.now()), run = !!S.timer.endsAt;
       label(g, 'Focus timer', 40, 232, 30, '#ffffff', 'left', 700); label(g, 'Length ' + Math.round(S.timer.len / 60) + ' min. The live countdown is at the top right.', 40, 274, 24);
@@ -321,6 +338,7 @@ export async function start() {
   /* ---------- actions ---------- */
   let saveT = 0; function commit(...dirty) { clearTimeout(saveT); saveT = setTimeout(() => L.save(localStorage, S), 250); (dirty.length ? dirty : [P.front, P.left, P.right]).forEach((p) => { p.dirty = true; }); if (!dirty.length || dirty.includes(P.right)) cork.dirty = true; sheet(); }
   const all = () => { commit(P.front, P.left, P.right, kb); for (const n in grips) grips[n].dirty = true; dock.dirty = true; for (const id in apps) apps[id].p.dirty = true; };
+  let emptyAsk = 0;
   function act(a, arg, src) {
     { const k = a.indexOf(':'); if (k > 0) { const app = apps[a.slice(0, k)]; audio(); beep(660); if (app && app.def.act) app.def.act(a.slice(k + 1), arg, src); return; } }
     audio(); beep(660);
@@ -331,9 +349,13 @@ export async function start() {
       case 'rtab': S.rtab = arg; pendLink = null; commit(P.right); break;
       case 'focus': S.focus = !S.focus; applyRoom(); commit(P.front); break;
       case 'sound': S.sound = !S.sound; audio(); commit(P.front); break;
-      case 'todo.toggle': if (S.todos[arg]) { S.todos[arg].done = !S.todos[arg].done; commit(P.front); } break;
+      case 'todo.toggle': if (S.todos[arg]) { const t = S.todos[arg]; t.done = !t.done; t.at = t.done ? Date.now() : 0; if (t.done) { beep(660, 0.09, 0.05); setTimeout(() => beep(990, 0.16, 0.05), 90); if (S.todos.every((x) => x.done)) say('Everything on the list is done'); } commit(P.front); } break;
+      case 'todo.file': { const n = L.fileDone(S, Date.now(), false); if (n) { beep(880, 0.12, 0.04); say(n + (n === 1 ? ' item' : ' items') + ' filed in the done log'); commit(P.front); } break; }
+      case 'todo.view': S.tab = arg === 'log' ? 'log' : 'today'; P.front.dirty = true; break;
+      case 'todo.back': if (S.done[arg] && S.todos.length < L.LIMITS.todos) { const d = S.done.splice(arg, 1)[0]; S.todos.push({ t: d.t, done: false, at: 0 }); commit(P.front); } else if (S.done[arg]) say('The list is full. Finish or remove one first.'); break;
+      case 'todo.empty': if (emptyAsk && Date.now() - emptyAsk < 4000) { emptyAsk = 0; S.done = []; commit(P.front); } else { emptyAsk = Date.now(); say('Tap again to empty the done log'); } break;
       case 'todo.del': S.todos.splice(arg, 1); commit(P.front); break;
-      case 'todo.add': askText('New to-do', '', L.LIMITS.todoLen, (t) => { if (t && S.todos.length < L.LIMITS.todos) { S.todos.push({ t, done: false }); commit(P.front); } }); break;
+      case 'todo.add': askText('New to-do', '', L.LIMITS.todoLen, (t) => { if (t && S.todos.length < L.LIMITS.todos) { S.todos.push({ t, done: false, at: 0 }); commit(P.front); } }); break;
       case 'timer.toggle': S.timer = S.timer.endsAt ? L.timerPause(S.timer, Date.now()) : L.timerStart(S.timer, Date.now()); commit(P.front); break;
       case 'timer.reset': S.timer = L.timerReset(S.timer); commit(P.front); break;
       case 'timer.set': S.timer = L.timerSet(S.timer, arg); commit(P.front); break;
@@ -385,7 +407,7 @@ export async function start() {
     scene.background = presenting && arSession ? null : (bg || (bg = new T.Color(0x0b0d12)));
     for (const n in grips) grips[n].mesh.visible = presenting;
     for (const id in apps) apps[id].p.mesh.visible = !!(S.sheets[id] && S.sheets[id].open) && !S.focus; dock.mesh.visible = Object.keys(apps).length > 0;
-    P.left.mesh.visible = P.right.mesh.visible = !S.focus; cork.mesh.visible = S.cork && !S.focus; ball.visible = false; planetG.visible = S.planets;
+    P.left.mesh.visible = P.right.mesh.visible = !S.focus; cork.mesh.visible = S.cork && !S.focus; ball.visible = false; restPen.visible = presenting && !ctl.some((o) => o.heldPen); planetG.visible = S.planets;
     if (S.room === 'stars') { loadStars(); skyTurn.rotation.y = -Math.PI / 2 - L.siderealAngle(Date.now(), new Date().getTimezoneOffset()); } if (starPts) starPts.material.uniforms.uK.value = presenting ? 2.4 : R.getPixelRatio() * 1.15;
   }
   let bg = null, arSession = false;
@@ -401,7 +423,7 @@ export async function start() {
     /* the boards never dip into the desk: the ring rises until their lowest edge clears the desk top */
     ring.position.set(0, Math.max(seat.eye, seat.top + 0.03 + 0.4025 * s), 0); ring.scale.setScalar(s); ring.rotation.x = presenting ? gazeUp : 0;
     if (kbPos) kb.mesh.position.copy(kbPos); else kb.mesh.position.set(0, L.kbY(seat.top, seat.eye), -0.33); kb.mesh.rotation.set(-Math.PI / 2 + L.KB.tilt, 0, 0);
-    ball.position.set(Math.min(S.desk.w / 2 - 0.12, 0.34), seat.top + 0.06, FRONT - 0.12);
+    ball.position.set(Math.min(S.desk.w / 2 - 0.12, 0.34), seat.top + 0.06, FRONT - 0.12); restPen.position.set(Math.min(S.desk.w / 2 - 0.16, 0.33), seat.top + 0.0045, FRONT - 0.07); restPen.rotation.set(0, 0, Math.PI / 2); restPen.rotateX(0.5);
     scene.updateMatrixWorld(true); surfaces.forEach((p) => { p.inv.copy(p.mesh.matrixWorld).invert(); const e = p.mesh.matrixWorld.elements; p.wx = Math.hypot(e[0], e[1], e[2]); p.wy = Math.hypot(e[4], e[5], e[6]); p.sc = Math.hypot(e[8], e[9], e[10]); });
   }
   /* a moved or resized board is nudged up until its lowest edge clears the desk top */
@@ -463,22 +485,28 @@ export async function start() {
     rig.rotation.y = ny; rig.position.x += (cx - zc * Math.sin(ny) - rig.position.x) * 0.5; rig.position.z += (cz - zc * Math.cos(ny) - rig.position.z) * 0.5;
     o.line.scale.z = g; o.line.visible = true; o.dot.visible = false;
   }
+  /* a pencil: six-sided yellow body, wood cone, dark lead, metal band and pink eraser. Its point is at the origin. */
+  const PENM = { body: new T.MeshStandardMaterial({ color: 0xf2b62a, roughness: 0.5 }), wood: new T.MeshStandardMaterial({ color: 0xd9b48a, roughness: 0.8 }), lead: new T.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.5 }), band: new T.MeshStandardMaterial({ color: 0xb9bec7, roughness: 0.3, metalness: 0.8 }), rub: new T.MeshStandardMaterial({ color: 0xe58aa0, roughness: 0.8 }) };
+  function mkPen() { const pen = new T.Group(), add = (geo, m, y, flip) => { const x = new T.Mesh(geo, m); x.position.y = y; if (flip) x.rotation.x = Math.PI; pen.add(x); }; add(new T.ConeGeometry(0.0012, 0.005, 6), PENM.lead, 0.0025, true); add(new T.CylinderGeometry(0.0038, 0.0012, 0.013, 6), PENM.wood, 0.0115); add(new T.CylinderGeometry(0.0038, 0.0038, 0.125, 6), PENM.body, 0.0805); add(new T.CylinderGeometry(0.004, 0.004, 0.01, 10), PENM.band, 0.148); add(new T.CylinderGeometry(0.0038, 0.0038, 0.01, 10), PENM.rub, 0.158); return pen; }
+  /* the desk pencil: it lies on the desk; pinch it to pick it up, let go and it returns to its place */
+  const restPen = mkPen(), restW = new T.Vector3(); restPen.visible = false; rig.add(restPen);
   const ctl = [0, 1].map((i) => {
     const c = R.xr.getController(i), h = R.xr.getHand(i); scene.add(c, h); const o = { c, h, src: null, isHand: false, on: false, near: false, O: new T.Vector3(), D: new T.Vector3(), ball: false, hold: 0, sel: false, free: false };
     const line = new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0, 0, 0), new T.Vector3(0, 0, -1)]), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })); const dot = new T.Mesh(new T.SphereGeometry(0.006, 10, 8), new T.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
     line.visible = dot.visible = false; c.add(line); scene.add(dot); o.line = line; o.dot = dot;
-    { const pen = new T.Group(), body = new T.Mesh(new T.CylinderGeometry(0.0038, 0.0038, 0.13, 8), new T.MeshStandardMaterial({ color: 0xf2b62a, roughness: 0.55 })), nib = new T.Mesh(new T.ConeGeometry(0.0038, 0.014, 8), new T.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.6 })), cap = new T.Mesh(new T.CylinderGeometry(0.004, 0.004, 0.012, 8), new T.MeshStandardMaterial({ color: 0xe58aa0, roughness: 0.7 })); body.position.y = 0.079; nib.position.y = 0.007; nib.rotation.x = Math.PI; cap.position.y = 0.15; pen.add(body, nib, cap); pen.visible = false; scene.add(pen); o.pen = pen; }
+    { const pen = mkPen(); pen.visible = false; scene.add(pen); o.pen = pen; o.tip = new T.Vector3(); o.hasTip = false; o.heldPen = false; }
     c.addEventListener('connected', (e) => { o.src = e.data; o.isHand = !!(e.data && e.data.hand); o.on = true; });
     c.addEventListener('disconnected', () => { o.src = null; o.on = false; o.pen.visible = false; o.ball = false; o.hold = 0; o.sel = false; if (drag && drag.i === i) { drag = null; layout(); } line.visible = dot.visible = false; setHover(i, null, null); });
     o.start = () => {
       o.sel = true; o.free = false;
+      if (o.isHand && o.hasTip && restPen.visible && !edit && o.tip.distanceTo(restW.setFromMatrixPosition(restPen.matrixWorld)) < 0.11) { o.heldPen = true; restPen.visible = false; audio(); beep(740, 0.06, 0.04); return; }
       if (o.ball && !drag) { head.setFromMatrixPosition(camera.matrixWorld); drag = { i, g0: Math.max(0.05, ballW.distanceTo(o.O)), r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; audio(); beep(440, 0.08); return; }
       if (!o.near && hov[i] && hovP[i]) { const r = hov[i]; if (r.act === 'grip') { if (!bdrag && !drag && !grab) boardStart(i, o, r.arg, true); } else act(r.act, r.arg, o.src); }
       /* pinch a board anywhere that is not a button and drag: the board follows (after a small dead zone, so a plain press never nudges it) */
       else if (!o.near && !edit && seated && o.hp && !o.hp.point && nameOf(o.hp) && !bdrag && !drag && !grab) { boardStart(i, o, nameOf(o.hp), false); }
       else if (!o.near && !edit && seated && !o.pp) { o.hold = performance.now(); o.free = true; }
     };
-    o.end = () => { o.hold = 0; o.sel = false; if (bdrag && bdrag.i === i) boardEnd(); if (drag && drag.i === i) { drag = null; layout(); beep(660, 0.08); } };
+    o.end = () => { o.hold = 0; o.sel = false; if (o.heldPen) { o.heldPen = false; restPen.visible = presenting; beep(520, 0.05, 0.03); } if (bdrag && bdrag.i === i) boardEnd(); if (drag && drag.i === i) { drag = null; layout(); beep(660, 0.08); } };
     /* controllers use the trigger; bare hands are read from the finger joints below, because the headset's own pinch signal drops out when leaning back */
     c.addEventListener('selectstart', () => { if (!o.isHand) o.start(); });
     c.addEventListener('selectend', () => { if (!o.isHand) o.end(); });
@@ -497,6 +525,8 @@ export async function start() {
         /* our own pinch: thumb tip to index tip, with a gap between press and release so it cannot flicker; a closed fist does not count */
         o.pd = it && tt && it.visible !== false && tt.visible !== false ? it.position.distanceTo(tt.position) : 9;
         o.fist = !!(wr && mt && mk) && mt.position.distanceTo(wr.position) < mk.position.distanceTo(wr.position) * 1.12;
+        o.hasTip = !!(it && it.visible !== false); if (o.hasTip) o.tip.copy(it.position);
+        if (o.heldPen && o.hasTip && wr) { pv2.copy(wr.position).sub(it.position).normalize().multiplyScalar(0.6); pv2.y += 0.8; pv2.normalize(); o.pen.position.copy(it.position); o.pen.quaternion.setFromUnitVectors(UP, pv2); o.pen.visible = true; }
         if (it && it.visible !== false) {
           grabNear = false;
           for (let s = 0; s < surfaces.length; s++) {
@@ -587,7 +617,7 @@ export async function start() {
     const sec = (title, kids) => box.appendChild(el('section', null, [el('h2', { text: title }), ...kids])); const b = (text, fn, cls) => el('button', { type: 'button', text, className: cls || '', on: { click: () => { sheet.force = true; fn(); } } });
     const adder = (ph, max, fn) => { const i = el('input', { type: 'text', placeholder: ph, maxLength: max, 'aria-label': ph }); return el('form', { className: 'dk-row', on: { submit: (e) => { e.preventDefault(); const v = i.value.trim(); if (v) { sheet.force = true; fn(v); } } } }, [i, el('button', { type: 'submit', text: 'Add' })]); };
     sec('To-do', [...S.todos.map((t, i) => el('div', { className: 'dk-row' }, [el('label', { className: 'dk-grow' }, [el('input', { type: 'checkbox', checked: t.done, on: { change: () => { sheet.force = true; act('todo.toggle', i); } } }), el('span', { text: ' ' + t.t })]), b('Remove', () => act('todo.del', i), 'dk-x')])),
-      S.todos.length < L.LIMITS.todos ? adder('New to-do', L.LIMITS.todoLen, (v) => { S.todos.push({ t: v.slice(0, L.LIMITS.todoLen), done: false }); commit(P.front); }) : null]);
+      S.todos.length < L.LIMITS.todos ? adder('New to-do', L.LIMITS.todoLen, (v) => { S.todos.push({ t: v.slice(0, L.LIMITS.todoLen), done: false, at: 0 }); commit(P.front); }) : null]);
     const left = L.timerLeft(S.timer, Date.now());
     sec('Focus timer', [el('div', { className: 'dk-row' }, [el('strong', { text: L.mmss(left), id: 'dk-sheet-time' }), b(S.timer.endsAt ? 'Pause' : 'Start', () => act('timer.toggle')), b('Reset', () => act('timer.reset')), ...[5, 15, 25, 50].map((m) => b(m + ' min', () => act('timer.set', m * 60), S.timer.len === m * 60 ? 'dk-on' : '')), b('Custom', () => act('timer.custom'))])]);
     sec('Sticky notes', [...S.notes.map((n, i) => el('div', { className: 'dk-row' }, [el('textarea', { value: n.t, maxLength: L.LIMITS.noteLen, rows: 2, className: 'dk-grow', 'aria-label': 'Sticky note ' + (i + 1), style: 'background:' + L.NOTE_COLORS[n.c], on: { change: (e) => { n.t = e.target.value.slice(0, L.LIMITS.noteLen); commit(P.right); } } }), b('Colour', () => act('note.color', i)), b('Remove', () => act('note.del', i), 'dk-x')])),
@@ -613,7 +643,7 @@ export async function start() {
 
   /* ---------- apps: what a module may use ---------- */
   const frameHooks = [];
-  const api = { T, L, FF, rr, btn, label, base, accent, say, askText, beep, commit: () => commit(P.left), get S() { return S; }, flat: (id) => act('app.flat', id), isFlat: (id) => !!(S.sheets[id] && S.sheets[id].flat), get presenting() { return presenting; }, get seat() { return seat; }, rig, ring, scene,
+  const api = { T, L, FF, rr, btn, label, base, accent, say, askText, beep, commit: () => commit(P.left), get S() { return S; }, dim: (m) => { if (m && m.color && dimmable.indexOf(m) < 0) { dimmable.push(m); applyRoom(); } }, flat: (id) => act('app.flat', id), isFlat: (id) => !!(S.sheets[id] && S.sheets[id].flat), get presenting() { return presenting; }, get seat() { return seat; }, rig, ring, scene,
     sound: () => { audio(); return ac; }, onFrame: (fn) => { if (typeof fn === 'function' && frameHooks.length < 16) frameHooks.push(fn); }, redraw: (p) => { if (p) p.dirty = true; }, touch: (p) => { if (p) p.t.needsUpdate = true; },
     store: { get: (id) => { try { return L.SHEET_ID.test(id) ? localStorage.getItem('aou_desk_app_' + id) : null; } catch (e) { return null; } }, set: (id, text) => { try { if (L.SHEET_ID.test(id) && typeof text === 'string' && text.length < 1500000) { localStorage.setItem('aou_desk_app_' + id, text); return true; } } catch (e) { } return false; } },
     addSheet(def) {
@@ -638,7 +668,7 @@ export async function start() {
       else { if (recenterAt && t0 > recenterAt) { recenterAt = 0; placeSeat(); } xrInput(); follow(t0); if (t0 - sessT0 > 3000) { stat.n++; stat.sum += dt; if (dt > 20) stat.slow++; if (dt > stat.worst) stat.worst = dt; } }
     } else { camera.rotation.set(pitch, yaw, 0, 'YXZ'); flatN++; flatSum += dt; if (dt > flatWorst) flatWorst = dt; }
     if (t0 - secT > 250) {
-      secT = t0; const now = Date.now();
+      secT = t0; const now = Date.now(); if (L.fileDone(S, now, true)) commit(P.front); /* yesterday's finished items file themselves */
       if (L.timerDone(S.timer, now)) { if (!rang) { rang = true; S.timer = L.timerReset(S.timer); audio(); chime(); say('Time is up. Nice work.', 6000); commit(P.front); } } else rang = false;
       if (DEV && flatN + stat.n > 0) statLine = presenting ? ` ${stat.slow}s ${stat.worst.toFixed(0)}w` : '';
       const k = stripKey(); if (k !== stripLast) { stripLast = k; strip.dirty = true; const st = $('dk-sheet-time'); if (st) st.textContent = L.mmss(L.timerLeft(S.timer, now)); }
