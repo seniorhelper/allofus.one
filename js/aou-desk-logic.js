@@ -9,7 +9,8 @@ export const ROOMS = ['plain', 'loft', 'sky', 'stars', 'real'];
 export const NEONS = ['#22e6ff', '#ff3df0', '#7dff5a', '#ffb020', '#8b7bff'];
 export const NOTE_COLORS = ['#ffe873', '#ffb3c7', '#a8e6ff', '#b9f5a6', '#ffd0a1'];
 /* boards: where each one sits around the seat. a = angle to the side, e = angle up, r = distance (1 = standard), k = size. */
-export const BOARDS = { front: { a: 0, e: -0.0925, r: 1.0043, k: 1 }, left: { a: -0.8203, e: -0.0925, r: 1.0043, k: 1 }, right: { a: 0.8203, e: -0.0925, r: 1.0043, k: 1 }, cork: { a: 0.8203, e: 0.4678, r: 1.1204, k: 1 } };
+/* starting places: further out and spread wide, the way the first headset tester arranged them by hand */
+export const BOARDS = { front: { a: 0, e: -0.2, r: 1.45, k: 1.1 }, left: { a: -0.9, e: -0.12, r: 1.55, k: 1 }, right: { a: 0.78, e: -0.11, r: 1.5, k: 1 }, cork: { a: 0.82, e: 0.47, r: 1.3, k: 1 } };
 export const BLIM = { a: 2.6, eMin: -0.6, eMax: 1.2, rMin: 0.45, rMax: 2.2, kMin: 0.6, kMax: 1.8 };
 export function cleanBoards(raw) { const o = {}; for (const n in BOARDS) { const b = (raw && typeof raw === 'object' && raw[n]) || {}, d = BOARDS[n]; o[n] = { a: clamp(b.a, -BLIM.a, BLIM.a, d.a), e: clamp(b.e, BLIM.eMin, BLIM.eMax, d.e), r: clamp(b.r, BLIM.rMin, BLIM.rMax, d.r), k: clamp(b.k, BLIM.kMin, BLIM.kMax, d.k) }; } return o; }
 /* extra sheets added by app modules: same placement numbers as boards, plus open or closed. Ids are checked so stored data can not smuggle in odd keys. */

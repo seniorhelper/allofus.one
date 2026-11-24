@@ -41,7 +41,7 @@ export default function (desk) {
   }
 
   sheet = desk.addSheet({
-    id, title: 'Money tools', W: 1024, H: 640, w: 1.0, h: 0.625, home: { a: -1.72, e: -0.02, r: 1.05, k: 1 }, open: false,
+    id, title: 'Money tools', W: 1024, H: 640, w: 1.0, h: 0.625, home: { a: 0.46, e: 0.02, r: 1.6, k: 1 }, open: false,
     draw(p, g) {
       desk.base(p, 'Money tools'); const t = byId[st.tool], vals = st.vals[t.id];
       MODES.forEach(([m, n], i) => desk.btn(p, 560 + i * 150, 30, 140, 52, n, id + ':mode', m, { on: st.mode === m, size: 24 }));

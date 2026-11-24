@@ -24,43 +24,44 @@ export default function (desk) {
   const chain = (...n) => { for (let i = 0; i < n.length - 1; i++) n[i].connect(n[i + 1]); return n[n.length - 1]; };
   function build() {
     ac = desk.sound(); if (!ac) return false; if (out) return true;
-    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; out = gain(0); out.connect(comp); comp.connect(ac.destination);
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; out = gain(0); out.connect(comp); const soft = filt('lowpass', 4200); comp.connect(soft); soft.connect(ac.destination);
     CH.forEach(([k]) => { g[k] = gain(0); g[k].connect(out); });
     const white = noise('white'), pink = noise('pink'), brown = noise('brown');
     /* rain: bright hiss with a slow swell */
-    const rainG = gain(0.5); chain(white, filt('highpass', 500), filt('lowpass', 7500), rainG, g.rain); lfo(0.13, 0.12, rainG.gain);
+    const rainG = gain(0.5); chain(pink, filt('highpass', 250), filt('lowpass', 3200), rainG, g.rain); lfo(0.13, 0.08, rainG.gain);
     /* wind: a band of soft noise whose pitch and strength wander */
     const wf = filt('bandpass', 420, 0.7), wg = gain(0.9); chain(pink, wf, wg, g.wind); lfo(0.07, 220, wf.frequency); lfo(0.11, 0.35, wg.gain);
     /* brook: narrow bright band that wobbles quickly, over a low rumble */
-    const bf = filt('bandpass', 1400, 5), bg = gain(0.7); chain(white, bf, bg, g.brook); lfo(3.1, 500, bf.frequency); lfo(7.3, 260, bf.frequency); chain(brown, filt('lowpass', 300), gain(0.5), g.brook);
+    const bf = filt('bandpass', 900, 1.2), bg = gain(0.5); chain(pink, bf, bg, g.brook); lfo(0.7, 220, bf.frequency); lfo(1.9, 90, bf.frequency); chain(brown, filt('lowpass', 300), gain(0.5), g.brook);
     /* fire: low roar; the crackles are added as tiny bursts from the frame clock */
     const fg = gain(0.8); chain(brown, filt('lowpass', 420), fg, g.fire); lfo(0.9, 0.2, fg.gain);
-    g.crack = filt('highpass', 1800); chain(g.crack, gain(0.9), g.fire); g.white = white;
+    g.crack = filt('bandpass', 1500, 0.8); chain(g.crack, gain(0.35), g.fire); g.white = white;
     /* crickets: a high tone chopped fast, in a slow pulse */
-    const co = ac.createOscillator(), cg = gain(0), chop = ac.createOscillator(), chopG = gain(0.5), pulse = ac.createOscillator(), pg = gain(0.05); co.frequency.value = 4300; chop.type = 'square'; chop.frequency.value = 31; pulse.frequency.value = 0.55;
-    chop.connect(chopG); chopG.connect(cg.gain); pulse.connect(pg); pg.connect(cg.gain); chain(co, cg, gain(0.12), g.night); co.start(); chop.start(); pulse.start();
+    const co = ac.createOscillator(), cg = gain(0), chop = ac.createOscillator(), chopG = gain(0.5), pulse = ac.createOscillator(), pg = gain(0.05); co.frequency.value = 2900; chop.type = 'sine'; chop.frequency.value = 24; pulse.frequency.value = 0.55;
+    chop.connect(chopG); chopG.connect(cg.gain); pulse.connect(pg); pg.connect(cg.gain); chain(co, cg, gain(0.035), g.night); co.start(); chop.start(); pulse.start();
     /* soft music: four gentle voices through a low-pass, retuned to a new chord now and then */
-    const pf = filt('lowpass', 900), pgn = gain(0.16); chain(pf, pgn, g.pad); lfo(0.05, 0.05, pgn.gain);
-    for (let i = 0; i < 4; i++) { const o = ac.createOscillator(); o.type = i % 2 ? 'triangle' : 'sine'; o.frequency.value = 220; o.detune.value = (i - 1.5) * 4; o.connect(pf); o.start(); padOsc.push(o); }
+    const pf = filt('lowpass', 420), pgn = gain(0.11); chain(pf, pgn, g.pad); lfo(0.05, 0.05, pgn.gain);
+    for (let i = 0; i < 4; i++) { const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = [110, 164.81, 220, 329.63][i]; o.detune.value = (i - 1.5) * 3; o.connect(pf); o.start(); padOsc.push(o); }
     g.birdBus = gain(0.5); g.birdBus.connect(g.birds); return true;
   }
-  const CHORDS = [[220, 277.18, 329.63, 440], [196, 246.94, 293.66, 392], [174.61, 220, 261.63, 349.23], [146.83, 220, 293.66, 369.99]];
+  /* open fifths and octaves only (no thirds), so nothing can clash */
+  const CHORDS = [[220, 164.81, 220, 329.63], [196, 146.83, 196, 293.66], [220, 164.81, 246.94, 329.63], [174.61, 130.81, 196, 261.63]];
   function apply(fast) { if (!out) return; const t = ac.currentTime, k = fast ? 0.08 : 0.7; out.gain.setTargetAtTime(anyOn() ? (st.master / 10) ** 2 * 0.9 : 0, t, k); CH.forEach(([c]) => g[c].gain.setTargetAtTime((st.v[c] / 10) ** 1.6, t, k)); }
   function chirp(t) { /* one bird phrase: a few quick sweeps */
-    const n = 2 + (rnd() * 4 | 0), base = 2200 + rnd() * 2200, pan = ac.createStereoPanner ? ac.createStereoPanner() : null; if (pan) { pan.pan.value = rnd() * 1.6 - 0.8; pan.connect(g.birdBus); }
-    for (let i = 0; i < n; i++) { const o = ac.createOscillator(), a = gain(0), s = t + i * (0.09 + rnd() * 0.06); o.frequency.setValueAtTime(base, s); o.frequency.exponentialRampToValueAtTime(base * (1.25 + rnd() * 0.5), s + 0.05); o.frequency.exponentialRampToValueAtTime(base * 0.9, s + 0.1); a.gain.setValueAtTime(0, s); a.gain.linearRampToValueAtTime(0.5, s + 0.015); a.gain.linearRampToValueAtTime(0, s + 0.1); o.connect(a); a.connect(pan || g.birdBus); o.start(s); o.stop(s + 0.12); }
+    const n = 2 + (rnd() * 4 | 0), base = 1500 + rnd() * 1100, pan = ac.createStereoPanner ? ac.createStereoPanner() : null; if (pan) { pan.pan.value = rnd() * 1.6 - 0.8; pan.connect(g.birdBus); }
+    for (let i = 0; i < n; i++) { const o = ac.createOscillator(), a = gain(0), s = t + i * (0.09 + rnd() * 0.06); o.frequency.setValueAtTime(base, s); o.frequency.exponentialRampToValueAtTime(base * (1.25 + rnd() * 0.5), s + 0.05); o.frequency.exponentialRampToValueAtTime(base * 0.9, s + 0.1); a.gain.setValueAtTime(0, s); a.gain.linearRampToValueAtTime(0.14, s + 0.03); a.gain.linearRampToValueAtTime(0, s + 0.1); o.connect(a); a.connect(pan || g.birdBus); o.start(s); o.stop(s + 0.12); }
   }
-  function crackle(t) { const a = gain(0); g.white.connect(a); a.connect(g.crack); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(0.25 + rnd() * 0.6, t + 0.002); a.gain.exponentialRampToValueAtTime(0.001, t + 0.02 + rnd() * 0.04); const off = () => { try { g.white.disconnect(a); a.disconnect(); } catch (e) { } }; setTimeout(off, 200); }
+  function crackle(t) { const a = gain(0); g.white.connect(a); a.connect(g.crack); a.gain.setValueAtTime(0, t); a.gain.linearRampToValueAtTime(0.1 + rnd() * 0.25, t + 0.004); a.gain.exponentialRampToValueAtTime(0.001, t + 0.02 + rnd() * 0.04); const off = () => { try { g.white.disconnect(a); a.disconnect(); } catch (e) { } }; setTimeout(off, 200); }
   desk.onFrame((now) => {
     if (!out || !anyOn() || ac.state !== 'running') return; const t = ac.currentTime;
     if (st.v.birds > 0 && now > nextBird) { nextBird = now + 1500 + rnd() * 6000; chirp(t + 0.05); }
     if (st.v.fire > 0 && now > nextCrackle) { nextCrackle = now + 60 + rnd() * 420; crackle(t + 0.01); }
-    if (st.v.pad > 0 && now > nextChord) { nextChord = now + 16000 + rnd() * 9000; chord = (chord + 1 + (rnd() * 2 | 0)) % CHORDS.length; padOsc.forEach((o, i) => o.frequency.setTargetAtTime(CHORDS[chord][i] / (i === 0 ? 2 : 1), t, 2.5)); }
+    if (st.v.pad > 0 && now > nextChord) { nextChord = now + 26000 + rnd() * 14000; chord = (chord + 1 + (rnd() * 2 | 0)) % CHORDS.length; padOsc.forEach((o, i) => o.frequency.setTargetAtTime(CHORDS[chord][i] / (i === 0 ? 2 : 1), t, 5)); }
   });
 
   function set(k, v) { if (!build()) { desk.say('Turn Sound on first (front board)'); return; } if (ac.state === 'suspended') ac.resume().catch(() => { }); if (k === 'master') st.master = v; else st.v[k] = v; apply(true); save(); desk.redraw(sheet); }
   sheet = desk.addSheet({
-    id, title: 'Calm', W: 640, H: 640, w: 0.62, h: 0.62, home: { a: -1.6, e: 0.42, r: 1.1, k: 1 }, open: false,
+    id, title: 'Calm', W: 640, H: 640, w: 0.62, h: 0.62, home: { a: -0.45, e: 0.02, r: 1.3, k: 1 }, open: false,
     draw(p, c) {
       desk.base(p, 'Calm sounds'); desk.label(c, 'Made in code. Mix your own.', 604, 58, 20, '#aab3c2', 'right');
       const row = (y, name, key, val) => { desk.label(c, name, 36, y + 22, 24, '#f1f4f9'); desk.btn(p, 212, y, 56, 44, '−', id + ':vol', [key, -1], { size: 32 }); for (let i = 0; i < 10; i++) { desk.rr(c, 280 + i * 25, y + 8, 20, 28, 5); c.fillStyle = i < val ? desk.accent() : '#222a38'; c.fill(); } desk.btn(p, 540, y, 56, 44, '+', id + ':vol', [key, 1], { size: 32 }); };

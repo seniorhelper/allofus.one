@@ -175,7 +175,7 @@ export async function start() {
   const BRD = { front: P.front, left: P.left, right: P.right, cork }, grips = {};
   function placeBoards() { for (const n in BRD) { const p = BRD[n]; let b = S.boards[n] || S.sheets[n]; if (!b) { const a = apps[n]; if (!a) continue; const h = a.def.home || {}; b = S.sheets[n] = { flat: !!h.flat, a: h.a || 0, e: h.e === undefined ? 0.3 : h.e, r: h.r || 1, k: h.k || 1, open: !!a.def.open }; } if (b.flat && apps[n]) { if (p.mesh.parent !== rig) rig.add(p.mesh); const fw = 0.56 * b.k, fh = fw * p.h / p.w, sl = 0.3; p.mesh.position.set(0, seat.top + 0.006 + Math.sin(sl) * fh / 2, FRONT - 0.05 - Math.cos(sl) * fh / 2); p.mesh.rotation.set(-Math.PI / 2 + sl, 0, 0); p.mesh.scale.set(fw, fh, 1); continue; } if (p.mesh.parent !== ring) ring.add(p.mesh); const ce = Math.cos(b.e), r = b.r * R0; p.mesh.position.set(Math.sin(b.a) * ce * r, Math.sin(b.e) * r, -Math.cos(b.a) * ce * r); p.mesh.rotation.set(b.e, -b.a, 0, 'YXZ'); p.mesh.scale.set(p.w * b.k, p.h * b.k, 1); } }
   const apps = {}, posOf = (n) => S.boards[n] || S.sheets[n];
-  function makeGrip(n) { const p = BRD[n], gs = surface('grip-' + n, 320, 56, 0.26, 0.0455, p.mesh); gs.mesh.scale.set(0.26 / p.w, 0.0455 / p.h, 1); gs.mesh.position.set(0, 0.5 + (0.0455 / 2 + 0.012) / p.h, 0); gs.grip = n; gs.mesh.visible = false; grips[n] = gs; return gs; }
+  function makeGrip(n) { const p = BRD[n], gs = surface('grip-' + n, 400, 72, 0.38, 0.0684, p.mesh); gs.mesh.scale.set(0.38 / p.w, 0.0684 / p.h, 1); gs.mesh.position.set(0, 0.5 + (0.0684 / 2 + 0.012) / p.h, 0); gs.grip = n; gs.mesh.visible = false; grips[n] = gs; return gs; }
   for (const n in BRD) makeGrip(n);
   const dock = surface('dock', 1024, 88, 1.0, 0.086, P.front.mesh); dock.mesh.scale.set(1, 0.086 / 0.625, 1); dock.mesh.position.set(0, 0.5 + (0.012 + 0.0455 + 0.014 + 0.043) / 0.625, 0); dock.mesh.visible = false;
   placeBoards();
@@ -198,9 +198,12 @@ export async function start() {
   const label = (g, text, x, y, size = 24, col = '#aab3c2', align = 'left', weight = 500, maxW) => { g.fillStyle = col; g.font = `${weight} ${size}px ${FF}`; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(text, x, y, maxW); };
 
   let presenting = false, arOK = false, vrOK = false;
-  const gripDraw = (gs) => { gs.draw = () => { const g = gs.g, ap = !!gs.app; g.clearRect(0, 0, 320, 56); gs.regions.length = 0; rr(g, 2, 2, 316, 52, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent(); g.stroke();
-    btn(gs, 8, 8, ap ? 46 : 56, 40, '−', 'bsize', [gs.grip, -1], { size: 30, r: 20 }); btn(gs, ap ? 58 : 256, 8, ap ? 46 : 56, 40, '+', 'bsize', [gs.grip, 1], { size: 30, r: 20 }); if (ap) btn(gs, 266, 8, 46, 40, '×', 'app.close', gs.grip, { size: 30, r: 20, bg: '#2a1f25', fg: '#ff9aa8' });
-    const x0 = ap ? 110 : 70, x1 = ap ? 260 : 250; g.fillStyle = accent(); for (let i = 0; i < 6; i++) { g.beginPath(); g.arc((x0 + x1) / 2 - 40 + i * 16, 28, 4, 0, 6.283); g.fill(); } gs.regions.push({ x: x0, y: 2, w: x1 - x0, h: 52, act: 'grip', arg: gs.grip }); }; };
+  const gripDraw = (gs) => { gs.draw = () => { const g = gs.g, ap = !!gs.app; g.clearRect(0, 0, 400, 72); gs.regions.length = 0; rr(g, 2, 2, 396, 68, 30); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = '#2a3446'; g.stroke();
+    btn(gs, 8, 8, 54, 56, '−', 'bsize', [gs.grip, -1], { size: 34, r: 24 }); btn(gs, 66, 8, 54, 56, '+', 'bsize', [gs.grip, 1], { size: 34, r: 24 }); if (ap) btn(gs, 338, 8, 54, 56, '×', 'app.close', gs.grip, { size: 34, r: 24, bg: '#2a1f25', fg: '#ff9aa8' });
+    /* the MOVE box: one clear teal target to aim at, with a four-way arrow beside the word */
+    const x0 = 128, x1 = ap ? 330 : 392, cx = x0 + 40; rr(g, x0, 8, x1 - x0, 56, 24); g.fillStyle = '#19c3b1'; g.fill(); g.strokeStyle = '#06281f'; g.lineWidth = 5; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); g.moveTo(cx - 18, 36); g.lineTo(cx + 18, 36); g.moveTo(cx, 18); g.lineTo(cx, 54);
+    g.moveTo(cx - 11, 29); g.lineTo(cx - 18, 36); g.lineTo(cx - 11, 43); g.moveTo(cx + 11, 29); g.lineTo(cx + 18, 36); g.lineTo(cx + 11, 43); g.moveTo(cx - 7, 25); g.lineTo(cx, 18); g.lineTo(cx + 7, 25); g.moveTo(cx - 7, 47); g.lineTo(cx, 54); g.lineTo(cx + 7, 47); g.stroke();
+    label(g, 'MOVE', (cx + 26 + x1) / 2, 37, 30, '#06281f', 'center', 800); gs.regions.push({ x: x0, y: 2, w: x1 - x0, h: 68, act: 'grip', arg: gs.grip }); }; };
   Object.values(grips).forEach(gripDraw);
   /* the dock: one button per app sheet, above the front board */
   dock.draw = () => { const g = dock.g, ids = Object.keys(apps); g.clearRect(0, 0, 1024, 88); dock.regions.length = 0; if (!ids.length) return; rr(g, 2, 2, 1020, 84, 26); g.fillStyle = '#0e1219'; g.fill(); g.lineWidth = 3; g.strokeStyle = accent(); g.stroke(); const bw = Math.min(150, (640 - (ids.length - 1) * 8) / ids.length), x0 = 216 + (648 - (ids.length * bw + (ids.length - 1) * 8)) / 2; btn(dock, 12, 14, 92, 60, 'Dim', 'light', -1, { size: 22 }); btn(dock, 110, 14, 96, 60, 'Bright', 'light', 1, { size: 22 }); btn(dock, 872, 14, 140, 60, 'Reset all', 'tidy', null, { size: 22, bg: '#2a1f25', fg: '#ffd0d6' }); ids.forEach((id, i) => btn(dock, x0 + i * (bw + 8), 14, bw, 60, apps[id].def.title, 'app.toggle', id, { on: !!(S.sheets[id] && S.sheets[id].open), size: bw < 130 ? 20 : 24 })); };
@@ -464,8 +467,9 @@ export async function start() {
     const c = R.xr.getController(i), h = R.xr.getHand(i); scene.add(c, h); const o = { c, h, src: null, isHand: false, on: false, near: false, O: new T.Vector3(), D: new T.Vector3(), ball: false, hold: 0, sel: false, free: false };
     const line = new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0, 0, 0), new T.Vector3(0, 0, -1)]), new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })); const dot = new T.Mesh(new T.SphereGeometry(0.006, 10, 8), new T.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
     line.visible = dot.visible = false; c.add(line); scene.add(dot); o.line = line; o.dot = dot;
+    { const pen = new T.Group(), body = new T.Mesh(new T.CylinderGeometry(0.0038, 0.0038, 0.13, 8), new T.MeshStandardMaterial({ color: 0xf2b62a, roughness: 0.55 })), nib = new T.Mesh(new T.ConeGeometry(0.0038, 0.014, 8), new T.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.6 })), cap = new T.Mesh(new T.CylinderGeometry(0.004, 0.004, 0.012, 8), new T.MeshStandardMaterial({ color: 0xe58aa0, roughness: 0.7 })); body.position.y = 0.079; nib.position.y = 0.007; nib.rotation.x = Math.PI; cap.position.y = 0.15; pen.add(body, nib, cap); pen.visible = false; scene.add(pen); o.pen = pen; }
     c.addEventListener('connected', (e) => { o.src = e.data; o.isHand = !!(e.data && e.data.hand); o.on = true; });
-    c.addEventListener('disconnected', () => { o.src = null; o.on = false; o.ball = false; o.hold = 0; o.sel = false; if (drag && drag.i === i) { drag = null; layout(); } line.visible = dot.visible = false; setHover(i, null, null); });
+    c.addEventListener('disconnected', () => { o.src = null; o.on = false; o.pen.visible = false; o.ball = false; o.hold = 0; o.sel = false; if (drag && drag.i === i) { drag = null; layout(); } line.visible = dot.visible = false; setHover(i, null, null); });
     o.start = () => {
       o.sel = true; o.free = false;
       if (o.ball && !drag) { head.setFromMatrixPosition(camera.matrixWorld); drag = { i, g0: Math.max(0.05, ballW.distanceTo(o.O)), r0: Math.hypot(o.O.x - head.x, o.O.z - head.z) }; audio(); beep(440, 0.08); return; }
@@ -480,12 +484,13 @@ export async function start() {
     c.addEventListener('selectend', () => { if (!o.isHand) o.end(); });
     return o;
   });
+  const pv1 = new T.Vector3(), pv2 = new T.Vector3(), UP = new T.Vector3(0, 1, 0);
   const JN = 25, joints = new T.InstancedMesh(new T.SphereGeometry(1, 8, 6), new T.MeshStandardMaterial({ color: 0xdfe6f2, roughness: 0.5, metalness: 0.1 }), JN * 2); joints.frustumCulled = false; joints.count = 0; scene.add(joints); joints.instanceMatrix.setUsage(T.DynamicDrawUsage);
   const JS = new T.Vector3(), JNAMES = ['wrist', 'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip', 'index-finger-metacarpal', 'index-finger-phalanx-proximal', 'index-finger-phalanx-intermediate', 'index-finger-phalanx-distal', 'index-finger-tip', 'middle-finger-metacarpal', 'middle-finger-phalanx-proximal', 'middle-finger-phalanx-intermediate', 'middle-finger-phalanx-distal', 'middle-finger-tip', 'ring-finger-metacarpal', 'ring-finger-phalanx-proximal', 'ring-finger-phalanx-intermediate', 'ring-finger-phalanx-distal', 'ring-finger-tip', 'pinky-finger-metacarpal', 'pinky-finger-phalanx-proximal', 'pinky-finger-phalanx-intermediate', 'pinky-finger-phalanx-distal', 'pinky-finger-tip'];
   function xrInput() {
     let n = 0; const now = performance.now(); ballW.setFromMatrixPosition(ball.matrixWorld);
     for (let i = 0; i < 2; i++) {
-      const o = ctl[i]; let near = false, grabNear = false; o.pp = null;
+      const o = ctl[i]; let near = false, grabNear = false; o.pp = null; o.pen.visible = false;
       if (o.on && o.isHand && o.h.joints) {
         for (let j = 0; j < JN; j++) { const jt = o.h.joints[JNAMES[j]]; if (!jt || jt.visible === false) continue; const rad = Math.max(0.005, Math.min(0.012, (jt.jointRadius || 0.008) * 0.8)); tmpM.compose(jt.position, tmpQ.identity(), JS.setScalar(rad)); joints.setMatrixAt(n++, tmpM); }
         const it = o.h.joints['index-finger-tip'], tt = o.h.joints['thumb-tip'], wr = o.h.joints['wrist'], mt = o.h.joints['middle-finger-tip'], mk = o.h.joints['middle-finger-phalanx-proximal'];
@@ -496,7 +501,9 @@ export async function start() {
           grabNear = false;
           for (let s = 0; s < surfaces.length; s++) {
             const p = surfaces[s]; if (drag || !p.touch || !shown(p) || (edit && p !== kb && p !== kbTop)) continue; tip.copy(it.position).applyMatrix4(p.inv); const z = tip.z * p.sc - 0.006, inside = tip.x > -0.5 && tip.x < 0.5 && tip.y > -0.5 && tip.y < 0.5;
-            if (inside && z < 0.1 && z > L.POKE.deep) { near = true; p.hx = (tip.x + 0.5) * p.W; p.hy = (0.5 - tip.y) * p.H; const r = regionAt(p); setHover(i, p, r); if (p.point && !r) { o.pp = p; p.point(i, p.hx, p.hy, z <= 0.012, false); } if (L.pokeStep(p.poke[i], z, true) && r) act(r.act, r.arg, o.src); } else L.pokeStep(p.poke[i], z, false);
+            if (inside && z < (p.point ? 0.14 : 0.1) && z > L.POKE.deep) { near = true; p.hx = (tip.x + 0.5) * p.W; p.hy = (0.5 - tip.y) * p.H; const r = regionAt(p); setHover(i, p, r);
+              /* on a drawing sheet: touch it, or pinch just above it like holding a pencil, and the pen is down. A pencil shows at the fingers. */
+              if (p.point && !r) { o.pp = p; p.point(i, p.hx, p.hy, z <= 0.012 || o.sel, false); if (wr) { pv1.setFromMatrixColumn(p.mesh.matrixWorld, 2).normalize(); pv2.copy(wr.position).sub(it.position).normalize().multiplyScalar(0.55).addScaledVector(pv1, 0.85).normalize(); o.pen.position.copy(it.position).addScaledVector(pv1, -Math.max(0, z)); o.pen.quaternion.setFromUnitVectors(UP, pv2); o.pen.visible = true; } } if (L.pokeStep(p.poke[i], z, true) && r) act(r.act, r.arg, o.src); } else L.pokeStep(p.poke[i], z, false);
           }
         }
       }
@@ -611,7 +618,7 @@ export async function start() {
     store: { get: (id) => { try { return L.SHEET_ID.test(id) ? localStorage.getItem('aou_desk_app_' + id) : null; } catch (e) { return null; } }, set: (id, text) => { try { if (L.SHEET_ID.test(id) && typeof text === 'string' && text.length < 1500000) { localStorage.setItem('aou_desk_app_' + id, text); return true; } } catch (e) { } return false; } },
     addSheet(def) {
       if (!def || !L.SHEET_ID.test(def.id) || apps[def.id] || BRD[def.id] || typeof def.draw !== 'function' || Object.keys(apps).length >= 12) return null;
-      const p = surface(def.id, def.W | 0, def.H | 0, +def.w, +def.h, ring); BRD[def.id] = p; apps[def.id] = { def, p }; p.draw = () => def.draw(p, p.g); if (typeof def.point === 'function') p.point = (i, x, y, dn, end) => def.point(p, i, x, y, dn, end);
+      const p = surface(def.id, def.W | 0, def.H | 0, +def.w, +def.h, ring); BRD[def.id] = p; apps[def.id] = { def, p }; p.draw = () => def.draw(p, p.g); if (typeof def.point === 'function') { p.t.generateMipmaps = true; p.t.minFilter = T.LinearMipmapLinearFilter; p.t.anisotropy = Math.min(8, R.capabilities.getMaxAnisotropy()); p.t.needsUpdate = true; } if (typeof def.point === 'function') p.point = (i, x, y, dn, end) => def.point(p, i, x, y, dn, end);
       const gs = makeGrip(def.id); gs.app = true; gripDraw(gs); placeBoards(); dock.dirty = true; return p;
     } };
 
